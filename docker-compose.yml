@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # Frontend - Next.js
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: ../docker/Dockerfile.web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://api:3001
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - aevo-network
+
+  # Backend - Express.js
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: ../docker/Dockerfile.api
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/aevo
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=aevo-secret-key-change-in-production
+      - PORT=3001
+    volumes:
+      - ./apps/api:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - aevo-network
+
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=aevo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aevo-network
+
+  # Redis for caching and Socket.IO
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - aevo-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  aevo-network:
+    driver: bridge

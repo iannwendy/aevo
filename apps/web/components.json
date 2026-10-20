@@ -1,0 +1,12 @@
+{
+  "tsx": false,
+  "tailwind": {
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils"
+  },
+  "style": "default"
+}
