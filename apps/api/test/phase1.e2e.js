@@ -121,6 +121,10 @@ async function main() {
   await test('API-06', 'Error handler answers unknown routes without a stack in prod shape', async () => {
     const res = await call('/api/definitely-not-a-route');
     assert.equal(res.status, 404);
+    // Same JSON shape as every other error, never Express's default HTML page.
+    assert.equal(typeof res.body, 'object', `expected JSON, got ${String(res.body).slice(0, 40)}`);
+    assert.match(res.body.error, /^Cannot GET \/api\/definitely-not-a-route$/);
+    assert.equal(res.body.stack, undefined, 'stack leaked on 4xx');
   });
 
   // ---------------------------------------------------------------- Task 1.3

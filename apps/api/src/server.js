@@ -8,7 +8,7 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 
 const routes = require('./routes');
-const { errorHandler } = require('./middleware/errorHandler');
+const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { passport } = require('./config/passport');
 const { isAllowedOrigin } = require('./config/origins');
 
@@ -52,6 +52,9 @@ app.use('/api', routes);
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Unknown routes: JSON 404 in the same shape as every other error
+app.use(notFoundHandler);
 
 // Error handling
 app.use(errorHandler);

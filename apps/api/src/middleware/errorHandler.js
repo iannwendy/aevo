@@ -1,4 +1,18 @@
 const errorHandler = (err, req, res, next) => {
+  // A route that never matched. Keep the message identical to Express's own
+  // default ("Cannot GET /path") so logs and clients see the same text.
+  if (isUnmatchedRoute(err)) {
+    // Decode so non-ASCII paths read naturally; malformed escapes come back
+    // as a 404 with a generic message (Express's own router rejects it as 400).
+    let path = req.originalUrl;
+    try {
+      path = decodeURI(path);
+    } catch {
+      return res.status(404).json({ error: 'Cannot parse the requested URL' });
+    }
+    return res.status(404).json({ error: `Cannot ${req.method} ${path}` });
+  }
+
   console.error('Error:', err);
 
   // Prisma errors
@@ -51,6 +65,12 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
+const UNMATCHED_ROUTE = Symbol('unmatchedRoute');
+
+function isUnmatchedRoute(err) {
+  return err instanceof Error && err[UNMATCHED_ROUTE] === true;
+}
+
 function isBodyParserError(err) {
   return (
     err.type === 'entity.parse.failed' ||
@@ -74,4 +94,15 @@ function resolveStatusCode(err) {
   return 500;
 }
 
-module.exports = { errorHandler };
+// Mounted after the routes and before the error handler: any request that no
+// route matched reaches it, so unknown routes get the same JSON shape as every
+// other error instead of Express's default HTML page. The 404 is passed on as
+// an error so it flows through the single JSON writer above.
+const notFoundHandler = (req, res, next) => {
+  const err = new Error(`Cannot ${req.method} ${req.originalUrl}`);
+  err.status = 404;
+  Object.defineProperty(err, UNMATCHED_ROUTE, { value: true });
+  next(err);
+};
+
+module.exports = { errorHandler, notFoundHandler };
