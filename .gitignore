@@ -37,3 +37,6 @@ coverage/
 .vscode/
 .idea/
 *.swp
+
+# Playwright MCP
+.playwright-mcp/

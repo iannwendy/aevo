@@ -1,44 +1,12 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import SiteHeader from '../components/SiteHeader';
+import SiteFooter from '../components/SiteFooter';
 
 export default function HomePage() {
   return (
     <main className="min-h-screen">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border">
-        <div className="container-main h-[72px] flex items-center justify-between">
-          <Link href="/" className="text-2xl font-display font-medium tracking-tight">
-            aevo.
-          </Link>
-
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="/products" className="text-small font-medium hover:text-secondary transition-colors">
-              Shop
-            </Link>
-            <Link href="/products?category=laptops" className="text-small font-medium hover:text-secondary transition-colors">
-              Laptops
-            </Link>
-            <Link href="/products?category=components" className="text-small font-medium hover:text-secondary transition-colors">
-              Components
-            </Link>
-            <Link href="/products?category=monitors" className="text-small font-medium hover:text-secondary transition-colors">
-              Monitors
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-4">
-            <Link href="/products" className="text-small font-medium hover:text-secondary transition-colors">
-              Search
-            </Link>
-            <Link href="/account/profile" className="text-small font-medium hover:text-secondary transition-colors">
-              Account
-            </Link>
-            <Link href="/cart" className="text-small font-medium hover:text-secondary transition-colors">
-              Cart
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero Section */}
       <section className="pt-[72px]">
@@ -131,37 +99,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-12">
-        <div className="container-main">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div>
-              <Link href="/" className="text-2xl font-display font-medium">
-                aevo.
-              </Link>
-              <p className="text-small text-secondary mt-2">
-                Premium Computing, Refined.
-              </p>
-            </div>
-
-            <nav className="flex gap-8">
-              <Link href="/products" className="text-small text-secondary hover:text-ink transition-colors">
-                Shop
-              </Link>
-              <Link href="/account/profile" className="text-small text-secondary hover:text-ink transition-colors">
-                Account
-              </Link>
-              <Link href="/admin" className="text-small text-secondary hover:text-ink transition-colors">
-                Admin
-              </Link>
-            </nav>
-          </div>
-
-          <div className="mt-12 pt-8 border-t border-border text-small text-secondary">
-            © 2025 AEVO. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

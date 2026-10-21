@@ -112,7 +112,16 @@ router.post(
 // ------------------------------------------------------------------- Login
 router.post(
   '/login',
+  // Per-IP limit plus a per-account limit, so one attacker cannot lock a
+  // victim out by burning their budget from a single address, and one address
+  // cannot spread guesses across many accounts within the IP budget.
   rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 'Too many login attempts' }),
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: 'Too many login attempts for this account',
+    keyGenerator: (req) => String(req.body?.email || '').toLowerCase(),
+  }),
   [
     body('email').isEmail().normalizeEmail(),
     body('password').notEmpty(),
@@ -165,8 +174,15 @@ router.post(
 );
 
 // ------------------------------------------------------------------ Logout
+// The cookie was set with httpOnly/secure/sameSite and no domain; clearCookie
+// only expires a cookie whose attributes match, so mirror them here.
 router.post('/logout', (req, res) => {
-  res.clearCookie('token', { path: '/' });
+  res.clearCookie('token', {
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
   res.json({ message: 'Logged out successfully' });
 });
 
@@ -279,7 +295,15 @@ router.put(
 // ----------------------------------------------------------- Forgot password
 router.post(
   '/forgot-password',
+  // Both per-IP and per-address: the per-address bucket stops a single
+  // mailbox from being spammed with reset emails from many addresses.
   rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: 'Too many reset requests' }),
+  rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    message: 'Too many reset requests for this address',
+    keyGenerator: (req) => String(req.body?.email || '').toLowerCase(),
+  }),
   [body('email').isEmail().normalizeEmail()],
   async (req, res) => {
     const { email } = req.body;

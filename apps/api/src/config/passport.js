@@ -38,7 +38,7 @@ const isFacebookConfigured = Boolean(FACEBOOK_APP_ID && FACEBOOK_APP_SECRET);
 async function upsertOAuthUser({ provider, providerId, email, fullName }) {
   const normalizedEmail = email ? email.trim().toLowerCase() : null;
 
-  const existingLink = await prisma.oauthAccount.findUnique({
+  const existingLink = await prisma.oAuthAccount.findUnique({
     where: { provider_providerId: { provider, providerId } },
     include: { user: true },
   });
@@ -53,7 +53,7 @@ async function upsertOAuthUser({ provider, providerId, email, fullName }) {
 
   if (user) {
     // Link the social account to the pre-existing local account.
-    await prisma.oauthAccount.create({
+    await prisma.oAuthAccount.create({
       data: { provider, providerId, userId: user.id },
     });
     return user;

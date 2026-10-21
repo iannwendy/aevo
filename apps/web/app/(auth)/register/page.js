@@ -1,0 +1,267 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
+import { GOOGLE_AUTH_URL, fetchProfile } from '../../../lib/auth-client';
+import { register } from '../../../lib/account-client';
+
+/**
+ * /register
+ *
+ * POST /api/auth/register -> 201 {user, token} (cookie set) | 400 {error | errors[]}
+ * The account signs in straight away, so a success continues to the profile.
+ */
+
+const PASSWORD_MIN = 6;
+const PASSWORD_MAX = 72;
+
+export default function RegisterPage() {
+  const router = useRouter();
+
+  // null | 'checking' (resolving existing session) | 'submitting'
+  const [phase, setPhase] = useState('checking');
+  // null | { kind: 'error' | 'success', message }
+  const [notice, setNotice] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [form, setForm] = useState({ fullName: '', email: '', password: '' });
+
+  // Already signed in? Skip the form (same pattern as /login).
+  useEffect(() => {
+    let cancelled = false;
+    fetchProfile()
+      .then((result) => {
+        if (cancelled) return;
+        if (result.status === 'ok') {
+          router.replace('/account/profile');
+          return;
+        }
+        setPhase('idle');
+      })
+      .catch(() => {
+        if (!cancelled) setPhase('idle');
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function update(field) {
+    return (event) => {
+      setForm((prev) => ({ ...prev, [field]: event.target.value }));
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    };
+  }
+
+  function validate() {
+    const errors = {};
+    const fullName = form.fullName.trim();
+    const email = form.email.trim();
+
+    if (!fullName) errors.fullName = 'Enter your full name.';
+    if (!email) errors.email = 'Enter your email address.';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'Enter a valid email address.';
+    }
+    if (form.password.length < PASSWORD_MIN) {
+      errors.password = `Password must be at least ${PASSWORD_MIN} characters.`;
+    } else if (form.password.length > PASSWORD_MAX) {
+      errors.password = `Password must be at most ${PASSWORD_MAX} characters.`;
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0
+      ? { fullName, email, password: form.password }
+      : null;
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    if (phase === 'submitting') return;
+
+    setNotice(null);
+    const payload = validate();
+    if (!payload) return;
+
+    setPhase('submitting');
+    const result = await register(payload);
+
+    if (result.ok) {
+      setNotice({ kind: 'success', message: 'Account created. Opening your account…' });
+      router.replace('/account/profile');
+      return;
+    }
+
+    if (result.status === 400 && /already registered/i.test(result.message)) {
+      setFieldErrors({ email: 'This email is already registered. Sign in instead.' });
+    }
+    setNotice({ kind: 'error', message: result.message });
+    setPhase('idle');
+  }
+
+  const isSubmitting = phase === 'submitting';
+  const isBusy = isSubmitting || phase === 'checking';
+
+  return (
+    <main className="min-h-screen grid lg:grid-cols-2 bg-surface">
+      {/* ---- Left: brand panel ---- */}
+      <aside className="hidden lg:flex flex-col justify-between bg-canvas border-r border-border p-16">
+        <Link
+          href="/"
+          className="text-2xl font-display font-medium tracking-tight text-ink focus-ring rounded-lg"
+        >
+          aevo.
+        </Link>
+
+        <div className="max-w-md">
+          <span className="text-caption font-mono text-secondary uppercase tracking-wider">
+            Account
+          </span>
+          <h1 className="text-display mt-4">Join AEVO.</h1>
+          <p className="text-xl text-secondary mt-6">
+            Order tracking, saved addresses and loyalty points on every purchase.
+          </p>
+        </div>
+
+        <p className="text-caption font-mono text-secondary uppercase tracking-wider">
+          Premium Computing, Refined.
+        </p>
+      </aside>
+
+      {/* ---- Right: form panel ---- */}
+      <section className="flex flex-col justify-center px-6 py-12 md:px-16 lg:px-24">
+        <div className="w-full max-w-md mx-auto">
+          <Link
+            href="/"
+            className="lg:hidden text-2xl font-display font-medium tracking-tight focus-ring rounded-lg"
+          >
+            aevo.
+          </Link>
+
+          <h2 className="text-h1 mt-8 lg:mt-0">Create an account</h2>
+          <p className="text-secondary mt-2">
+            Already have one?{' '}
+            <Link
+              href="/login"
+              className="text-ink font-medium hover:underline underline-offset-4 focus-ring rounded"
+            >
+              Sign in
+            </Link>
+          </p>
+
+          {notice && (
+            <p
+              role={notice.kind === 'error' ? 'alert' : 'status'}
+              aria-live="polite"
+              className={`mt-6 text-small rounded-lg px-4 py-3 border ${
+                notice.kind === 'error'
+                  ? 'border-red-300 bg-red-50 text-red-700'
+                  : 'border-sage/30 bg-sage/5 text-sage'
+              }`}
+            >
+              {notice.message}
+            </p>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
+            <Field
+              id="fullName"
+              label="Full name"
+              type="text"
+              autoComplete="name"
+              value={form.fullName}
+              onChange={update('fullName')}
+              error={fieldErrors.fullName}
+              disabled={isBusy}
+            />
+            <Field
+              id="email"
+              label="Email"
+              type="email"
+              autoComplete="email"
+              value={form.email}
+              onChange={update('email')}
+              error={fieldErrors.email}
+              disabled={isBusy}
+            />
+            <Field
+              id="password"
+              label="Password"
+              type="password"
+              autoComplete="new-password"
+              value={form.password}
+              onChange={update('password')}
+              error={fieldErrors.password}
+              disabled={isBusy}
+              hint={`At least ${PASSWORD_MIN} characters.`}
+            />
+
+            <button
+              type="submit"
+              disabled={isBusy}
+              className="btn-primary focus-ring w-full h-12 rounded-lg font-medium inline-flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />}
+              {isSubmitting ? 'Creating account…' : 'Create account'}
+            </button>
+          </form>
+
+          <div className="my-8 flex items-center gap-4" aria-hidden="true">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-caption font-mono text-secondary uppercase tracking-wider">
+              or
+            </span>
+            <span className="h-px flex-1 bg-border" />
+          </div>
+
+          <a
+            href={GOOGLE_AUTH_URL}
+            className="btn-secondary focus-ring w-full h-12 rounded-lg font-medium inline-flex items-center justify-center"
+          >
+            Continue with Google
+          </a>
+
+          <p className="text-small text-secondary mt-6">
+            By creating an account you agree to AEVO’s terms of use.
+          </p>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function Field({ id, label, error, hint, ...inputProps }) {
+  const describedBy = [hint && `${id}-hint`, error && `${id}-error`]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <div>
+      <label htmlFor={id} className="block text-small font-medium mb-2">
+        {label}
+      </label>
+      <input
+        id={id}
+        name={id}
+        aria-invalid={error ? 'true' : undefined}
+        aria-describedby={describedBy || undefined}
+        className={`w-full h-12 rounded-lg border bg-surface px-4 text-base focus-ring ${
+          error ? 'border-red-400' : 'border-border'
+        }`}
+        {...inputProps}
+      />
+      {hint && !error && (
+        <p id={`${id}-hint`} className="text-small text-secondary mt-2">
+          {hint}
+        </p>
+      )}
+      {error && (
+        <p id={`${id}-error`} className="text-small text-red-600 mt-2">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
