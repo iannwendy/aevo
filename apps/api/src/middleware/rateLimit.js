@@ -11,10 +11,10 @@ const buckets = new Map();
 // Drop expired buckets periodically so the map cannot grow without bound.
 setInterval(() => {
   const now = Date.now();
-  for (const [key, hits] of buckets) {
-    const live = hits.filter((t) => now - t < hits.windowMs);
+  for (const [key, entry] of buckets) {
+    const live = entry.hits.filter((t) => now - t < entry.windowMs);
     if (live.length === 0) buckets.delete(key);
-    else hits.set(key, live);
+    else entry.hits = live;
   }
 }, 60_000).unref?.();
 
@@ -23,10 +23,15 @@ setInterval(() => {
  * @param {number} options.windowMs - sliding window length
  * @param {number} options.max - max requests per window per key
  * @param {string} options.message - body returned when the limit is hit
+ * @param {(req: import('express').Request) => string} [options.keyGenerator]
+ *   extra identity appended to the key. By default the key is only IP+path,
+ *   so counting per account as well requires passing e.g.
+ *   `(req) => String(req.body?.email || '').toLowerCase()`.
  */
-function rateLimit({ windowMs = 15 * 60 * 1000, max = 20, message = 'Too many requests, please try again later' } = {}) {
+function rateLimit({ windowMs = 15 * 60 * 1000, max = 20, message = 'Too many requests, please try again later', keyGenerator } = {}) {
   return (req, res, next) => {
-    const key = `${req.ip}:${req.path}`;
+    const suffix = keyGenerator ? `:${keyGenerator(req)}` : '';
+    const key = `${req.ip}:${req.path}${suffix}`;
     const now = Date.now();
 
     let entry = buckets.get(key);

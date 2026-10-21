@@ -10,32 +10,17 @@ const apiClient = axios.create({
   },
 });
 
-// Request interceptor
-apiClient.interceptors.request.use((config) => {
-  const token = document.cookie
-    .split('; ')
-    .find((row) => row.startsWith('token='))
-    ?.split('=')[1];
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
+// Requests carry the session through the httpOnly cookie the browser sends
+// automatically (withCredentials). No Authorization header is built here:
+// document.cookie can never see that token anyway.
 
 // Response interceptor
+// A 401 marks a request that needs a signed-in user. Callers handle it (and
+// choose where to send the visitor); redirecting the window here would bounce
+// public pages - and "wrong password" replies - to /login.
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized - redirect to login
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
-    }
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default apiClient;
