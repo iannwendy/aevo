@@ -424,8 +424,20 @@ router.get('/google/callback', (req, res, next) => {
     return res.status(503).json({ error: 'Google login is not configured on this server' });
   }
   return passport.authenticate('google', { session: false }, (err, user) => {
-    if (err) return next(err);
-    if (!user) return res.redirect(`${CLIENT_URL}/login?error=oauth_failed`);
+    // Passport funnels every expected failure here instead of raising:
+    //   - no user: consent denied, or the state nonce did not match;
+    //   - err: bad/expired/reused code (TokenError 400), provider refusing
+    //     the client (401), provider 5xx, or a network failure (TokenError
+    //     with `status` 500, still an upstream/input problem, never ours).
+    // Either way the user belongs back on the login page with a copy that the
+    // frontend understands, not on a JSON error page.
+    if (err || !user) {
+      console.warn(
+        'Google OAuth callback failed:',
+        err ? `${err.name || 'Error'}: ${err.message}` : 'no user (consent denied or state mismatch)'
+      );
+      return res.redirect(`${CLIENT_URL}/login?error=oauth_failed`);
+    }
     const token = signSessionToken(user);
     res.cookie('token', token, {
       httpOnly: true,
@@ -452,8 +464,16 @@ router.get('/facebook/callback', (req, res, next) => {
     return res.status(503).json({ error: 'Facebook login is not configured on this server' });
   }
   return passport.authenticate('facebook', { session: false }, (err, user) => {
-    if (err) return next(err);
-    if (!user) return res.redirect(`${CLIENT_URL}/login?error=oauth_failed`);
+    // Same contract as the Google callback: every failure lands on the login
+    // page. Facebook reports refusals as error_code/error_message, which
+    // passport-facebook turns into a FacebookAuthorizationError.
+    if (err || !user) {
+      console.warn(
+        'Facebook OAuth callback failed:',
+        err ? `${err.name || 'Error'}: ${err.message}` : 'no user (consent denied or state mismatch)'
+      );
+      return res.redirect(`${CLIENT_URL}/login?error=oauth_failed`);
+    }
     const token = signSessionToken(user);
     res.cookie('token', token, {
       httpOnly: true,

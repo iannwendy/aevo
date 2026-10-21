@@ -10,6 +10,7 @@ const { Server } = require('socket.io');
 const routes = require('./routes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { passport } = require('./config/passport');
+const { isAllowedOrigin } = require('./config/origins');
 
 const app = express();
 const httpServer = createServer(app);
@@ -17,7 +18,7 @@ const httpServer = createServer(app);
 // Socket.IO setup for realtime reviews
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: isAllowedOrigin,
     methods: ['GET', 'POST'],
   },
 });
@@ -30,7 +31,9 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  // Only the allowlisted client origins get an Access-Control-Allow-Origin
+  // header; anything else is left without one so browsers block the read.
+  origin: isAllowedOrigin,
   credentials: true,
 }));
 app.use(morgan('dev'));
