@@ -9,6 +9,7 @@ const { Server } = require('socket.io');
 
 const routes = require('./routes');
 const { errorHandler } = require('./middleware/errorHandler');
+const { passport } = require('./config/passport');
 
 const app = express();
 const httpServer = createServer(app);
@@ -36,6 +37,10 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Passport is mounted for the social login routes. The strategies themselves
+// only register when their credentials are present.
+app.use(passport.initialize());
 
 // Routes
 app.use('/api', routes);
