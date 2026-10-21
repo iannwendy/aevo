@@ -2,15 +2,7 @@ const errorHandler = (err, req, res, next) => {
   // A route that never matched. Keep the message identical to Express's own
   // default ("Cannot GET /path") so logs and clients see the same text.
   if (isUnmatchedRoute(err)) {
-    // Decode so non-ASCII paths read naturally; malformed escapes come back
-    // as a 404 with a generic message (Express's own router rejects it as 400).
-    let path = req.originalUrl;
-    try {
-      path = decodeURI(path);
-    } catch {
-      return res.status(404).json({ error: 'Cannot parse the requested URL' });
-    }
-    return res.status(404).json({ error: `Cannot ${req.method} ${path}` });
+    return res.status(404).json({ error: `Cannot ${req.method} ${req.path}` });
   }
 
   console.error('Error:', err);
@@ -81,10 +73,11 @@ function isBodyParserError(err) {
   );
 }
 
-// OAuth library errors carry `status` (RFC 6749 section 5.2): passport-oauth2
-// TokenError and AuthorizationError set it, e.g. 400 "invalid_grant" for an
-// expired or already-used code, 401 "invalid_client". Without this the handler
-// would answer a client mistake with a 500.
+// passport-oauth2 errors carry `status` (RFC 6749 section 5.2): TokenError
+// sets 400 for invalid_grant / invalid_client and AuthorizationError sets 403
+// for access_denied. node-oauth itself reports the provider's HTTP status as
+// `statusCode` on the wrapped error. Any 4xx is the caller's mistake, so it
+// keeps its message; without this the handler answered 500.
 function resolveStatusCode(err) {
   const candidate = err.statusCode || err.status;
   if (Number.isInteger(candidate) && candidate >= 400 && candidate <= 599) {
