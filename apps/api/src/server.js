@@ -7,8 +7,8 @@ const cookieParser = require('cookie-parser');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 
-const routes = require('./src/routes');
-const { errorHandler } = require('./src/middleware/errorHandler');
+const routes = require('./routes');
+const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 const httpServer = createServer(app);

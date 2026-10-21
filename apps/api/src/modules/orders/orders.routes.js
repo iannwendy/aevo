@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const { authMiddleware, optionalAuth, adminOnly } = require('../../middleware/auth');
-const { generateOrderNumber } = require('../../../utils/helpers');
+const { generateOrderNumber } = require('../../utils/helpers');
 
 const prisma = new PrismaClient();
 
