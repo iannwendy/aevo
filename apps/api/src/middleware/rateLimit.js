@@ -14,7 +14,7 @@ setInterval(() => {
   for (const [key, entry] of buckets) {
     const live = entry.hits.filter((t) => now - t < entry.windowMs);
     if (live.length === 0) buckets.delete(key);
-    else entry.hits = live;
+    else entry.hits.splice(0, entry.hits.length, ...live);
   }
 }, 60_000).unref?.();
 
