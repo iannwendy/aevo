@@ -190,9 +190,9 @@ export default function AdminOrdersPage() {
                     setDateRangePreset(preset.id);
                     setPage(1);
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-caption font-mono transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-caption font-mono transition-all duration-200 active:scale-95 ${
                     dateRangePreset === preset.id
-                      ? 'bg-primary text-primary-foreground font-medium'
+                      ? 'bg-primary text-primary-foreground font-medium shadow-xs'
                       : 'bg-surface-muted text-secondary hover:text-ink'
                   }`}
                 >
@@ -376,10 +376,10 @@ export default function AdminOrdersPage() {
                         <Link
                           href={`/admin/orders/${order.id}`}
                           data-testid={`view-order-link-${order.id}`}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border bg-surface text-caption font-medium text-ink hover:bg-surface-muted"
+                          className="group inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border bg-surface text-caption font-medium text-ink hover:bg-surface-muted btn-interactive"
                         >
                           <span>Details</span>
-                          <ArrowRight size={13} />
+                          <ArrowRight size={13} className="transition-transform duration-200 group-hover:translate-x-0.5" />
                         </Link>
                       </td>
                     </tr>

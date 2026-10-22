@@ -164,7 +164,7 @@ export default function AdminOrderDetailPage({ params }) {
         )}
 
         {/* Update Order Status Form */}
-        <div className="surface-card p-6" data-testid="admin-order-status-form-card">
+        <div className="surface-card p-6 animate-slide-up" data-testid="admin-order-status-form-card">
           <h2 className="text-h3 font-display font-medium text-ink mb-4">
             {t('admin.updateOrderStatusTitle')}
           </h2>

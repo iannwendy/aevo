@@ -290,7 +290,7 @@ export default function AdminUsersPage() {
                           type="button"
                           onClick={() => handleOpenEditUser(user)}
                           data-testid={`edit-user-btn-${user.id}`}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-surface text-caption font-medium text-ink hover:bg-surface-muted"
+                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-surface text-caption font-medium text-ink hover:bg-surface-muted btn-interactive"
                         >
                           <Edit3 size={13} />
                           <span>Edit</span>
@@ -300,7 +300,7 @@ export default function AdminUsersPage() {
                           type="button"
                           onClick={() => handleToggleBan(user)}
                           data-testid={`toggle-ban-btn-${user.id}`}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-caption font-medium transition-colors ${
+                          className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-caption font-medium btn-interactive ${
                             user.isActive
                               ? 'border-danger/30 bg-danger/10 text-danger hover:bg-danger/20'
                               : 'border-success/30 bg-success/10 text-success hover:bg-success/20'
@@ -337,7 +337,7 @@ export default function AdminUsersPage() {
 
         {/* User Edit / Detail Drawer Card */}
         {selectedUser && (
-          <div className="surface-card p-6 space-y-5" data-testid="admin-user-detail-panel">
+          <div className="surface-card p-6 space-y-5 animate-slide-up" data-testid="admin-user-detail-panel">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
                 <p className="text-caption font-mono uppercase text-secondary">

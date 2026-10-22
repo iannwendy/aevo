@@ -206,7 +206,7 @@ export default function AdminDashboardPage() {
             data-testid="simple-kpi-grid"
           >
             <div
-              className="surface-card p-6 flex flex-col justify-between"
+              className="surface-card p-6 flex flex-col justify-between hover-lift animate-slide-up stagger-1"
               data-testid="kpi-total-users"
             >
               <div className="flex items-center justify-between text-secondary">
@@ -226,7 +226,7 @@ export default function AdminDashboardPage() {
             </div>
 
             <div
-              className="surface-card p-6 flex flex-col justify-between"
+              className="surface-card p-6 flex flex-col justify-between hover-lift animate-slide-up stagger-2"
               data-testid="kpi-new-users"
             >
               <div className="flex items-center justify-between text-secondary">
@@ -244,7 +244,7 @@ export default function AdminDashboardPage() {
             </div>
 
             <div
-              className="surface-card p-6 flex flex-col justify-between"
+              className="surface-card p-6 flex flex-col justify-between hover-lift animate-slide-up stagger-3"
               data-testid="kpi-total-orders"
             >
               <div className="flex items-center justify-between text-secondary">
@@ -262,7 +262,7 @@ export default function AdminDashboardPage() {
             </div>
 
             <div
-              className="surface-card p-6 flex flex-col justify-between"
+              className="surface-card p-6 flex flex-col justify-between hover-lift animate-slide-up stagger-4"
               data-testid="kpi-total-revenue"
             >
               <div className="flex items-center justify-between text-secondary">
@@ -474,9 +474,9 @@ export default function AdminDashboardPage() {
                   data-testid={`period-btn-${item.id}`}
                   aria-pressed={period === item.id}
                   onClick={() => setPeriod(item.id)}
-                  className={`px-3 py-1.5 rounded-lg text-caption font-mono transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-caption font-mono transition-all duration-200 active:scale-95 ${
                     period === item.id
-                      ? 'bg-primary text-primary-foreground font-medium'
+                      ? 'bg-primary text-primary-foreground font-medium shadow-xs'
                       : 'text-secondary hover:text-ink hover:bg-surface-muted'
                   }`}
                 >
@@ -527,7 +527,7 @@ export default function AdminDashboardPage() {
             className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6"
             data-testid="advanced-kpi-grid"
           >
-            <div className="surface-card p-6" data-testid="adv-kpi-orders">
+            <div className="surface-card p-6 hover-lift" data-testid="adv-kpi-orders">
               <div className="flex items-center justify-between text-secondary">
                 <span className="text-caption font-mono uppercase tracking-wider">
                   {t('admin.advOrdersSold')}
@@ -542,7 +542,7 @@ export default function AdminDashboardPage() {
               </p>
             </div>
 
-            <div className="surface-card p-6" data-testid="adv-kpi-revenue">
+            <div className="surface-card p-6 hover-lift" data-testid="adv-kpi-revenue">
               <div className="flex items-center justify-between text-secondary">
                 <span className="text-caption font-mono uppercase tracking-wider">
                   {t('admin.advTotalRevenue')}
@@ -568,7 +568,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            <div className="surface-card p-6" data-testid="adv-kpi-profit">
+            <div className="surface-card p-6 hover-lift" data-testid="adv-kpi-profit">
               <div className="flex items-center justify-between text-secondary">
                 <span className="text-caption font-mono uppercase tracking-wider">
                   {t('admin.advOverallProfit')}
@@ -583,7 +583,7 @@ export default function AdminDashboardPage() {
               </p>
             </div>
 
-            <div className="surface-card p-6" data-testid="adv-kpi-units">
+            <div className="surface-card p-6 hover-lift" data-testid="adv-kpi-units">
               <div className="flex items-center justify-between text-secondary">
                 <span className="text-caption font-mono uppercase tracking-wider">
                   {t('admin.advProductsSold')}

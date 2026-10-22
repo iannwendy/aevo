@@ -347,7 +347,7 @@ export default function AdminDiscountsPage() {
                             </div>
                             <div className="w-full h-1.5 rounded-full bg-border overflow-hidden">
                               <div
-                                className={`h-full rounded-full ${
+                                className={`h-full rounded-full transition-all duration-500 ease-out ${
                                   isExhausted ? 'bg-warning' : 'bg-primary'
                                 }`}
                                 style={{
@@ -401,7 +401,7 @@ export default function AdminDiscountsPage() {
                               type="button"
                               onClick={() => handleDeactivate(discount)}
                               data-testid={`deactivate-discount-btn-${discount.code}`}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-surface text-caption font-medium text-danger hover:border-danger/40"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-surface text-caption font-medium text-danger hover:border-danger/40 btn-interactive"
                             >
                               <Trash2 size={13} />
                               <span>Deactivate</span>
@@ -410,7 +410,7 @@ export default function AdminDiscountsPage() {
                             <button
                               type="button"
                               onClick={() => handleReactivate(discount)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-surface text-caption font-medium text-success hover:border-success/40"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-surface text-caption font-medium text-success hover:border-success/40 btn-interactive"
                             >
                               <RotateCcw size={13} />
                               <span>Activate</span>
@@ -421,7 +421,7 @@ export default function AdminDiscountsPage() {
 
                       {/* Expandable list of orders where this coupon was applied */}
                       {isExpanded && (
-                        <tr className="bg-surface-muted/60">
+                        <tr className="bg-surface-muted/60 animate-fade-in">
                           <td colSpan={7} className="p-4">
                             <p className="text-caption font-mono uppercase text-secondary mb-2">
                               Orders Using Coupon {discount.code} ({appliedOrders.length})

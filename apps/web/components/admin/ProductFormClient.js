@@ -270,7 +270,7 @@ export default function ProductFormClient({ productId = null }) {
             Loading product configuration…
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6" data-testid="admin-product-form">
+          <form onSubmit={handleSubmit} className="space-y-6 animate-slide-up" data-testid="admin-product-form">
             {/* Core Information */}
             <div className="surface-card p-6 space-y-5">
               <h2 className="text-h3 font-display font-medium text-ink">

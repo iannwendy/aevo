@@ -17,7 +17,7 @@ import {
 import AdminShell from '../../../components/admin/AdminShell';
 import Pagination from '../../../components/product/Pagination';
 import { productsApi, categoriesApi } from '../../../lib/api';
-import { formatPrice } from '../../../lib/utils';
+import { formatPrice, handleImageError } from '../../../lib/utils';
 import { useI18n } from '../../../lib/i18n';
 
 export default function AdminProductsPage() {
@@ -236,7 +236,7 @@ export default function AdminProductsPage() {
 
         {/* Collapsible Category Manager */}
         {showCategoryManager && (
-          <div className="surface-card p-6 space-y-5" data-testid="admin-category-manager">
+          <div className="surface-card p-6 space-y-5 animate-slide-up" data-testid="admin-category-manager">
             <h2 className="text-h3 font-display font-medium text-ink">
               Hardware Categories ({categories.length})
             </h2>
@@ -370,7 +370,8 @@ export default function AdminProductsPage() {
                               <img
                                 src={product.image}
                                 alt={product.name}
-                                className="w-11 h-11 rounded-lg object-contain p-1 border border-border bg-white shrink-0"
+                                onError={handleImageError}
+                                className="w-11 h-11 rounded-lg object-contain p-1 border border-border bg-white shrink-0 transition-transform duration-200 hover:scale-110"
                               />
                             ) : (
                               <div className="w-11 h-11 rounded-lg border border-border bg-surface-muted shrink-0" />
@@ -423,7 +424,7 @@ export default function AdminProductsPage() {
                           <div className="inline-flex items-center justify-end gap-2">
                             <Link
                               href={`/admin/products/${product.id}`}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-surface text-caption font-medium text-ink hover:bg-surface-muted"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-surface text-caption font-medium text-ink hover:bg-surface-muted btn-interactive"
                             >
                               <Edit3 size={13} />
                               <span>Edit</span>
@@ -431,7 +432,7 @@ export default function AdminProductsPage() {
                             <button
                               type="button"
                               onClick={() => handleDeleteProduct(product)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-surface text-caption font-medium text-danger hover:border-danger/40"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-border bg-surface text-caption font-medium text-danger hover:border-danger/40 btn-interactive"
                             >
                               <Trash2 size={13} />
                               <span>Delete</span>
@@ -442,7 +443,7 @@ export default function AdminProductsPage() {
 
                       {/* Expandable Variant Inventory Row */}
                       {isExpanded && (
-                        <tr className="bg-surface-muted/60">
+                        <tr className="bg-surface-muted/60 animate-fade-in">
                           <td colSpan={7} className="p-4">
                             <div className="space-y-2">
                               <p className="text-caption font-mono uppercase text-secondary">

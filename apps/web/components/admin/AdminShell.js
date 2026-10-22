@@ -97,14 +97,14 @@ export default function AdminShell({ children }) {
               data-testid="admin-mobile-menu-toggle"
               aria-expanded={mobileMenuOpen}
               aria-label="Toggle admin navigation"
-              className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-surface text-ink hover:bg-surface-muted focus-ring"
+              className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-surface text-ink hover:bg-surface-muted focus-ring transition-all duration-200 active:scale-90"
             >
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
 
             <Link
               href="/admin"
-              className="inline-flex items-center gap-2.5 focus-ring rounded-lg"
+              className="inline-flex items-center gap-2.5 focus-ring rounded-lg transition-transform duration-200 hover:scale-[1.03] active:scale-[0.97]"
             >
               <span className="text-2xl font-display font-medium tracking-tight text-ink">
                 aevo.
@@ -118,7 +118,7 @@ export default function AdminShell({ children }) {
           <div className="flex items-center gap-3 sm:gap-4">
             {authState.user && (
               <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-muted border border-border text-caption">
-                <span className="w-2 h-2 rounded-full bg-success" />
+                <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
                 <span className="font-medium text-ink">{authState.user.fullName}</span>
                 <span className="font-mono text-secondary uppercase">
                   ({authState.user.role})
@@ -129,10 +129,10 @@ export default function AdminShell({ children }) {
             <Link
               href="/"
               data-testid="admin-storefront-link"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-border bg-surface text-small font-medium text-ink hover:bg-surface-muted transition-colors focus-ring"
+              className="group inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-border bg-surface text-small font-medium text-ink hover:bg-surface-muted btn-interactive focus-ring"
             >
               <span>{t('admin.backToStore')}</span>
-              <ArrowUpRight size={15} />
+              <ArrowUpRight size={15} className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
 
             <SettingsMenu />
@@ -161,10 +161,10 @@ export default function AdminShell({ children }) {
                   href={item.href}
                   data-testid={item.testId}
                   aria-current={active ? 'page' : undefined}
-                  className={`flex items-center gap-3 px-3.5 py-3 rounded-xl text-small font-medium transition-colors focus-ring ${
+                  className={`flex items-center gap-3 px-3.5 py-3 rounded-xl text-small font-medium transition-all duration-200 active:scale-[0.98] focus-ring ${
                     active
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-secondary hover:text-ink hover:bg-surface-muted'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'text-secondary hover:text-ink hover:bg-surface-muted hover:translate-x-1'
                   }`}
                 >
                   <Icon size={18} strokeWidth={1.75} />
@@ -185,7 +185,7 @@ export default function AdminShell({ children }) {
         {mobileMenuOpen && (
           <div
             data-testid="admin-mobile-menu-drawer"
-            className="lg:hidden border-b border-border bg-surface px-4 py-4 space-y-1.5"
+            className="lg:hidden border-b border-border bg-surface px-4 py-4 space-y-1.5 animate-slide-down"
           >
             {ADMIN_NAV_ITEMS.map((item) => {
               const Icon = item.icon;
@@ -195,9 +195,9 @@ export default function AdminShell({ children }) {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-small font-medium transition-colors ${
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-small font-medium transition-all duration-200 active:scale-[0.98] ${
                     active
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
                       : 'text-secondary hover:text-ink hover:bg-surface-muted'
                   }`}
                 >
