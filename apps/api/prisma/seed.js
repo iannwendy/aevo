@@ -69,6 +69,12 @@ const PRODUCTS = [
   {
     name: 'MacBook Pro M3',
     slug: 'macbook-pro-m3',
+    images: [
+      'https://m.media-amazon.com/images/I/51Zuib0V6uL._AC_SL1200_.jpg',
+      'https://m.media-amazon.com/images/I/31f7u4+Uz6L._AC_SL1200_.jpg',
+      'https://m.media-amazon.com/images/I/51a6zax50zL._AC_SL1200_.jpg',
+      'https://m.media-amazon.com/images/I/51H1YCrJQlL._AC_SL1200_.jpg',
+    ],
     brand: 'Apple',
     category: 'laptops',
     isNewArrival: true,
@@ -91,6 +97,12 @@ const PRODUCTS = [
   {
     name: 'ASUS ROG Zephyrus G14',
     slug: 'asus-rog-zephyrus-g14',
+    images: [
+      'https://m.media-amazon.com/images/I/61WJkJCsYZL._AC_SL1000_.jpg',
+      'https://m.media-amazon.com/images/I/61YURuJ1QzL._AC_SL1000_.jpg',
+      'https://m.media-amazon.com/images/I/713tovDb2OL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61kGpBGP7DL._AC_SL1000_.jpg',
+    ],
     brand: 'ASUS',
     category: 'laptops',
     isNewArrival: true,
@@ -111,6 +123,12 @@ const PRODUCTS = [
   {
     name: 'Lenovo ThinkPad X1 Carbon Gen 12',
     slug: 'lenovo-thinkpad-x1-carbon-gen-12',
+    images: [
+      'https://m.media-amazon.com/images/I/61GSvJjxBuL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61VVypCqZxL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61jVaCmKXAL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61yafX5gUtL._AC_SL1039_.jpg',
+    ],
     brand: 'Lenovo',
     category: 'laptops',
     isBestSeller: true,
@@ -131,6 +149,12 @@ const PRODUCTS = [
   {
     name: 'Dell XPS 15 9530',
     slug: 'dell-xps-15-9530',
+    images: [
+      'https://m.media-amazon.com/images/I/71748MYAozL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61crHKovSKL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61aZ5XNG03L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/510UlYOnZ0L._AC_SL1500_.jpg',
+    ],
     brand: 'Dell',
     category: 'laptops',
     description: [
@@ -152,6 +176,12 @@ const PRODUCTS = [
   {
     name: 'NVIDIA GeForce RTX 4090 Founders Edition',
     slug: 'nvidia-geforce-rtx-4090-founders-edition',
+    images: [
+      'https://m.media-amazon.com/images/I/514QPBuqGyL._AC_SL1002_.jpg',
+      'https://m.media-amazon.com/images/I/61n5Z0eMm6L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61P6nrmF+NL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71PKwzCa8ZL._AC_SL1500_.jpg',
+    ],
     brand: 'NVIDIA',
     category: 'components',
     isNewArrival: true,
@@ -173,6 +203,12 @@ const PRODUCTS = [
   {
     name: 'AMD Ryzen 9 7950X3D',
     slug: 'amd-ryzen-9-7950x3d',
+    images: [
+      'https://m.media-amazon.com/images/I/51jNS8epPeL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/51wD3-OAv0L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/51qA89Dg6UL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61rKeM-2DpL._AC_SL1500_.jpg',
+    ],
     brand: 'AMD',
     category: 'components',
     isBestSeller: true,
@@ -193,6 +229,12 @@ const PRODUCTS = [
   {
     name: 'Corsair Vengeance RGB DDR5 32GB',
     slug: 'corsair-vengeance-rgb-ddr5-32gb',
+    images: [
+      'https://m.media-amazon.com/images/I/61EVf-QxpvL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81fnmTvXQlL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81iJ8gp-VHL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/91mS+ceUWfL._AC_SL1500_.jpg',
+    ],
     brand: 'Corsair',
     category: 'components',
     description: [
@@ -212,6 +254,12 @@ const PRODUCTS = [
   {
     name: 'Samsung 990 PRO 2TB NVMe SSD',
     slug: 'samsung-990-pro-2tb-nvme-ssd',
+    images: [
+      'https://m.media-amazon.com/images/I/71OWtcxKgvL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61qidDdfgRL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61D9foQdhDL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61S4fCwCigL._AC_SL1500_.jpg',
+    ],
     brand: 'Samsung',
     category: 'components',
     isNewArrival: true,
@@ -232,6 +280,12 @@ const PRODUCTS = [
   {
     name: 'Noctua NH-D15 chromax.black',
     slug: 'noctua-nh-d15-chromax-black',
+    images: [
+      'https://m.media-amazon.com/images/I/91t48GBv8TL._SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/91O+0CrmvSL._SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/914SVxljeIL._SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81MxGwGWBZL._SL1500_.jpg',
+    ],
     brand: 'Noctua',
     category: 'components',
     description: [
@@ -251,6 +305,12 @@ const PRODUCTS = [
   {
     name: 'Logitech MX Master 3S',
     slug: 'logitech-mx-master-3s',
+    images: [
+      'https://m.media-amazon.com/images/I/61C0EGFbtEL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81f-tgX7C9L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71-0F2ReUML._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81wTU+JA24L._AC_SL1500_.jpg',
+    ],
     brand: 'Logitech',
     category: 'components',
     description: [
@@ -272,6 +332,12 @@ const PRODUCTS = [
   {
     name: 'LG UltraGear OLED 27GP950',
     slug: 'lg-ultragear-oled-27gp950',
+    images: [
+      'https://m.media-amazon.com/images/I/81iMclFYKIL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81Lw-dn5L8L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81iCtprkQ7L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/91dAAoGUO-L._AC_SL1500_.jpg',
+    ],
     brand: 'LG',
     category: 'monitors',
     isNewArrival: true,
@@ -293,6 +359,12 @@ const PRODUCTS = [
   {
     name: 'Dell UltraSharp U2723QE',
     slug: 'dell-ultrasharp-u2723qe',
+    images: [
+      'https://m.media-amazon.com/images/I/81MxURKFxuL._SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/512dpZN-V-L._SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81m13zgd+GL._SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61SLNvDzNpL._SL1500_.jpg',
+    ],
     brand: 'Dell',
     category: 'monitors',
     isBestSeller: true,
@@ -313,6 +385,12 @@ const PRODUCTS = [
   {
     name: 'Samsung Odyssey G9',
     slug: 'samsung-odyssey-g9',
+    images: [
+      'https://m.media-amazon.com/images/I/61X2vtmJGlL._AC_SL1000_.jpg',
+      'https://m.media-amazon.com/images/I/51PpQvTj2iL._AC_SL1000_.jpg',
+      'https://m.media-amazon.com/images/I/61JAQ3X++fL._AC_SL1000_.jpg',
+      'https://m.media-amazon.com/images/I/51wkXMRfhiL._AC_SL1000_.jpg',
+    ],
     brand: 'Samsung',
     category: 'monitors',
     description: [
@@ -332,6 +410,12 @@ const PRODUCTS = [
   {
     name: 'BenQ PD2725U Designer Monitor',
     slug: 'benq-pd2725u-designer-monitor',
+    images: [
+      'https://m.media-amazon.com/images/I/71T6IXSp69L._AC_SL1200_.jpg',
+      'https://m.media-amazon.com/images/I/61LY3i31VAL._AC_SL1200_.jpg',
+      'https://m.media-amazon.com/images/I/6115LMMkgtL._AC_SL1200_.jpg',
+      'https://m.media-amazon.com/images/I/61ZQw4Jr58L._AC_SL1200_.jpg',
+    ],
     brand: 'BenQ',
     category: 'monitors',
     description: [
@@ -353,6 +437,12 @@ const PRODUCTS = [
   {
     name: 'Seagate BarraCuda 4TB HDD',
     slug: 'seagate-barracuda-4tb-hdd',
+    images: [
+      'https://m.media-amazon.com/images/I/71V1jd3s9dL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71s1Sdv4CEL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/91-ZZ7WGjNL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71MeWAEqCLL._AC_SL1500_.jpg',
+    ],
     brand: 'Seagate',
     category: 'storage',
     description: [
@@ -372,6 +462,12 @@ const PRODUCTS = [
   {
     name: 'Crucial X8 Pro 1TB Portable SSD',
     slug: 'crucial-x8-pro-1tb-portable-ssd',
+    images: [
+      'https://m.media-amazon.com/images/I/41n+bV47yGL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61-60csvLgL._AC_SL1080_.jpg',
+      'https://m.media-amazon.com/images/I/71jDeOfT8hL._AC_SL1080_.jpg',
+      'https://m.media-amazon.com/images/I/61RBsORIayL._AC_SL1080_.jpg',
+    ],
     brand: 'Crucial',
     category: 'storage',
     isNewArrival: true,
@@ -392,6 +488,12 @@ const PRODUCTS = [
   {
     name: 'Western Digital My Book 8TB',
     slug: 'western-digital-my-book-8tb',
+    images: [
+      'https://m.media-amazon.com/images/I/61-HsohPa4L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/91de3oIDNKL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71Etw--2wyL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71HzrIJCr8L._AC_SL1500_.jpg',
+    ],
     brand: 'Western Digital',
     category: 'storage',
     description: [
@@ -413,6 +515,12 @@ const PRODUCTS = [
   {
     name: 'Keychron K2 HE Wireless',
     slug: 'keychron-k2-he-wireless',
+    images: [
+      'https://m.media-amazon.com/images/I/71ayR53urCL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71jyIVQyM6L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81p8dv-3LfL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71oXi08x5CL._AC_SL1500_.jpg',
+    ],
     brand: 'Keychron',
     category: 'peripherals',
     isBestSeller: true,
@@ -433,6 +541,12 @@ const PRODUCTS = [
   {
     name: 'Logitech G Pro X Superlight 2',
     slug: 'logitech-g-pro-x-superlight-2',
+    images: [
+      'https://m.media-amazon.com/images/I/51Cps60NQpL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61C1qwVNamL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/810kkuWpvLL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71jjVeUc0DL._AC_SL1500_.jpg',
+    ],
     brand: 'Logitech',
     category: 'peripherals',
     isBestSeller: true,
@@ -453,6 +567,12 @@ const PRODUCTS = [
   {
     name: 'HyperX Cloud III',
     slug: 'hyperx-cloud-iii',
+    images: [
+      'https://m.media-amazon.com/images/I/71pz2njkNRL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81iEg46f+yL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/914OFsiHnuL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/818aW-ERYRL._AC_SL1500_.jpg',
+    ],
     brand: 'HyperX',
     category: 'peripherals',
     description: [
@@ -472,6 +592,12 @@ const PRODUCTS = [
   {
     name: 'Elgato Stream Deck MK.2',
     slug: 'elgato-stream-deck-mk2',
+    images: [
+      'https://m.media-amazon.com/images/I/51jSapFsaWL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71on77A9qcL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/7104SfP4HIL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71ZcscXhy-L._AC_SL1500_.jpg',
+    ],
     brand: 'Elgato',
     category: 'peripherals',
     description: [
@@ -493,6 +619,12 @@ const PRODUCTS = [
   {
     name: 'Anker 737 Power Bank 24,000mAh',
     slug: 'anker-737-power-bank-24000mah',
+    images: [
+      'https://m.media-amazon.com/images/I/51NyluaOSPL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81cSBDjAV4L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/719lUzh1T-L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/717fYnV0QYL._AC_SL1500_.jpg',
+    ],
     brand: 'Anker',
     category: 'accessories',
     isNewArrival: true,
@@ -513,6 +645,12 @@ const PRODUCTS = [
   {
     name: 'CalDigit TS4 Thunderbolt Dock',
     slug: 'caldigit-ts4-thunderbolt-dock',
+    images: [
+      'https://m.media-amazon.com/images/I/61RBOqHLI0L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71YqWcZ8ufL._AC_SL1250_.jpg',
+      'https://m.media-amazon.com/images/I/612R7T6l3mL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71gk7GAoDaL._AC_SL1500_.jpg',
+    ],
     brand: 'CalDigit',
     category: 'accessories',
     description: [
@@ -532,6 +670,12 @@ const PRODUCTS = [
   {
     name: 'Lamicall Desktop Stand',
     slug: 'lamicall-desktop-stand',
+    images: [
+      'https://m.media-amazon.com/images/I/71pNZrEkYWL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61USbMWIgRL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61brLi6S5cL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71iusJDvlgL._AC_SL1500_.jpg',
+    ],
     brand: 'Lamicall',
     category: 'accessories',
     description: [
@@ -551,6 +695,12 @@ const PRODUCTS = [
   {
     name: 'HP ZBook Studio G10 Workstation',
     slug: 'hp-zbook-studio-g10-workstation',
+    images: [
+      'https://m.media-amazon.com/images/I/71rMQHAnahL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71smTXcTVuL._AC_SL1254_.jpg',
+      'https://m.media-amazon.com/images/I/71jzfHSA5dL._AC_SL1254_.jpg',
+      'https://m.media-amazon.com/images/I/71A0ssC7yEL._AC_SL1254_.jpg',
+    ],
     brand: 'HP',
     category: 'laptops',
     description: [
@@ -570,6 +720,12 @@ const PRODUCTS = [
   {
     name: 'ASUS ProArt Display PA279CRV',
     slug: 'asus-proart-display-pa279crv',
+    images: [
+      'https://m.media-amazon.com/images/I/91dkLCfM8dL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/712-CXJj6oL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71PpaJoDtQL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81cDU1dWeKL._AC_SL1500_.jpg',
+    ],
     brand: 'ASUS',
     category: 'monitors',
     description: [
@@ -589,6 +745,12 @@ const PRODUCTS = [
   {
     name: 'SanDisk Extreme PRO Portable SSD V2',
     slug: 'sandisk-extreme-pro-portable-ssd-v2',
+    images: [
+      'https://m.media-amazon.com/images/I/71Sk-mD8mlL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/810ivFLJD0L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71q+ZrYKXyL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81cB7E7VuTL._AC_SL1500_.jpg',
+    ],
     brand: 'SanDisk',
     category: 'storage',
     description: [
@@ -608,6 +770,12 @@ const PRODUCTS = [
   {
     name: 'Razer Huntsman V3 Pro TKL',
     slug: 'razer-huntsman-v3-pro-tkl',
+    images: [
+      'https://m.media-amazon.com/images/I/81zUBZKswJL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/81j4GVC09OL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71zcVPsfA-L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71LbGMeSYvL._AC_SL1500_.jpg',
+    ],
     brand: 'Razer',
     category: 'peripherals',
     description: [
@@ -627,6 +795,12 @@ const PRODUCTS = [
   {
     name: 'TwelveSouth BookArc Flex Vertical Stand',
     slug: 'twelvesouth-bookarc-flex-vertical-stand',
+    images: [
+      'https://m.media-amazon.com/images/I/51Tepm-v3zL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71qukwp9Z-L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61ZT2YTd2KL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61kN0ZsLeoL._AC_SL1500_.jpg',
+    ],
     brand: 'TwelveSouth',
     category: 'accessories',
     description: [
@@ -646,12 +820,12 @@ const PRODUCTS = [
 ];
 
 const CATEGORIES = [
-  { name: 'Laptops', slug: 'laptops', description: 'Portable machines for work, study and play.', image: IMG('1517336714731-489689fd1d8a') },
-  { name: 'Components', slug: 'components', description: 'CPUs, GPUs, memory and cooling for a desktop build.', image: IMG('1591488320449-0118bb3b4980') },
-  { name: 'Monitors', slug: 'monitors', description: 'Colour-accurate and high-refresh displays.', image: IMG('1527443224154-c4a3942d3acf') },
-  { name: 'Storage', slug: 'storage', description: 'SSDs, hard drives and portable backup media.', image: IMG('1531492746076-7cae9a3b1a55') },
-  { name: 'Peripherals', slug: 'peripherals', description: 'Keyboards, mice and audio for the desk.', image: IMG('1527864550417-7fd91e51d618') },
-  { name: 'Accessories', slug: 'accessories', description: 'Docks, chargers and everyday desk additions.', image: IMG('1587825140708-9899a6e4b2f5') },
+  { name: 'Laptops', slug: 'laptops', description: 'Portable machines for work, study and play.', image: 'https://m.media-amazon.com/images/I/51Zuib0V6uL._AC_SL1200_.jpg' },
+  { name: 'Components', slug: 'components', description: 'CPUs, GPUs, memory and cooling for a desktop build.', image: 'https://m.media-amazon.com/images/I/514QPBuqGyL._AC_SL1002_.jpg' },
+  { name: 'Monitors', slug: 'monitors', description: 'Colour-accurate and high-refresh displays.', image: 'https://m.media-amazon.com/images/I/81iMclFYKIL._AC_SL1500_.jpg' },
+  { name: 'Storage', slug: 'storage', description: 'SSDs, hard drives and portable backup media.', image: 'https://m.media-amazon.com/images/I/71OWtcxKgvL._AC_SL1500_.jpg' },
+  { name: 'Peripherals', slug: 'peripherals', description: 'Keyboards, mice and audio for the desk.', image: 'https://m.media-amazon.com/images/I/71ayR53urCL._AC_SL1500_.jpg' },
+  { name: 'Accessories', slug: 'accessories', description: 'Docks, chargers and everyday desk additions.', image: 'https://m.media-amazon.com/images/I/61RBOqHLI0L._AC_SL1500_.jpg' },
 ];
 
 const DISCOUNTS = [
@@ -780,11 +954,13 @@ async function seedCatalogue() {
     }
 
     // >= 3 images per product (rubric requirement).
-    const catSeeds = GALLERY_SEEDS[p.category] || GALLERY_SEEDS.laptops;
+    const imageUrls = Array.isArray(p.images) && p.images.length >= 3
+      ? p.images
+      : (GALLERY_SEEDS[p.category] || GALLERY_SEEDS.laptops).slice(0, 4).map((seed) => IMG(seed));
     await prisma.productImage.createMany({
-      data: catSeeds.slice(0, 4).map((seed, i) => ({
+      data: imageUrls.map((url, i) => ({
         productId: product.id,
-        url: IMG(seed),
+        url,
         isPrimary: i === 0,
         position: i,
       })),
