@@ -655,11 +655,11 @@ const CATEGORIES = [
 ];
 
 const DISCOUNTS = [
-  { code: 'AEVO10', description: '10% off your order', discountType: 'percentage', discountValue: 10, maxUses: 10 },
-  { code: 'SAVE20', description: '20% off orders over 5,000,000 VND', discountType: 'percentage', discountValue: 20, maxUses: 10 },
-  { code: 'WELCOME', description: '500,000 VND off for new customers', discountType: 'fixed', discountValue: 500000, maxUses: 10 },
-  { code: 'FREESHIP', description: '15% off shipping-inclusive orders', discountType: 'percentage', discountValue: 15, maxUses: 10 },
-  { code: 'BIGDEAL', description: '1,000,000 VND off premium hardware', discountType: 'fixed', discountValue: 1000000, maxUses: 10 },
+  { code: 'AEV10', description: '10% off your order', discountType: 'percentage', discountValue: 10, maxUses: 10 },
+  { code: 'SAV20', description: '20% off orders over 5,000,000 VND', discountType: 'percentage', discountValue: 20, maxUses: 10 },
+  { code: 'NEW50', description: '500,000 VND off for new customers', discountType: 'fixed', discountValue: 500000, maxUses: 10 },
+  { code: 'VIP15', description: '15% off shipping-inclusive orders', discountType: 'percentage', discountValue: 15, maxUses: 10 },
+  { code: 'PRO1M', description: '1,000,000 VND off premium hardware', discountType: 'fixed', discountValue: 1000000, maxUses: 10 },
 ];
 
 async function resetCatalogue() {

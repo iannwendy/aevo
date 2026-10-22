@@ -1,17 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../../utils/prisma');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
 
-const prisma = new PrismaClient();
+const CODE_REGEX = /^[A-Z0-9]{5}$/;
 
-// Validate discount code
+// Validate discount code (public — used during checkout)
 router.get('/validate/:code', async (req, res) => {
   try {
-    const { code } = req.params;
+    const rawCode = String(req.params.code || '').trim().toUpperCase();
+    if (!rawCode) {
+      return res.status(400).json({ error: 'Discount code is required' });
+    }
 
     const discount = await prisma.discount.findUnique({
-      where: { code: code.toUpperCase() },
+      where: { code: rawCode },
     });
 
     if (!discount) {
@@ -26,14 +29,29 @@ router.get('/validate/:code', async (req, res) => {
       return res.status(400).json({ error: 'Discount code has reached its usage limit' });
     }
 
+    const subtotalParam = Number(req.query.subtotal);
+    let discountAmount = null;
+    if (!Number.isNaN(subtotalParam) && subtotalParam > 0) {
+      if (discount.discountType === 'percentage') {
+        discountAmount = Math.round(subtotalParam * (discount.discountValue / 100));
+      } else {
+        discountAmount = Math.min(discount.discountValue, subtotalParam);
+      }
+    }
+
     res.json({
+      id: discount.id,
       code: discount.code,
       discountType: discount.discountType,
       discountValue: discount.discountValue,
       description: discount.description,
+      maxUses: discount.maxUses,
+      usedCount: discount.usedCount,
       remainingUses: discount.maxUses - discount.usedCount,
+      ...(discountAmount !== null && { discountAmount }),
     });
   } catch (error) {
+    console.error('Validate discount error:', error);
     res.status(500).json({ error: 'Failed to validate discount code' });
   }
 });
@@ -45,9 +63,18 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
       orderBy: { createdAt: 'desc' },
       include: {
         usageHistory: {
-          take: 5,
           orderBy: { usedAt: 'desc' },
-          include: { order: true },
+          include: {
+            order: {
+              select: {
+                id: true,
+                orderNumber: true,
+                totalAmount: true,
+                discountAmount: true,
+                createdAt: true,
+              },
+            },
+          },
         },
         _count: { select: { orders: true } },
       },
@@ -55,6 +82,7 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
 
     res.json(discounts);
   } catch (error) {
+    console.error('Get discounts error:', error);
     res.status(500).json({ error: 'Failed to fetch discounts' });
   }
 });
@@ -62,22 +90,43 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
 // Create discount (admin)
 router.post('/', authMiddleware, adminOnly, async (req, res) => {
   try {
-    const { code, description, discountType, discountValue, maxUses = 10 } = req.body;
+    const {
+      code,
+      description,
+      discountType = 'percentage',
+      discountValue,
+      maxUses = 10,
+    } = req.body;
 
-    // Validate code format (5 chars alphanumeric)
-    const codeRegex = /^[A-Z0-9]{5}$/;
-    if (!codeRegex.test(code.toUpperCase())) {
-      return res.status(400).json({ error: 'Code must be exactly 5 alphanumeric characters' });
+    const normalizedCode = String(code || '').trim().toUpperCase();
+
+    // Validate code format (strictly 5 chars alphanumeric per requirement.md)
+    if (!CODE_REGEX.test(normalizedCode)) {
+      return res
+        .status(400)
+        .json({ error: 'Code must be exactly 5 alphanumeric characters' });
     }
 
-    // Check max uses (max 10 as per requirement)
-    if (maxUses > 10) {
-      return res.status(400).json({ error: 'Maximum usage limit is 10' });
+    const parsedMaxUses = Number(maxUses);
+    if (!Number.isInteger(parsedMaxUses) || parsedMaxUses < 1 || parsedMaxUses > 10) {
+      return res
+        .status(400)
+        .json({ error: 'Maximum usage limit must be between 1 and 10' });
     }
 
-    // Check if code exists
+    const parsedValue = Number(discountValue);
+    if (Number.isNaN(parsedValue) || parsedValue <= 0) {
+      return res.status(400).json({ error: 'Discount value must be greater than 0' });
+    }
+
+    if (!['percentage', 'fixed'].includes(discountType)) {
+      return res
+        .status(400)
+        .json({ error: 'Discount type must be percentage or fixed' });
+    }
+
     const existing = await prisma.discount.findUnique({
-      where: { code: code.toUpperCase() },
+      where: { code: normalizedCode },
     });
 
     if (existing) {
@@ -86,16 +135,17 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
 
     const discount = await prisma.discount.create({
       data: {
-        code: code.toUpperCase(),
-        description,
+        code: normalizedCode,
+        description: description || null,
         discountType,
-        discountValue,
-        maxUses,
+        discountValue: parsedValue,
+        maxUses: parsedMaxUses,
       },
     });
 
     res.status(201).json(discount);
   } catch (error) {
+    console.error('Create discount error:', error);
     res.status(500).json({ error: 'Failed to create discount code' });
   }
 });
@@ -104,27 +154,38 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
 router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
-    const { isActive, maxUses } = req.body;
+    const { isActive, maxUses, description, discountValue, discountType } = req.body;
 
-    if (maxUses && maxUses > 10) {
-      return res.status(400).json({ error: 'Maximum usage limit is 10' });
+    if (maxUses !== undefined) {
+      const parsedMax = Number(maxUses);
+      if (!Number.isInteger(parsedMax) || parsedMax < 1 || parsedMax > 10) {
+        return res
+          .status(400)
+          .json({ error: 'Maximum usage limit must be between 1 and 10' });
+      }
     }
 
     const discount = await prisma.discount.update({
       where: { id },
       data: {
-        ...(isActive !== undefined && { isActive }),
-        ...(maxUses && { maxUses }),
+        ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+        ...(maxUses !== undefined && { maxUses: Number(maxUses) }),
+        ...(description !== undefined && { description }),
+        ...(discountValue !== undefined && { discountValue: Number(discountValue) }),
+        ...(discountType !== undefined && { discountType }),
       },
     });
 
     res.json(discount);
   } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Discount not found' });
+    }
     res.status(500).json({ error: 'Failed to update discount' });
   }
 });
 
-// Delete discount (admin)
+// Delete / Deactivate discount (admin)
 router.delete('/:id', authMiddleware, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
@@ -136,6 +197,9 @@ router.delete('/:id', authMiddleware, adminOnly, async (req, res) => {
 
     res.json({ message: 'Discount deactivated' });
   } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Discount not found' });
+    }
     res.status(500).json({ error: 'Failed to delete discount' });
   }
 });
