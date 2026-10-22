@@ -126,6 +126,16 @@ function ResetPasswordView({ searchParams }) {
               )}
 
               <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
+                <input
+                  type="text"
+                  name="username"
+                  autoComplete="username"
+                  defaultValue=""
+                  readOnly
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  className="sr-only"
+                />
                 <div>
                   <label htmlFor="password" className="block text-small font-medium mb-2">
                     {t('auth.reset.newPasswordLabel')}

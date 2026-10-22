@@ -134,6 +134,7 @@ export default function ProductDetailClient({
 
     const socket = createSocketClient(API_URL, {
       transports: ['websocket', 'polling'],
+      autoConnect: false,
     });
 
     socket.on('connect', () => {
@@ -155,9 +156,18 @@ export default function ProductDetailClient({
       });
     });
 
+    const connectTimer = setTimeout(() => {
+      socket.connect();
+    }, 60);
+
     return () => {
-      socket.emit('leave-product', product.id);
-      socket.disconnect();
+      clearTimeout(connectTimer);
+      if (socket.connected) {
+        socket.emit('leave-product', product.id);
+        socket.disconnect();
+      } else {
+        socket.off();
+      }
     };
   }, [product?.id]);
 

@@ -462,6 +462,16 @@ function ChangePasswordForm({ hasPassword }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+      <input
+        type="text"
+        name="username"
+        autoComplete="username"
+        defaultValue=""
+        readOnly
+        tabIndex={-1}
+        aria-hidden="true"
+        className="sr-only"
+      />
       <FormField
         id="currentPassword"
         label={t('profile.currentPasswordLabel')}
