@@ -34,18 +34,32 @@ export const authApi = {
 // Products API
 export const productsApi = {
   getAll: (params) => apiClient.get('/products', { params }),
+  getAdminAll: (params) => apiClient.get('/products/admin/all', { params }),
   getNewArrivals: (params) => apiClient.get('/products/new-arrivals', { params }),
   getBestSellers: (params) => apiClient.get('/products/best-sellers', { params }),
   getFilters: () => apiClient.get('/products/filters'),
   getById: (id) => apiClient.get(`/products/${id}`),
   getBySlug: (slug) => apiClient.get(`/products/slug/${slug}`),
   search: (q, params = {}) => apiClient.get('/products/search', { params: { q, ...params } }),
+  create: (data) => apiClient.post('/products', data),
+  update: (id, data) => apiClient.put(`/products/${id}`, data),
+  delete: (id) => apiClient.delete(`/products/${id}`),
+  addVariant: (productId, data) => apiClient.post(`/products/${productId}/variants`, data),
+  updateVariant: (productId, variantId, data) =>
+    apiClient.put(`/products/${productId}/variants/${variantId}`, data),
+  updateVariantInventory: (variantId, inventory) =>
+    apiClient.put(`/products/variants/${variantId}/inventory`, { inventory }),
+  deleteVariant: (productId, variantId) =>
+    apiClient.delete(`/products/${productId}/variants/${variantId}`),
 };
 
 // Categories API
 export const categoriesApi = {
   getAll: () => apiClient.get('/categories'),
   getById: (id) => apiClient.get(`/categories/${id}`),
+  create: (data) => apiClient.post('/categories', data),
+  update: (id, data) => apiClient.put(`/categories/${id}`, data),
+  delete: (id) => apiClient.delete(`/categories/${id}`),
 };
 
 // Cart API
@@ -57,10 +71,11 @@ export const cartApi = {
   clearCart: () => apiClient.delete('/cart'),
 };
 
-//Orders API
+// Orders API
 export const ordersApi = {
   create: (data) => apiClient.post('/orders', data),
   getAll: () => apiClient.get('/orders'),
+  getAdminAll: (params) => apiClient.get('/orders/admin/all', { params }),
   getById: (id) => apiClient.get(`/orders/${id}`),
   getByOrderNumber: (orderNumber) => apiClient.get(`/orders/number/${orderNumber}`),
   updateStatus: (id, status, note) => apiClient.put(`/orders/${id}/status`, { status, note }),
@@ -79,6 +94,7 @@ export const addressesApi = {
 export const discountsApi = {
   validate: (code, params) => apiClient.get(`/discounts/validate/${code}`, { params }),
   getAll: () => apiClient.get('/discounts'),
+  getById: (id) => apiClient.get(`/discounts/${id}`),
   create: (data) => apiClient.post('/discounts', data),
   update: (id, data) => apiClient.put(`/discounts/${id}`, data),
   delete: (id) => apiClient.delete(`/discounts/${id}`),

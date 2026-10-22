@@ -59,6 +59,17 @@ async function call(path, { method = 'GET', body, token, cookie, headers = {} } 
   return { status: res.status, body: parsed, headers: res.headers };
 }
 
+async function callWeb(path, { cookie, headers = {} } = {}) {
+  const h = { ...headers };
+  if (cookie) h.Cookie = cookie;
+  const res = await fetch(`${CLIENT}${path}`, {
+    headers: h,
+    redirect: 'manual',
+  });
+  const text = await res.text();
+  return { status: res.status, html: text, headers: res.headers };
+}
+
 function cookieFrom(res, name = 'token') {
   const setCookie = res.headers.getSetCookie?.() || [];
   const cookie = setCookie.find((c) => c.startsWith(`${name}=`));
@@ -737,6 +748,110 @@ async function registerCustomer(tag = 'phase4') {
     const valRes = await call(`/api/discounts/validate/${p4DiscountCode}`);
     assert.equal(valRes.status, 400);
     return `id=${p4DiscountId}, isActive=${delRes.body.isActive}`;
+  });
+
+  // =========================================================================
+  // Task 4.7: Admin Frontend Pages (FE-24 -> FE-29)
+  // =========================================================================
+  console.log('\n=== Task 4.7: Admin Frontend Pages ===');
+
+  await test('FE-24', 'Visit /admin renders Dashboard overview (KPIs, Best Sellers, Advanced Analytics) and enforces 403 for non-admin', async () => {
+    // Non-admin user cookie should be rejected with 403 by middleware
+    const nonAdminRes = await callWeb('/admin', { cookie: customer.cookie });
+    assert.equal(nonAdminRes.status, 403, 'Expected 403 when customer visits /admin');
+
+    // Admin visit /admin in English
+    const enRes = await callWeb('/admin', { cookie: admin.cookie });
+    assert.equal(enRes.status, 200);
+    assert.ok(enRes.html.includes('AEVO Control'), 'Expected AEVO Control shell');
+    assert.ok(
+      enRes.html.includes('Store Performance &amp; Analytics.') ||
+        enRes.html.includes('Store Performance & Analytics.'),
+      'Expected Dashboard Overview heading'
+    );
+    assert.ok(enRes.html.includes('Simple Dashboard — Store Overview'));
+    assert.ok(enRes.html.includes('Advanced Analytics — Timeframe Comparison'));
+
+    // Admin visit /admin in Vietnamese (aevo_locale=vi)
+    const viRes = await callWeb('/admin', {
+      cookie: `${admin.cookie}; aevo_locale=vi`,
+    });
+    assert.equal(viRes.status, 200);
+    assert.ok(
+      viRes.html.includes('Bảng điều khiển cơ bản — Tổng quan cửa hàng'),
+      'Expected Vietnamese Dashboard heading'
+    );
+    return `en=200, vi=200, nonAdmin=${nonAdminRes.status}`;
+  });
+
+  await test('FE-25', 'Visit /admin/products renders Product Management page', async () => {
+    const res = await callWeb('/admin/products', { cookie: admin.cookie });
+    assert.equal(res.status, 200);
+    assert.ok(res.html.includes('Product Management'));
+    assert.ok(res.html.includes('Add Product'));
+    assert.ok(res.html.includes('data-testid="admin-products-page"'));
+    return 'status=200 (/admin/products)';
+  });
+
+  await test('FE-26', 'Visit /admin/products/new and /admin/products/[id] renders Create/Edit Product form and creates product via API', async () => {
+    const newPage = await callWeb('/admin/products/new', { cookie: admin.cookie });
+    assert.equal(newPage.status, 200);
+    assert.ok(newPage.html.includes('Create Hardware Product'));
+    assert.ok(newPage.html.includes('Variants &amp; Inventory') || newPage.html.includes('Variants & Inventory'));
+
+    // Also verify edit product page /admin/products/[id]
+    const editPage = await callWeb(`/admin/products/${createdProductId}`, {
+      cookie: admin.cookie,
+    });
+    assert.equal(editPage.status, 200);
+    assert.ok(editPage.html.includes('Edit Hardware Product'));
+
+    // Also verify /admin/discounts page renders properly
+    const discountsPage = await callWeb('/admin/discounts', { cookie: admin.cookie });
+    assert.equal(discountsPage.status, 200);
+    assert.ok(discountsPage.html.includes('Discount Management'));
+    return 'status=200 (/admin/products/new, /admin/products/[id], /admin/discounts)';
+  });
+
+  await test('FE-27', 'Visit /admin/users renders User Management page', async () => {
+    const res = await callWeb('/admin/users', { cookie: admin.cookie });
+    assert.equal(res.status, 200);
+    assert.ok(res.html.includes('User Management'));
+    return 'status=200 (/admin/users)';
+  });
+
+  await test('FE-28', 'Visit /admin/orders renders Order Management page with time filter presets', async () => {
+    const res = await callWeb('/admin/orders', { cookie: admin.cookie });
+    assert.equal(res.status, 200);
+    assert.ok(res.html.includes('Order Management'));
+    assert.ok(res.html.includes('Today'));
+    assert.ok(res.html.includes('Yesterday'));
+    assert.ok(res.html.includes('This Week'));
+    assert.ok(res.html.includes('This Month'));
+    return 'status=200 (/admin/orders)';
+  });
+
+  await test('FE-29', 'Visit /admin/orders/[id] renders Order Detail + Status Update form and updates order status', async () => {
+    assert.ok(adminTestOrderId, 'Expected adminTestOrderId');
+    const detailPage = await callWeb(`/admin/orders/${adminTestOrderId}`, {
+      cookie: admin.cookie,
+    });
+    assert.equal(detailPage.status, 200);
+    assert.ok(detailPage.html.includes('data-testid="admin-order-detail-page"'));
+
+    // Perform status transition to SHIPPING and verify
+    const statusRes = await call(`/api/orders/${adminTestOrderId}/status`, {
+      method: 'PUT',
+      token: admin.token,
+      body: {
+        status: 'SHIPPING',
+        note: 'Handed over to express courier via Admin Order Detail',
+      },
+    });
+    assert.equal(statusRes.status, 200);
+    assert.equal(statusRes.body.status, 'SHIPPING');
+    assert.equal(statusRes.body.statusHistory[0].status, 'SHIPPING');
+    return `orderId=${adminTestOrderId}, status=${statusRes.body.status}`;
   });
 
   await prisma.$disconnect();
