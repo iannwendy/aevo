@@ -18,35 +18,36 @@ import {
 import { cartApi, discountsApi, ordersApi } from '../../lib/api';
 import { fetchProfile } from '../../lib/auth-client';
 import { formatPrice } from '../../lib/utils';
+import { useI18n } from '../../lib/i18n';
 
 const STEPS = [
-  { id: 1, key: 'information', label: '1. Information' },
-  { id: 2, key: 'shipping-address', label: '2. Address' },
-  { id: 3, key: 'shipping-method', label: '3. Shipping' },
-  { id: 4, key: 'payment', label: '4. Payment' },
-  { id: 5, key: 'review', label: '5. Review' },
+  { id: 1, key: 'information', labelKey: 'checkout.step1Tab' },
+  { id: 2, key: 'shipping-address', labelKey: 'checkout.step2Tab' },
+  { id: 3, key: 'shipping-method', labelKey: 'checkout.step3Tab' },
+  { id: 4, key: 'payment', labelKey: 'checkout.step4Tab' },
+  { id: 5, key: 'review', labelKey: 'checkout.step5Tab' },
 ];
 
 const PAYMENT_OPTIONS = [
   {
     value: 'cod',
-    title: 'Cash on Delivery (COD)',
-    description: 'Pay in cash upon hardware inspection and delivery.',
+    titleKey: 'checkout.codTitle',
+    descKey: 'checkout.codDesc',
   },
   {
     value: 'bank_transfer',
-    title: 'Instant Bank Transfer (VietQR)',
-    description: 'Direct interbank transfer with order number reference.',
+    titleKey: 'checkout.bankTransferTitle',
+    descKey: 'checkout.bankTransferDesc',
   },
   {
     value: 'card',
-    title: 'Credit / Debit Card',
-    description: 'Visa, Mastercard, or JCB with 3D Secure verification.',
+    titleKey: 'checkout.cardTitle',
+    descKey: 'checkout.cardDesc',
   },
   {
     value: 'momo',
-    title: 'MoMo E-Wallet',
-    description: 'Fast digital wallet payment via MoMo QR.',
+    titleKey: 'checkout.momoTitle',
+    descKey: 'checkout.momoDesc',
   },
 ];
 
@@ -60,6 +61,7 @@ function pickDefaultAddress(user) {
 
 export default function CheckoutClient({ initialUser = null, initialCart = null }) {
   const router = useRouter();
+  const { t } = useI18n();
   const defaultAddr = pickDefaultAddress(initialUser);
 
   const [step, setStep] = useState(1);
@@ -197,7 +199,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
     if (e) e.preventDefault();
     const clean = discountInput.trim().toUpperCase();
     if (!clean) {
-      setDiscountFeedback({ type: 'error', message: 'Please enter a 5-character discount code.' });
+      setDiscountFeedback({ type: 'error', message: t('checkout.enterDiscountError') });
       return;
     }
 
@@ -208,11 +210,14 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
       setAppliedDiscount(res.data);
       setDiscountFeedback({
         type: 'success',
-        message: `Code ${res.data.code} applied (${res.data.remainingUses} uses remaining).`,
+        message: t('checkout.discountAppliedMsg', {
+          code: res.data.code,
+          remaining: res.data.remainingUses,
+        }),
       });
     } catch (err) {
       setAppliedDiscount(null);
-      const msg = err?.response?.data?.error || 'Invalid discount code.';
+      const msg = err?.response?.data?.error || t('checkout.invalidDiscountError');
       setDiscountFeedback({ type: 'error', message: msg });
     } finally {
       setValidatingDiscount(false);
@@ -223,19 +228,19 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
   const handleApplyPoints = (e) => {
     if (e) e.preventDefault();
     if (!user) {
-      setPointsFeedback({ type: 'error', message: 'Please sign in to redeem loyalty points.' });
+      setPointsFeedback({ type: 'error', message: t('checkout.signInToRedeemError') });
       return;
     }
     const pts = parseInt(pointsInput, 10);
     if (Number.isNaN(pts) || pts < 0) {
-      setPointsFeedback({ type: 'error', message: 'Enter a valid number of points.' });
+      setPointsFeedback({ type: 'error', message: t('checkout.validPointsError') });
       return;
     }
     const available = user.loyaltyPoints || 0;
     if (pts > available) {
       setPointsFeedback({
         type: 'error',
-        message: `You only have ${available} loyalty points available.`,
+        message: t('checkout.insufficientPointsError', { available }),
       });
       return;
     }
@@ -244,8 +249,11 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
       type: 'success',
       message:
         pts > 0
-          ? `Redeemed ${pts} points (-${formatPrice(pts * POINT_VALUE)}).`
-          : 'Loyalty points cleared.',
+          ? t('checkout.redeemedPointsMsg', {
+              points: pts,
+              amount: formatPrice(pts * POINT_VALUE),
+            })
+          : t('checkout.pointsClearedMsg'),
     });
   };
 
@@ -254,20 +262,20 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
     setStepError(null);
     if (step === 1) {
       if (!email.trim() || !email.includes('@')) {
-        setStepError('Please enter a valid contact email address.');
+        setStepError(t('checkout.validEmailError'));
         return;
       }
       if (!fullName.trim()) {
-        setStepError('Please enter the recipient full name.');
+        setStepError(t('checkout.recipientNameError'));
         return;
       }
       if (!phone.trim()) {
-        setStepError('Please enter a contact phone number.');
+        setStepError(t('checkout.phoneError'));
         return;
       }
     } else if (step === 2) {
       if (!address.trim() || !city.trim()) {
-        setStepError('Please enter your street address and city.');
+        setStepError(t('checkout.addressCityError'));
         return;
       }
     }
@@ -277,7 +285,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
   const handlePlaceOrder = async () => {
     setStepError(null);
     if (!email.trim() || !fullName.trim() || !phone.trim() || !address.trim()) {
-      setStepError('Please complete your contact and shipping address details.');
+      setStepError(t('checkout.completeDetailsError'));
       return;
     }
 
@@ -315,7 +323,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
       );
     } catch (err) {
       const msg =
-        err?.response?.data?.error || 'Could not place order. Please check your details.';
+        err?.response?.data?.error || t('checkout.placeOrderError');
       setStepError(msg);
       setPlacingOrder(false);
     }
@@ -330,19 +338,19 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
           className="text-caption font-mono uppercase tracking-wider text-secondary mb-4"
         >
           <Link href="/cart" className="hover:text-ink transition-colors">
-            CART
+            {t('checkout.breadcrumbCart')}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-ink">CHECKOUT</span>
+          <span className="text-ink">{t('checkout.breadcrumbCheckout')}</span>
         </nav>
 
         <div className="pb-8 border-b border-border flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-h1">Complete your order.</h1>
+            <h1 className="text-h1">{t('checkout.title')}</h1>
             <p className="text-body text-secondary mt-1">
               {user
-                ? `Signed in as ${user.fullName} (${user.email})`
-                : 'Guest checkout — an account will be automatically created or linked for your email.'}
+                ? t('checkout.signedInAs', { name: user.fullName, email: user.email })
+                : t('checkout.guestNotice')}
             </p>
           </div>
 
@@ -370,7 +378,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                       : 'bg-surface border border-border text-secondary'
                   }`}
                 >
-                  {s.label}
+                  {t(s.labelKey)}
                 </button>
               );
             })}
@@ -398,16 +406,16 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-caption font-mono uppercase tracking-wider text-secondary">
-                      Step 1 of 5
+                      {t('checkout.stepOf', { step: 1 })}
                     </span>
-                    <h2 className="text-h2 mt-1">Contact Information</h2>
+                    <h2 className="text-h2 mt-1">{t('checkout.contactInfoTitle')}</h2>
                   </div>
                   {!user && (
                     <Link
                       href="/login?next=%2Fcheckout"
                       className="text-small font-medium text-ink underline underline-offset-4"
                     >
-                      Already have an account? Sign in
+                      {t('checkout.alreadyHaveAccountSignIn')}
                     </Link>
                   )}
                 </div>
@@ -418,9 +426,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     className="p-3.5 rounded-xl bg-sage/10 border border-sage/30 text-small text-sage flex items-center gap-2.5"
                   >
                     <UserCheck size={17} />
-                    <span>
-                      Your profile and default delivery address have been pre-filled.
-                    </span>
+                    <span>{t('checkout.preFilledNotice')}</span>
                   </div>
                 )}
 
@@ -430,7 +436,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                       htmlFor="checkout-email"
                       className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
                     >
-                      Email Address (for order confirmation &amp; tracking) *
+                      {t('checkout.emailLabel')}
                     </label>
                     <input
                       id="checkout-email"
@@ -450,7 +456,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                         htmlFor="checkout-fullname"
                         className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
                       >
-                        Recipient Full Name *
+                        {t('checkout.recipientNameLabel')}
                       </label>
                       <input
                         id="checkout-fullname"
@@ -469,7 +475,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                         htmlFor="checkout-phone"
                         className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
                       >
-                        Phone Number *
+                        {t('checkout.phoneLabel')}
                       </label>
                       <input
                         id="checkout-phone"
@@ -492,7 +498,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     data-testid="checkout-continue-to-shipping"
                     className="h-12 px-6 rounded-xl bg-ink text-white font-medium text-small hover:bg-ink/90 inline-flex items-center gap-2 transition-colors"
                   >
-                    <span>Continue to shipping address</span>
+                    <span>{t('checkout.continueToAddressBtn')}</span>
                     <ArrowRight size={17} />
                   </button>
                 </div>
@@ -507,16 +513,16 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
               >
                 <div>
                   <span className="text-caption font-mono uppercase tracking-wider text-secondary">
-                    Step 2 of 5
+                    {t('checkout.stepOf', { step: 2 })}
                   </span>
-                  <h2 className="text-h2 mt-1">Shipping Address</h2>
+                  <h2 className="text-h2 mt-1">{t('checkout.shippingAddressTitle')}</h2>
                 </div>
 
                 {/* Saved Addresses Selector for Logged-in Users */}
                 {user?.addresses?.length > 0 && (
                   <div data-testid="saved-addresses-selector" className="space-y-2.5">
                     <label className="block text-caption font-mono uppercase tracking-wider text-secondary">
-                      Saved Delivery Addresses
+                      {t('checkout.savedAddressesLabel')}
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {user.addresses.map((addr) => {
@@ -539,7 +545,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                               </span>
                               {addr.isDefault && (
                                 <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-ink text-white">
-                                  Default
+                                  {t('checkout.defaultBadge')}
                                 </span>
                               )}
                             </div>
@@ -559,7 +565,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                       htmlFor="checkout-address"
                       className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
                     >
-                      Street Address *
+                      {t('checkout.streetAddressLabel')}
                     </label>
                     <input
                       id="checkout-address"
@@ -579,7 +585,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                        Ward
+                        {t('checkout.wardLabel')}
                       </label>
                       <input
                         type="text"
@@ -592,7 +598,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     </div>
                     <div>
                       <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                        District
+                        {t('checkout.districtLabel')}
                       </label>
                       <input
                         type="text"
@@ -605,7 +611,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     </div>
                     <div>
                       <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                        City / Province *
+                        {t('checkout.cityLabel')}
                       </label>
                       <input
                         type="text"
@@ -627,7 +633,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     className="h-11 px-5 rounded-xl border border-border bg-surface text-small font-medium text-ink inline-flex items-center gap-2"
                   >
                     <ArrowLeft size={16} />
-                    <span>Back</span>
+                    <span>{t('checkout.backBtn')}</span>
                   </button>
                   <button
                     type="button"
@@ -635,7 +641,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     data-testid="checkout-continue-to-method"
                     className="h-12 px-6 rounded-xl bg-ink text-white font-medium text-small hover:bg-ink/90 inline-flex items-center gap-2"
                   >
-                    <span>Continue to shipping method</span>
+                    <span>{t('checkout.continueToMethodBtn')}</span>
                     <ArrowRight size={17} />
                   </button>
                 </div>
@@ -650,9 +656,9 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
               >
                 <div>
                   <span className="text-caption font-mono uppercase tracking-wider text-secondary">
-                    Step 3 of 5
+                    {t('checkout.stepOf', { step: 3 })}
                   </span>
-                  <h2 className="text-h2 mt-1">Shipping Method</h2>
+                  <h2 className="text-h2 mt-1">{t('checkout.shippingMethodTitle')}</h2>
                 </div>
 
                 <div className="space-y-3">
@@ -670,16 +676,16 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                       <Truck size={18} className="text-ink" />
                       <div>
                         <p className="text-small font-medium text-ink">
-                          Insured Standard Courier (2–4 business days)
+                          {t('checkout.standardCourierTitle')}
                         </p>
                         <p className="text-caption text-secondary">
-                          Signature required upon delivery. Free on orders over 20.000.000 ₫.
+                          {t('checkout.standardCourierDesc')}
                         </p>
                       </div>
                     </div>
                     <span className="text-small font-mono font-medium text-ink">
                       {afterDiscount >= FREE_SHIPPING_THRESHOLD
-                        ? 'Free'
+                        ? t('checkout.free')
                         : formatPrice(30000)}
                     </span>
                   </button>
@@ -698,16 +704,16 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                       <Truck size={18} className="text-ink" />
                       <div>
                         <p className="text-small font-medium text-ink">
-                          Priority Same-Day / Next-Day Air
+                          {t('checkout.expressCourierTitle')}
                         </p>
                         <p className="text-caption text-secondary">
-                          Dedicated hardware courier. Free on orders over 20.000.000 ₫.
+                          {t('checkout.expressCourierDesc')}
                         </p>
                       </div>
                     </div>
                     <span className="text-small font-mono font-medium text-ink">
                       {afterDiscount >= FREE_SHIPPING_THRESHOLD
-                        ? 'Free'
+                        ? t('checkout.free')
                         : formatPrice(50000)}
                     </span>
                   </button>
@@ -720,7 +726,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     className="h-11 px-5 rounded-xl border border-border bg-surface text-small font-medium text-ink inline-flex items-center gap-2"
                   >
                     <ArrowLeft size={16} />
-                    <span>Back</span>
+                    <span>{t('checkout.backBtn')}</span>
                   </button>
                   <button
                     type="button"
@@ -728,7 +734,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     data-testid="checkout-continue-to-payment"
                     className="h-12 px-6 rounded-xl bg-ink text-white font-medium text-small hover:bg-ink/90 inline-flex items-center gap-2"
                   >
-                    <span>Continue to payment</span>
+                    <span>{t('checkout.continueToPaymentBtn')}</span>
                     <ArrowRight size={17} />
                   </button>
                 </div>
@@ -743,9 +749,9 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
               >
                 <div>
                   <span className="text-caption font-mono uppercase tracking-wider text-secondary">
-                    Step 4 of 5
+                    {t('checkout.stepOf', { step: 4 })}
                   </span>
-                  <h2 className="text-h2 mt-1">Payment Method</h2>
+                  <h2 className="text-h2 mt-1">{t('checkout.paymentMethodTitle')}</h2>
                 </div>
 
                 <div className="space-y-3" data-testid="payment-methods-list">
@@ -764,8 +770,8 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                       <div className="flex items-center gap-3">
                         <CreditCard size={18} className="text-ink" />
                         <div>
-                          <p className="text-small font-medium text-ink">{opt.title}</p>
-                          <p className="text-caption text-secondary">{opt.description}</p>
+                          <p className="text-small font-medium text-ink">{t(opt.titleKey)}</p>
+                          <p className="text-caption text-secondary">{t(opt.descKey)}</p>
                         </div>
                       </div>
                       <span
@@ -783,13 +789,13 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
 
                 <div>
                   <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                    Delivery Notes (Optional)
+                    {t('checkout.deliveryNotesLabel')}
                   </label>
                   <textarea
                     rows={2}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Gate code, preferred delivery window..."
+                    placeholder={t('checkout.deliveryNotesPlaceholder')}
                     className="w-full p-3.5 rounded-xl border border-border bg-canvas text-small text-ink focus-ring"
                   />
                 </div>
@@ -801,7 +807,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     className="h-11 px-5 rounded-xl border border-border bg-surface text-small font-medium text-ink inline-flex items-center gap-2"
                   >
                     <ArrowLeft size={16} />
-                    <span>Back</span>
+                    <span>{t('checkout.backBtn')}</span>
                   </button>
                   <button
                     type="button"
@@ -809,7 +815,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     data-testid="checkout-continue-to-review"
                     className="h-12 px-6 rounded-xl bg-ink text-white font-medium text-small hover:bg-ink/90 inline-flex items-center gap-2"
                   >
-                    <span>Review order</span>
+                    <span>{t('checkout.reviewOrderBtn')}</span>
                     <ArrowRight size={17} />
                   </button>
                 </div>
@@ -824,23 +830,23 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
               >
                 <div>
                   <span className="text-caption font-mono uppercase tracking-wider text-secondary">
-                    Step 5 of 5
+                    {t('checkout.stepOf', { step: 5 })}
                   </span>
-                  <h2 className="text-h2 mt-1">Review &amp; Confirm Order</h2>
+                  <h2 className="text-h2 mt-1">{t('checkout.reviewConfirmTitle')}</h2>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-small">
                   <div className="p-4 rounded-xl bg-canvas border border-border">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-caption font-mono uppercase text-secondary">
-                        Contact &amp; Recipient
+                        {t('checkout.contactAndRecipient')}
                       </span>
                       <button
                         type="button"
                         onClick={() => setStep(1)}
                         className="text-caption underline"
                       >
-                        Edit
+                        {t('checkout.editBtn')}
                       </button>
                     </div>
                     <p className="font-medium text-ink">{fullName}</p>
@@ -851,21 +857,24 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                   <div className="p-4 rounded-xl bg-canvas border border-border">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-caption font-mono uppercase text-secondary">
-                        Destination &amp; Payment
+                        {t('checkout.destinationAndPayment')}
                       </span>
                       <button
                         type="button"
                         onClick={() => setStep(2)}
                         className="text-caption underline"
                       >
-                        Edit
+                        {t('checkout.editBtn')}
                       </button>
                     </div>
                     <p className="font-medium text-ink">
                       {[address, ward, district, city].filter(Boolean).join(', ')}
                     </p>
                     <p className="text-secondary mt-1 uppercase font-mono text-caption">
-                      Payment: {paymentMethod} · Shipping: {shippingMethod}
+                      {t('checkout.paymentSummaryLine', {
+                        payment: paymentMethod,
+                        shipping: shippingMethod,
+                      })}
                     </p>
                   </div>
                 </div>
@@ -877,7 +886,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     className="h-11 px-5 rounded-xl border border-border bg-surface text-small font-medium text-ink inline-flex items-center gap-2"
                   >
                     <ArrowLeft size={16} />
-                    <span>Back</span>
+                    <span>{t('checkout.backBtn')}</span>
                   </button>
                   <button
                     type="button"
@@ -889,8 +898,8 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     <Check size={18} />
                     <span>
                       {placingOrder
-                        ? 'Processing order...'
-                        : `Place order — ${formatPrice(totalAmount)}`}
+                        ? t('checkout.processingOrder')
+                        : t('checkout.placeOrderPrice', { price: formatPrice(totalAmount) })}
                     </span>
                   </button>
                 </div>
@@ -901,13 +910,13 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
           {/* Right Column: Order Summary + Discount Code + Loyalty Points */}
           <aside className="lg:col-span-5" data-testid="checkout-summary">
             <div className="bg-surface border border-border rounded-2xl p-6 sticky top-24 space-y-6">
-              <h2 className="text-h3">Order Summary</h2>
+              <h2 className="text-h3">{t('checkout.orderSummaryTitle')}</h2>
 
               {/* Items List */}
               {loading ? (
                 <div className="h-24 rounded-xl bg-canvas animate-pulse" />
               ) : items.length === 0 ? (
-                <p className="text-small text-secondary">Your cart is currently empty.</p>
+                <p className="text-small text-secondary">{t('checkout.emptyCartNotice')}</p>
               ) : (
                 <div className="space-y-3 max-h-60 overflow-y-auto pr-1 divide-y divide-border/60">
                   {items.map((item) => (
@@ -938,7 +947,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                   className="flex items-center gap-1.5 text-caption font-mono uppercase tracking-wider text-secondary mb-2"
                 >
                   <Tag size={12} />
-                  <span>Discount Code (5 characters)</span>
+                  <span>{t('checkout.discountCodeLabel')}</span>
                 </label>
                 <form onSubmit={handleApplyDiscount} className="flex gap-2">
                   <input
@@ -957,7 +966,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     data-testid="checkout-apply-discount"
                     className="h-10 px-4 rounded-xl bg-ink text-white text-caption font-medium hover:bg-ink/90"
                   >
-                    Apply
+                    {t('checkout.applyBtn')}
                   </button>
                 </form>
                 {discountFeedback && (
@@ -982,14 +991,14 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     className="flex items-center gap-1.5 text-caption font-mono uppercase tracking-wider text-secondary"
                   >
                     <Sparkles size={12} />
-                    <span>Redeem Loyalty Points</span>
+                    <span>{t('checkout.redeemLoyaltyLabel')}</span>
                   </label>
                   {user && (
                     <span
                       data-testid="checkout-available-points"
                       className="text-caption font-mono text-sage"
                     >
-                      Available: {user.loyaltyPoints || 0} pts
+                      {t('checkout.availablePts', { points: user.loyaltyPoints || 0 })}
                     </span>
                   )}
                 </div>
@@ -1001,7 +1010,11 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     step="10"
                     value={pointsInput}
                     onChange={(e) => setPointsInput(e.target.value)}
-                    placeholder={user ? '100 pts = 100.000 ₫' : 'Sign in to use points'}
+                    placeholder={
+                      user
+                        ? t('checkout.pointsPlaceholderUser')
+                        : t('checkout.pointsPlaceholderGuest')
+                    }
                     disabled={!user}
                     data-testid="checkout-loyalty-input"
                     className="flex-1 h-10 px-3 rounded-xl border border-border bg-canvas text-small font-mono text-ink disabled:opacity-50 focus-ring"
@@ -1012,7 +1025,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     data-testid="checkout-apply-points"
                     className="h-10 px-4 rounded-xl border border-border bg-surface hover:bg-canvas text-caption font-medium text-ink disabled:opacity-50"
                   >
-                    Redeem
+                    {t('checkout.redeemBtn')}
                   </button>
                 </form>
                 {pointsFeedback && (
@@ -1032,7 +1045,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
               {/* Totals Breakdown */}
               <dl className="pt-4 border-t border-border space-y-2.5 text-small">
                 <div className="flex justify-between">
-                  <dt className="text-secondary">Subtotal</dt>
+                  <dt className="text-secondary">{t('checkout.subtotal')}</dt>
                   <dd data-testid="checkout-subtotal" className="font-mono text-ink">
                     {formatPrice(subtotal)}
                   </dd>
@@ -1040,7 +1053,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
 
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-700">
-                    <dt>Discount ({appliedDiscount?.code})</dt>
+                    <dt>{t('checkout.discountWithCode', { code: appliedDiscount?.code })}</dt>
                     <dd data-testid="checkout-discount-amount" className="font-mono">
                       -{formatPrice(discountAmount)}
                     </dd>
@@ -1048,14 +1061,14 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                 )}
 
                 <div className="flex justify-between">
-                  <dt className="text-secondary">Shipping Fee</dt>
+                  <dt className="text-secondary">{t('checkout.shippingFee')}</dt>
                   <dd data-testid="checkout-shipping" className="font-mono text-ink">
-                    {shippingFee === 0 ? 'Free' : formatPrice(shippingFee)}
+                    {shippingFee === 0 ? t('checkout.free') : formatPrice(shippingFee)}
                   </dd>
                 </div>
 
                 <div className="flex justify-between">
-                  <dt className="text-secondary">Tax (10% VAT)</dt>
+                  <dt className="text-secondary">{t('checkout.taxVat')}</dt>
                   <dd data-testid="checkout-tax" className="font-mono text-ink">
                     {formatPrice(taxAmount)}
                   </dd>
@@ -1063,7 +1076,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
 
                 {loyaltyDiscount > 0 && (
                   <div className="flex justify-between text-emerald-700">
-                    <dt>Loyalty Points ({appliedPoints} pts)</dt>
+                    <dt>{t('checkout.loyaltyPointsWithCount', { points: appliedPoints })}</dt>
                     <dd data-testid="checkout-loyalty-discount" className="font-mono">
                       -{formatPrice(loyaltyDiscount)}
                     </dd>
@@ -1071,7 +1084,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                 )}
 
                 <div className="pt-3 border-t border-border flex items-baseline justify-between">
-                  <dt className="text-base font-medium text-ink">Total</dt>
+                  <dt className="text-base font-medium text-ink">{t('checkout.total')}</dt>
                   <dd
                     data-testid="checkout-total"
                     className="text-2xl font-display font-medium text-ink"
@@ -1084,7 +1097,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
               <div className="p-3 rounded-xl bg-canvas border border-border text-caption text-secondary flex items-center justify-between">
                 <span className="inline-flex items-center gap-1.5">
                   <ShieldCheck size={14} className="text-ink" />
-                  Points earned on this order:
+                  {t('checkout.pointsEarnedNotice')}
                 </span>
                 <strong className="font-mono text-ink">+{estimatedEarnedPoints} pts</strong>
               </div>

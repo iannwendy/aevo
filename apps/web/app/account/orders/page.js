@@ -16,6 +16,7 @@ import SiteFooter from '../../../components/SiteFooter';
 import { fetchProfile } from '../../../lib/auth-client';
 import { ordersApi, loyaltyApi } from '../../../lib/api';
 import { formatPrice } from '../../../lib/utils';
+import { useI18n } from '../../../lib/i18n';
 
 function getStatusBadgeClass(status) {
   switch (status) {
@@ -35,6 +36,7 @@ function getStatusBadgeClass(status) {
 
 export default function AccountOrdersPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [authStatus, setAuthStatus] = useState('loading');
   const [orders, setOrders] = useState([]);
   const [loyaltyPoints, setLoyaltyPoints] = useState({ points: 0, value: 0 });
@@ -95,7 +97,7 @@ export default function AccountOrdersPage() {
             className="inline-flex items-center gap-1.5 text-small text-secondary hover:text-ink transition-colors"
           >
             <ArrowLeft size={16} />
-            <span>Back to Account</span>
+            <span>{t('orders.backToAccount')}</span>
           </Link>
         </div>
 
@@ -105,19 +107,19 @@ export default function AccountOrdersPage() {
             href="/account/profile"
             className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
           >
-            Profile &amp; Security
+            {t('orders.tabProfileSecurity')}
           </Link>
           <Link
             href="/account/addresses"
             className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
           >
-            Delivery Addresses
+            {t('orders.tabDeliveryAddresses')}
           </Link>
           <Link
             href="/account/orders"
             className="px-4 py-2 rounded-xl bg-ink text-white text-small font-medium"
           >
-            Order History &amp; Loyalty
+            {t('orders.tabOrderHistoryLoyalty')}
           </Link>
         </div>
 
@@ -125,11 +127,10 @@ export default function AccountOrdersPage() {
         <div className="bg-surface border border-border rounded-2xl p-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-base font-display font-medium text-ink">
-              Track an Order by Order Number
+              {t('orders.trackByOrderNumberTitle')}
             </h2>
             <p className="text-caption text-secondary mt-0.5">
-              Checked out as a guest? Enter your AEVO order number (e.g. AEVO-...) to view
-              live status history.
+              {t('orders.trackByOrderNumberDesc')}
             </p>
           </div>
           <form onSubmit={handleOrderLookup} className="flex items-center gap-2 w-full md:w-auto">
@@ -138,7 +139,7 @@ export default function AccountOrdersPage() {
                 type="text"
                 value={lookupInput}
                 onChange={(e) => setLookupInput(e.target.value)}
-                placeholder="e.g., AEVO-..."
+                placeholder={t('orders.trackPlaceholder')}
                 data-testid="order-lookup-input"
                 className="w-full h-11 pl-9 pr-3 rounded-xl border border-border bg-canvas text-small font-mono uppercase text-ink placeholder:text-secondary focus-ring"
               />
@@ -152,23 +153,20 @@ export default function AccountOrdersPage() {
               data-testid="order-lookup-button"
               className="h-11 px-5 rounded-xl bg-ink text-white text-small font-medium hover:bg-ink/90 transition-colors shrink-0"
             >
-              Track
+              {t('orders.trackBtn')}
             </button>
           </form>
         </div>
 
         {authStatus === 'signed-out' ? (
           <div className="bg-surface border border-border rounded-2xl p-10 max-w-xl">
-            <h1 className="text-h2 mb-2">Sign in to view your order history</h1>
-            <p className="text-small text-secondary mb-6">
-              Sign in with the email you used at checkout to view all past purchases and
-              loyalty points.
-            </p>
+            <h1 className="text-h2 mb-2">{t('orders.signInTitle')}</h1>
+            <p className="text-small text-secondary mb-6">{t('orders.signInDesc')}</p>
             <Link
               href="/login?next=%2Faccount%2Forders"
               className="inline-flex items-center px-6 py-3 rounded-xl bg-ink text-white text-small font-medium"
             >
-              Sign in
+              {t('orders.signInBtn')}
             </Link>
           </div>
         ) : (
@@ -179,32 +177,31 @@ export default function AccountOrdersPage() {
                 <div className="lg:col-span-5">
                   <div className="inline-flex items-center gap-1.5 text-caption font-mono uppercase tracking-wider text-sage mb-2">
                     <Sparkles size={13} />
-                    <span>AEVO Loyalty Program</span>
+                    <span>{t('orders.loyaltyProgramBadge')}</span>
                   </div>
                   <h2 className="text-h2">
                     <span data-testid="loyalty-points-balance">{loyaltyPoints.points}</span>{' '}
-                    points
+                    {t('orders.pointsUnit')}
                   </h2>
                   <p className="text-small text-secondary mt-1">
-                    Redeemable value:{' '}
+                    {t('orders.redeemableValuePrefix')}{' '}
                     <strong className="text-ink font-medium" data-testid="loyalty-points-value">
                       {formatPrice(loyaltyPoints.value)}
                     </strong>{' '}
-                    (100 points = 100.000 ₫)
+                    {t('orders.redeemableFormula')}
                   </p>
                   <p className="text-caption text-secondary mt-3">
-                    You automatically earn 10% in points on every purchase (1,000,000 ₫ = 100
-                    points) and can redeem them immediately on your next order.
+                    {t('orders.loyaltyEarnExplanation')}
                   </p>
                 </div>
 
                 <div className="lg:col-span-7 border-t lg:border-t-0 lg:border-l border-border pt-6 lg:pt-0 lg:pl-8">
                   <h3 className="text-caption font-mono uppercase tracking-wider text-secondary mb-3">
-                    Recent Point Transactions
+                    {t('orders.recentTransactionsTitle')}
                   </h3>
                   {loyaltyHistory.length === 0 ? (
                     <p className="text-small text-secondary">
-                      No point transactions yet. Place an order to start earning rewards.
+                      {t('orders.noTransactionsYet')}
                     </p>
                   ) : (
                     <div
@@ -240,9 +237,9 @@ export default function AccountOrdersPage() {
             {/* Purchase History List */}
             <section>
               <div className="mb-6">
-                <h1 className="text-h1">Purchase History</h1>
+                <h1 className="text-h1">{t('orders.purchaseHistoryTitle')}</h1>
                 <p className="text-small text-secondary mt-1">
-                  All orders linked to your account, sorted with the most recent first.
+                  {t('orders.purchaseHistoryDesc')}
                 </p>
               </div>
 
@@ -258,15 +255,15 @@ export default function AccountOrdersPage() {
               ) : orders.length === 0 ? (
                 <div className="bg-surface border border-border rounded-2xl p-12 text-center">
                   <Package size={28} className="mx-auto text-secondary mb-3" />
-                  <h2 className="text-h3 mb-1">No orders placed yet</h2>
+                  <h2 className="text-h3 mb-1">{t('orders.noOrdersTitle')}</h2>
                   <p className="text-small text-secondary mb-6">
-                    When you complete an order, it will appear here with full tracking history.
+                    {t('orders.noOrdersDesc')}
                   </p>
                   <Link
                     href="/products"
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-ink text-white text-small font-medium"
                   >
-                    Explore Hardware
+                    {t('orders.exploreHardwareBtn')}
                     <ArrowRight size={16} />
                   </Link>
                 </div>
@@ -299,15 +296,16 @@ export default function AccountOrdersPage() {
                           <div className="flex items-center gap-2 text-caption font-mono text-secondary mt-1">
                             <Clock size={12} />
                             <span>
-                              Placed on{' '}
-                              {new Date(order.createdAt).toLocaleString('vi-VN')}
+                              {t('orders.placedOn', {
+                                date: new Date(order.createdAt).toLocaleString('vi-VN'),
+                              })}
                             </span>
                           </div>
                         </div>
 
                         <div className="sm:text-right">
                           <span className="text-caption font-mono uppercase text-secondary block">
-                            Total Amount
+                            {t('orders.totalAmount')}
                           </span>
                           <span
                             data-testid="order-card-total"
@@ -340,14 +338,16 @@ export default function AccountOrdersPage() {
 
                       <div className="pt-4 border-t border-border/60 flex items-center justify-between">
                         <span className="text-caption font-mono text-secondary uppercase">
-                          Payment: {order.paymentMethod?.toUpperCase()}
+                          {t('orders.paymentPrefix', {
+                            method: order.paymentMethod?.toUpperCase(),
+                          })}
                         </span>
                         <Link
                           href={`/account/orders/${order.id}`}
                           data-testid={`view-order-${order.orderNumber}`}
                           className="inline-flex items-center gap-1.5 text-small font-medium text-ink hover:text-secondary transition-colors"
                         >
-                          <span>View details &amp; status history</span>
+                          <span>{t('orders.viewDetailsAndHistory')}</span>
                           <ArrowRight size={15} />
                         </Link>
                       </div>

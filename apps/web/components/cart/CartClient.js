@@ -168,7 +168,7 @@ export default function CartClient({ initialCart }) {
               onClick={handleClearCart}
               disabled={updatingItemId === 'clear-all'}
               data-testid="cart-clear-button"
-              className="text-small text-secondary hover:text-red-600 transition-colors inline-flex items-center gap-1.5 self-start sm:self-auto"
+              className="text-small text-secondary hover:text-danger transition-colors inline-flex items-center gap-1.5 self-start sm:self-auto"
             >
               <Trash2 size={15} />
               <span>{t('cart.clearSelection')}</span>
@@ -179,7 +179,7 @@ export default function CartClient({ initialCart }) {
         {error && (
           <div
             data-testid="cart-error"
-            className="mt-6 p-4 rounded-xl border border-red-200 bg-red-50 text-red-800 text-small"
+            className="mt-6 p-4 rounded-xl border border-danger/30 bg-danger/10 text-danger text-small"
           >
             {error}
           </div>
@@ -212,7 +212,7 @@ export default function CartClient({ initialCart }) {
             <Link
               href="/products"
               data-testid="cart-empty-explore-cta"
-              className="inline-flex items-center gap-2 bg-ink text-white px-6 py-3.5 rounded-xl font-medium text-small hover:bg-ink/90 transition-colors"
+              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3.5 rounded-xl font-medium text-small hover:bg-primary/90 transition-colors"
             >
               {t('cart.exploreCollection')}
               <ArrowRight size={18} />
@@ -282,7 +282,7 @@ export default function CartClient({ initialCart }) {
                           disabled={isBusy}
                           data-testid={`cart-item-remove-${item.id}`}
                           aria-label={`Remove ${product?.name}`}
-                          className="p-2 rounded-lg text-secondary hover:text-red-600 hover:bg-canvas transition-colors"
+                          className="p-2 rounded-lg text-secondary hover:text-danger hover:bg-canvas transition-colors"
                         >
                           <Trash2 size={17} />
                         </button>
@@ -409,7 +409,7 @@ export default function CartClient({ initialCart }) {
                   <Link
                     href="/checkout"
                     data-testid="cart-checkout-cta"
-                    className="w-full h-12 rounded-xl bg-ink text-white font-medium text-small hover:bg-ink/90 transition-colors inline-flex items-center justify-center gap-2"
+                    className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 transition-colors inline-flex items-center justify-center gap-2"
                   >
                     <span>{t('cart.checkout')}</span>
                     <ArrowRight size={18} />

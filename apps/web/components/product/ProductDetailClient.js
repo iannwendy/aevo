@@ -42,11 +42,15 @@ function computeReviewStatsClient(reviews = []) {
   };
 }
 
-export default function ProductDetailClient({ slug, initialProduct }) {
+export default function ProductDetailClient({
+  slug,
+  initialProduct,
+  initialNotFound = false,
+}) {
   const { locale, t, catName } = useI18n();
   const [product, setProduct] = useState(initialProduct || null);
-  const [loading, setLoading] = useState(!initialProduct);
-  const [notFoundError, setNotFoundError] = useState(false);
+  const [loading, setLoading] = useState(!initialProduct && !initialNotFound);
+  const [notFoundError, setNotFoundError] = useState(Boolean(initialNotFound));
 
   // Gallery state
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -314,7 +318,7 @@ export default function ProductDetailClient({ slug, initialProduct }) {
         </p>
         <Link
           href="/products"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-ink text-white font-medium"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium"
         >
           {t('productDetail.backToCatalog')}
         </Link>
@@ -374,12 +378,12 @@ export default function ProductDetailClient({ slug, initialProduct }) {
               />
               <div className="absolute top-4 left-4 flex flex-wrap gap-2">
                 {product.isNewArrival && (
-                  <span className="bg-ink text-white text-caption font-mono uppercase tracking-wider px-3 py-1 rounded-full">
+                  <span className="bg-primary text-primary-foreground text-caption font-mono uppercase tracking-wider px-3 py-1 rounded-full">
                     {t('productCard.newArrival')}
                   </span>
                 )}
                 {product.isBestSeller && (
-                  <span className="bg-sage text-white text-caption font-mono uppercase tracking-wider px-3 py-1 rounded-full">
+                  <span className="bg-sage text-primary-foreground text-caption font-mono uppercase tracking-wider px-3 py-1 rounded-full">
                     {t('productCard.bestSeller')}
                   </span>
                 )}
@@ -506,7 +510,7 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                   <span
                     data-testid="product-stock"
                     className={`text-caption font-mono uppercase tracking-wider ${
-                      currentStock > 0 ? 'text-sage font-medium' : 'text-red-600 font-medium'
+                      currentStock > 0 ? 'text-sage font-medium' : 'text-danger font-medium'
                     }`}
                   >
                     {currentStock > 0
@@ -603,7 +607,7 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                     onClick={handleAddToCart}
                     disabled={addingToCart || currentStock <= 0}
                     data-testid="add-to-cart-button"
-                    className="flex-1 h-12 px-6 rounded-xl bg-ink text-white font-medium text-small hover:bg-ink/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 transition-colors"
+                    className="flex-1 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 transition-colors"
                   >
                     <ShoppingBag size={18} />
                     <span>
@@ -623,8 +627,8 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                     data-testid="add-to-cart-feedback"
                     className={`mt-4 p-3.5 rounded-xl border text-small flex items-center justify-between gap-3 ${
                       cartFeedback.type === 'success'
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                        : 'bg-red-50 border-red-200 text-red-800'
+                        ? 'bg-success/10 border-success/30 text-success'
+                        : 'bg-danger/10 border-danger/30 text-danger'
                     }`}
                   >
                     <span className="inline-flex items-center gap-2">
@@ -745,7 +749,7 @@ export default function ProductDetailClient({ slug, initialProduct }) {
             >
               <Radio
                 size={13}
-                className={socketConnected ? 'text-emerald-600 animate-pulse' : 'text-secondary'}
+                className={socketConnected ? 'text-success animate-pulse' : 'text-secondary'}
               />
               <span>
                 {socketConnected
@@ -932,8 +936,8 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                     data-testid="review-feedback"
                     className={`p-3 rounded-xl text-caption border ${
                       reviewFeedback.type === 'success'
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                        : 'bg-red-50 border-red-200 text-red-800'
+                        ? 'bg-success/10 border-success/30 text-success'
+                        : 'bg-danger/10 border-danger/30 text-danger'
                     }`}
                   >
                     {reviewFeedback.message}
@@ -944,7 +948,7 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                   type="submit"
                   disabled={submittingReview}
                   data-testid="review-submit-button"
-                  className="w-full h-11 rounded-xl bg-ink text-white text-small font-medium hover:bg-ink/90 disabled:opacity-50 transition-colors"
+                  className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
                 >
                   {submittingReview
                     ? t('productDetail.submitting')

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { cartApi } from '../lib/api';
 import { useI18n } from '../lib/i18n';
 import LanguageSwitcher from './LanguageSwitcher';
+import ThemeSwitcher from './ThemeSwitcher';
 
 const NAV_LINKS = [
   { href: '/products', key: 'header.shop' },
@@ -50,49 +51,50 @@ export default function SiteHeader() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border">
-      <div className="container-main h-[72px] flex items-center justify-between">
+      <div className="container-main h-[72px] flex items-center justify-between gap-4">
         <Link
           href="/"
-          className="text-2xl font-display font-medium tracking-tight focus-ring rounded-lg"
+          className="text-2xl font-display font-medium tracking-tight text-ink focus-ring rounded-lg shrink-0"
         >
           aevo.
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8" aria-label={t('header.primaryNavAria')}>
+        <nav className="hidden lg:flex items-center gap-8" aria-label={t('header.primaryNavAria')}>
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-small font-medium hover:text-secondary transition-colors focus-ring rounded"
+              className="text-small font-medium text-ink hover:text-secondary transition-colors focus-ring rounded"
             >
               {t(link.key)}
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-3.5">
+          <ThemeSwitcher />
           <LanguageSwitcher />
           <Link
             href="/products"
-            className="text-small font-medium hover:text-secondary transition-colors focus-ring rounded"
+            className="hidden sm:inline-block text-small font-medium text-ink hover:text-secondary transition-colors focus-ring rounded"
           >
             {t('header.search')}
           </Link>
           <Link
             href="/account/profile"
-            className="text-small font-medium hover:text-secondary transition-colors focus-ring rounded"
+            className="text-small font-medium text-ink hover:text-secondary transition-colors focus-ring rounded"
           >
             {t('header.account')}
           </Link>
           <Link
             href="/cart"
             data-testid="header-cart-link"
-            className="text-small font-medium hover:text-secondary transition-colors focus-ring rounded inline-flex items-center gap-1.5"
+            className="text-small font-medium text-ink hover:text-secondary transition-colors focus-ring rounded inline-flex items-center gap-1.5"
           >
             <span>{t('header.cart')}</span>
             <span
               data-testid="header-cart-count"
-              className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-ink text-white text-[11px] font-mono"
+              className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-mono"
             >
               {cartCount}
             </span>

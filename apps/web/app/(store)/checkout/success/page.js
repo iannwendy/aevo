@@ -13,6 +13,11 @@ import {
 import SiteHeader from '../../../../components/SiteHeader';
 import SiteFooter from '../../../../components/SiteFooter';
 import { formatPrice } from '../../../../lib/utils';
+import {
+  LOCALE_COOKIE_NAME,
+  normalizeLocale,
+  translate,
+} from '../../../../lib/i18n/dictionaries';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -61,6 +66,10 @@ export const metadata = {
 };
 
 export default async function CheckoutSuccessPage({ searchParams }) {
+  const cookieStore = cookies();
+  const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
+  const t = (key, params) => translate(locale, key, params);
+
   const order = await fetchOrderDetails(searchParams);
   const shippingAddr = order?.shippingAddress || order?.address || {};
 
@@ -79,18 +88,18 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                 </div>
                 <div className="flex-1">
                   <span className="text-caption font-mono uppercase tracking-widest text-success">
-                    ORDER CONFIRMED
+                    {t('checkoutSuccess.orderConfirmedEyebrow')}
                   </span>
-                  <h1 className="text-h1 mt-1">Thank you for your order.</h1>
+                  <h1 className="text-h1 mt-1">{t('checkoutSuccess.thankYouTitle')}</h1>
                   <p className="text-body text-secondary mt-2">
-                    Your hardware selection has been reserved and your invoice has been generated.
+                    {t('checkoutSuccess.reservedSubtitle')}
                   </p>
 
                   {order ? (
                     <div className="mt-6 pt-6 border-t border-border grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <span className="text-caption font-mono uppercase tracking-wider text-secondary block">
-                          ORDER NUMBER
+                          {t('checkoutSuccess.orderNumberLabel')}
                         </span>
                         <span
                           className="font-mono text-[16px] font-medium text-ink mt-1 block"
@@ -101,7 +110,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                       </div>
                       <div>
                         <span className="text-caption font-mono uppercase tracking-wider text-secondary block">
-                          DATE & TIME
+                          {t('checkoutSuccess.dateTimeLabel')}
                         </span>
                         <span className="font-mono text-[14px] text-ink mt-1 block">
                           {new Date(order.createdAt).toLocaleString('vi-VN')}
@@ -109,7 +118,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                       </div>
                       <div>
                         <span className="text-caption font-mono uppercase tracking-wider text-secondary block">
-                          CURRENT STATUS
+                          {t('checkoutSuccess.currentStatusLabel')}
                         </span>
                         <span
                           className="inline-flex items-center gap-1.5 font-mono text-[12px] uppercase tracking-wider px-2.5 py-0.5 rounded-pill bg-accent/10 text-accent mt-1"
@@ -123,7 +132,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                   ) : (
                     <div className="mt-6 pt-6 border-t border-border">
                       <p className="text-body text-secondary">
-                        Order Reference:{' '}
+                        {t('checkoutSuccess.orderReferencePrefix')}{' '}
                         <span
                           className="font-mono text-ink font-medium"
                           data-testid="success-order-number"
@@ -141,9 +150,11 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-ink shrink-0" />
                   <span>
-                    Confirmation details dispatched to{' '}
+                    {t('checkoutSuccess.confirmationSentTo')}{' '}
                     <strong className="text-ink font-medium">
-                      {shippingAddr.email || order?.user?.email || 'your email address'}
+                      {shippingAddr.email ||
+                        order?.user?.email ||
+                        t('checkoutSuccess.yourEmailFallback')}
                     </strong>
                   </span>
                 </div>
@@ -154,7 +165,9 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                   >
                     <Sparkles className="w-4 h-4" />
                     <span>
-                      +{order.earnedPoints || order.earnedLoyaltyPoints} Loyalty Points Earned
+                      {t('checkoutSuccess.loyaltyEarnedBadge', {
+                        points: order.earnedPoints || order.earnedLoyaltyPoints,
+                      })}
                     </span>
                   </div>
                 )}
@@ -168,7 +181,9 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                   <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
                     <Package className="w-4 h-4 text-secondary" />
                     <h2 className="text-caption font-mono uppercase tracking-wider text-secondary">
-                      ORDERED HARDWARE ({order.items?.length || 0})
+                      {t('checkoutSuccess.orderedHardwareHeading', {
+                        count: order.items?.length || 0,
+                      })}
                     </h2>
                   </div>
 
@@ -184,8 +199,11 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                             {item.productName}
                           </p>
                           <p className="text-[13px] font-mono text-secondary mt-0.5">
-                            Variant: {item.variantName} · Qty: {item.quantity} ×{' '}
-                            {formatPrice(item.price)}
+                            {t('checkoutSuccess.variantQtyLine', {
+                              variant: item.variantName,
+                              qty: item.quantity,
+                              price: formatPrice(item.price),
+                            })}
                           </p>
                         </div>
                         <div className="font-mono text-[15px] font-medium text-ink">
@@ -198,7 +216,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                   {/* Financial Breakdown */}
                   <div className="mt-6 pt-6 border-t border-border space-y-2.5 text-[14px]">
                     <div className="flex justify-between">
-                      <span className="text-secondary">Subtotal</span>
+                      <span className="text-secondary">{t('checkoutSuccess.subtotal')}</span>
                       <span className="font-mono text-ink" data-testid="success-subtotal">
                         {formatPrice(order.subtotal)}
                       </span>
@@ -206,7 +224,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                     {order.discountAmount > 0 && (
                       <div className="flex justify-between text-success">
                         <span>
-                          Discount
+                          {t('checkoutSuccess.discount')}
                           {order.discountCode
                             ? ` (${order.discountCode.code || order.discountCode})`
                             : ''}
@@ -218,26 +236,36 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                     )}
                     {order.loyaltyDiscount > 0 && (
                       <div className="flex justify-between text-success">
-                        <span>Loyalty Points ({order.usedLoyaltyPoints} pts)</span>
+                        <span>
+                          {t('checkoutSuccess.loyaltyPoints', {
+                            points: order.usedLoyaltyPoints,
+                          })}
+                        </span>
                         <span className="font-mono" data-testid="success-loyalty-discount">
                           -{formatPrice(order.loyaltyDiscount)}
                         </span>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-secondary">Shipping Fee</span>
+                      <span className="text-secondary">
+                        {t('checkoutSuccess.shippingFee')}
+                      </span>
                       <span className="font-mono text-ink">
-                        {order.shippingFee === 0 ? 'FREE' : formatPrice(order.shippingFee)}
+                        {order.shippingFee === 0
+                          ? t('checkoutSuccess.freeUpper')
+                          : formatPrice(order.shippingFee)}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-secondary">VAT (10%)</span>
+                      <span className="text-secondary">{t('checkoutSuccess.vat')}</span>
                       <span className="font-mono text-ink">
                         {formatPrice(order.taxAmount)}
                       </span>
                     </div>
                     <div className="pt-3 border-t border-border flex justify-between items-baseline">
-                      <span className="font-medium text-ink">Total Paid / Due</span>
+                      <span className="font-medium text-ink">
+                        {t('checkoutSuccess.totalPaidDue')}
+                      </span>
                       <span
                         className="font-mono text-[22px] font-semibold text-ink"
                         data-testid="success-total"
@@ -254,7 +282,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                     <div className="flex items-center gap-2 pb-3 border-b border-border mb-4">
                       <MapPin className="w-4 h-4 text-secondary" />
                       <h2 className="text-caption font-mono uppercase tracking-wider text-secondary">
-                        DELIVERY DESTINATION
+                        {t('checkoutSuccess.deliveryDestinationHeading')}
                       </h2>
                     </div>
                     <div className="text-[14px] space-y-1 text-ink">
@@ -279,20 +307,26 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                     <div className="flex items-center gap-2 pb-3 border-b border-border mb-4">
                       <CreditCard className="w-4 h-4 text-secondary" />
                       <h2 className="text-caption font-mono uppercase tracking-wider text-secondary">
-                        PAYMENT & TIMELINE
+                        {t('checkoutSuccess.paymentTimelineHeading')}
                       </h2>
                     </div>
                     <div className="text-[14px] space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-secondary">Payment Method</span>
+                        <span className="text-secondary">
+                          {t('checkoutSuccess.paymentMethod')}
+                        </span>
                         <span className="font-mono uppercase text-ink">
                           {order.paymentMethod || 'COD'}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-secondary">Status History</span>
+                        <span className="text-secondary">
+                          {t('checkoutSuccess.statusHistory')}
+                        </span>
                         <span className="font-mono text-ink">
-                          {order.statusHistory?.length || 1} event(s)
+                          {t('checkoutSuccess.eventsCount', {
+                            count: order.statusHistory?.length || 1,
+                          })}
                         </span>
                       </div>
                     </div>
@@ -307,13 +341,13 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                 href="/account/orders"
                 className="px-6 py-3 rounded-pill border border-border text-[14px] font-medium text-ink hover:border-ink transition-colors"
               >
-                View Order History
+                {t('checkoutSuccess.viewOrderHistoryBtn')}
               </Link>
               <Link
                 href="/products"
                 className="inline-flex items-center gap-2 px-7 py-3.5 rounded-pill bg-ink text-bg text-[14px] font-medium hover:bg-accent transition-colors"
               >
-                <span>Continue Shopping</span>
+                <span>{t('checkoutSuccess.continueShoppingBtn')}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

@@ -44,12 +44,12 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
           />
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
             {product.isNewArrival && (
-              <span className="bg-ink text-white text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
+              <span className="bg-primary text-primary-foreground text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
                 {t('productCard.newArrival')}
               </span>
             )}
             {product.isBestSeller && (
-              <span className="bg-sage text-white text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
+              <span className="bg-sage text-primary-foreground text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
                 {t('productCard.bestSeller')}
               </span>
             )}
@@ -134,12 +134,12 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
           />
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
             {product.isNewArrival && (
-              <span className="bg-ink text-white text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
+              <span className="bg-primary text-primary-foreground text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
                 {t('productCard.newArrival')}
               </span>
             )}
             {product.isBestSeller && (
-              <span className="bg-sage text-white text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
+              <span className="bg-sage text-primary-foreground text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
                 {t('productCard.bestSeller')}
               </span>
             )}

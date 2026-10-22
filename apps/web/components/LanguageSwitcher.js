@@ -19,7 +19,7 @@ export default function LanguageSwitcher({ className = '' }) {
         data-testid="lang-btn-en"
         className={`px-2 py-1 rounded-md text-[11px] font-mono font-medium tracking-wider transition-colors focus-ring ${
           locale === 'en'
-            ? 'bg-ink text-white shadow-xs'
+            ? 'bg-primary text-primary-foreground shadow-xs'
             : 'text-secondary hover:text-ink'
         }`}
       >
@@ -32,7 +32,7 @@ export default function LanguageSwitcher({ className = '' }) {
         data-testid="lang-btn-vi"
         className={`px-2 py-1 rounded-md text-[11px] font-mono font-medium tracking-wider transition-colors focus-ring ${
           locale === 'vi'
-            ? 'bg-ink text-white shadow-xs'
+            ? 'bg-primary text-primary-foreground shadow-xs'
             : 'text-secondary hover:text-ink'
         }`}
       >

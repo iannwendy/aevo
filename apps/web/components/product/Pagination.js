@@ -83,7 +83,7 @@ export default function Pagination({
               data-testid={`pagination-page-${p}`}
               className={`w-10 h-10 rounded-lg text-small font-medium transition-colors ${
                 isCurrent
-                  ? 'bg-ink text-white border border-ink'
+                  ? 'bg-primary text-primary-foreground border border-primary'
                   : 'bg-surface text-ink border border-border hover:bg-canvas'
               }`}
             >

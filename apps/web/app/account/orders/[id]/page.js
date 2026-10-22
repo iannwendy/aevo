@@ -14,6 +14,7 @@ import SiteHeader from '../../../../components/SiteHeader';
 import SiteFooter from '../../../../components/SiteFooter';
 import { ordersApi } from '../../../../lib/api';
 import { formatPrice } from '../../../../lib/utils';
+import { useI18n } from '../../../../lib/i18n';
 
 function getStatusBadgeClass(status) {
   switch (status) {
@@ -32,6 +33,7 @@ function getStatusBadgeClass(status) {
 }
 
 export default function OrderDetailPage({ params }) {
+  const { t } = useI18n();
   const orderId = params?.id;
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -49,7 +51,7 @@ export default function OrderDetailPage({ params }) {
         setError(null);
       } catch (err) {
         if (!active) return;
-        setError(err?.response?.data?.error || 'Order not found or unauthorized.');
+        setError(err?.response?.data?.error || t('orders.orderNotFoundError'));
       } finally {
         if (active) setLoading(false);
       }
@@ -58,7 +60,7 @@ export default function OrderDetailPage({ params }) {
     return () => {
       active = false;
     };
-  }, [orderId]);
+  }, [orderId, t]);
 
   const statusHistory = (order?.statusHistory || [])
     .slice()
@@ -78,7 +80,7 @@ export default function OrderDetailPage({ params }) {
             className="inline-flex items-center gap-1.5 text-small text-secondary hover:text-ink transition-colors"
           >
             <ArrowLeft size={16} />
-            <span>Back to Order History</span>
+            <span>{t('orders.backToOrderHistory')}</span>
           </Link>
         </div>
 
@@ -86,13 +88,13 @@ export default function OrderDetailPage({ params }) {
           <div className="h-96 rounded-2xl bg-surface border border-border animate-pulse" />
         ) : error || !order ? (
           <div className="bg-surface border border-border rounded-2xl p-12 text-center max-w-xl mx-auto">
-            <h1 className="text-h2 mb-2">Could not load order</h1>
+            <h1 className="text-h2 mb-2">{t('orders.couldNotLoadTitle')}</h1>
             <p className="text-small text-secondary mb-6">{error}</p>
             <Link
               href="/account/orders"
               className="inline-flex items-center px-6 py-3 rounded-xl bg-ink text-white text-small font-medium"
             >
-              Return to Orders
+              {t('orders.returnToOrdersBtn')}
             </Link>
           </div>
         ) : (
@@ -101,7 +103,7 @@ export default function OrderDetailPage({ params }) {
             <div className="bg-surface border border-border rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <span className="text-caption font-mono uppercase tracking-wider text-secondary">
-                  Order Details &amp; Tracking
+                  {t('orders.orderDetailsEyebrow')}
                 </span>
                 <div className="flex flex-wrap items-center gap-3 mt-1">
                   <h1 className="text-h1 font-mono" data-testid="order-detail-number">
@@ -117,13 +119,15 @@ export default function OrderDetailPage({ params }) {
                   </span>
                 </div>
                 <p className="text-small text-secondary mt-2">
-                  Placed on {new Date(order.createdAt).toLocaleString('vi-VN')}
+                  {t('orders.placedOn', {
+                    date: new Date(order.createdAt).toLocaleString('vi-VN'),
+                  })}
                 </p>
               </div>
 
               <div className="md:text-right">
                 <span className="text-caption font-mono uppercase tracking-wider text-secondary block">
-                  Total Paid / Due
+                  {t('orders.totalPaidDue')}
                 </span>
                 <span
                   data-testid="order-detail-total"
@@ -144,7 +148,7 @@ export default function OrderDetailPage({ params }) {
                 >
                   <div className="flex items-center gap-2 mb-4">
                     <Package size={18} className="text-ink" />
-                    <h2 className="text-h3">Ordered Hardware</h2>
+                    <h2 className="text-h3">{t('orders.orderedHardwareTitle')}</h2>
                   </div>
 
                   <div className="divide-y divide-border">
@@ -159,8 +163,11 @@ export default function OrderDetailPage({ params }) {
                             {item.productName}
                           </div>
                           <div className="text-caption text-secondary mt-0.5">
-                            Variant: {item.variantName} · Quantity: {item.quantity} ×{' '}
-                            {formatPrice(item.price)}
+                            {t('orders.variantQuantityLine', {
+                              variant: item.variantName,
+                              qty: item.quantity,
+                              price: formatPrice(item.price),
+                            })}
                           </div>
                         </div>
                         <div className="text-small font-mono font-medium text-ink shrink-0">
@@ -172,13 +179,13 @@ export default function OrderDetailPage({ params }) {
 
                   <dl className="mt-6 pt-6 border-t border-border space-y-2.5 text-small">
                     <div className="flex justify-between">
-                      <dt className="text-secondary">Subtotal</dt>
+                      <dt className="text-secondary">{t('orders.subtotal')}</dt>
                       <dd className="font-mono text-ink">{formatPrice(order.subtotal)}</dd>
                     </div>
                     {order.discountAmount > 0 && (
                       <div className="flex justify-between text-emerald-700">
                         <dt>
-                          Discount{' '}
+                          {t('orders.discount')}{' '}
                           {order.discountCode?.code ? `(${order.discountCode.code})` : ''}
                         </dt>
                         <dd className="font-mono">-{formatPrice(order.discountAmount)}</dd>
@@ -186,24 +193,26 @@ export default function OrderDetailPage({ params }) {
                     )}
                     {order.usedLoyaltyPoints > 0 && (
                       <div className="flex justify-between text-emerald-700">
-                        <dt>Loyalty Points Redeemed ({order.usedLoyaltyPoints} pts)</dt>
+                        <dt>
+                          {t('orders.loyaltyRedeemed', { points: order.usedLoyaltyPoints })}
+                        </dt>
                         <dd className="font-mono">-{formatPrice(loyaltyDiscount)}</dd>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <dt className="text-secondary">Shipping Fee</dt>
+                      <dt className="text-secondary">{t('orders.shippingFee')}</dt>
                       <dd className="font-mono text-ink">
                         {order.shippingFee === 0
-                          ? 'Free'
+                          ? t('orders.free')
                           : formatPrice(order.shippingFee)}
                       </dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-secondary">Tax (10% VAT)</dt>
+                      <dt className="text-secondary">{t('orders.taxVat')}</dt>
                       <dd className="font-mono text-ink">{formatPrice(order.taxAmount)}</dd>
                     </div>
                     <div className="flex justify-between pt-3 border-t border-border text-base font-medium text-ink">
-                      <dt>Total</dt>
+                      <dt>{t('orders.total')}</dt>
                       <dd className="font-mono">{formatPrice(order.totalAmount)}</dd>
                     </div>
                   </dl>
@@ -214,7 +223,7 @@ export default function OrderDetailPage({ params }) {
                   <div className="bg-surface border border-border rounded-2xl p-6">
                     <div className="flex items-center gap-2 text-caption font-mono uppercase tracking-wider text-secondary mb-3">
                       <MapPin size={14} />
-                      <span>Shipping Address</span>
+                      <span>{t('orders.shippingAddressLabel')}</span>
                     </div>
                     {order.shippingAddress ? (
                       <div className="text-small text-ink space-y-1">
@@ -243,14 +252,14 @@ export default function OrderDetailPage({ params }) {
                   <div className="bg-surface border border-border rounded-2xl p-6">
                     <div className="flex items-center gap-2 text-caption font-mono uppercase tracking-wider text-secondary mb-3">
                       <CreditCard size={14} />
-                      <span>Payment Method</span>
+                      <span>{t('orders.paymentMethodLabel')}</span>
                     </div>
                     <p className="text-small font-medium text-ink uppercase">
                       {order.paymentMethod || 'COD'}
                     </p>
                     {order.notes && (
                       <p className="text-caption text-secondary mt-3">
-                        Note: {order.notes}
+                        {t('orders.notePrefix', { note: order.notes })}
                       </p>
                     )}
                   </div>
@@ -265,10 +274,10 @@ export default function OrderDetailPage({ params }) {
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <Clock size={18} className="text-ink" />
-                    <h2 className="text-h3">Status History</h2>
+                    <h2 className="text-h3">{t('orders.statusHistoryTitle')}</h2>
                   </div>
                   <p className="text-caption text-secondary mb-6">
-                    Most recent status is displayed at the top (reverse chronological order).
+                    {t('orders.statusHistoryDesc')}
                   </p>
 
                   {/* Timeline */}
@@ -316,9 +325,9 @@ export default function OrderDetailPage({ params }) {
                     >
                       <thead>
                         <tr className="border-b border-border text-secondary font-mono uppercase">
-                          <th className="py-2 pr-3">Status</th>
-                          <th className="py-2 pr-3">Updated At</th>
-                          <th className="py-2">Note</th>
+                          <th className="py-2 pr-3">{t('orders.thStatus')}</th>
+                          <th className="py-2 pr-3">{t('orders.thUpdatedAt')}</th>
+                          <th className="py-2">{t('orders.thNote')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/60">

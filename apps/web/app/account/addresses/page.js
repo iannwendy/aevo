@@ -15,6 +15,7 @@ import SiteHeader from '../../../components/SiteHeader';
 import SiteFooter from '../../../components/SiteFooter';
 import { fetchProfile } from '../../../lib/auth-client';
 import { addressesApi } from '../../../lib/api';
+import { useI18n } from '../../../lib/i18n';
 
 const EMPTY_FORM = {
   fullName: '',
@@ -27,6 +28,7 @@ const EMPTY_FORM = {
 };
 
 export default function AddressesPage() {
+  const { t } = useI18n();
   const [authStatus, setAuthStatus] = useState('loading');
   const [user, setUser] = useState(null);
   const [addresses, setAddresses] = useState([]);
@@ -44,11 +46,11 @@ export default function AddressesPage() {
       const res = await addressesApi.getAll();
       setAddresses(Array.isArray(res.data) ? res.data : []);
     } catch {
-      setFeedback({ type: 'error', message: 'Failed to load saved addresses.' });
+      setFeedback({ type: 'error', message: t('addresses.loadError') });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     let active = true;
@@ -101,7 +103,7 @@ export default function AddressesPage() {
     if (!formData.fullName.trim() || !formData.phone.trim() || !formData.address.trim()) {
       setFeedback({
         type: 'error',
-        message: 'Full name, phone number, and street address are required.',
+        message: t('addresses.requiredFieldsError'),
       });
       return;
     }
@@ -112,16 +114,16 @@ export default function AddressesPage() {
     try {
       if (editingId) {
         await addressesApi.update(editingId, formData);
-        setFeedback({ type: 'success', message: 'Delivery address updated.' });
+        setFeedback({ type: 'success', message: t('addresses.updatedSuccess') });
       } else {
         await addressesApi.create(formData);
-        setFeedback({ type: 'success', message: 'New delivery address added.' });
+        setFeedback({ type: 'success', message: t('addresses.addedSuccess') });
       }
       setShowForm(false);
       setEditingId(null);
       await loadAddresses();
     } catch (err) {
-      const msg = err?.response?.data?.error || 'Could not save address.';
+      const msg = err?.response?.data?.error || t('addresses.saveError');
       setFeedback({ type: 'error', message: msg });
     } finally {
       setSaving(false);
@@ -131,20 +133,20 @@ export default function AddressesPage() {
   const handleSetDefault = async (id) => {
     try {
       await addressesApi.setDefault(id);
-      setFeedback({ type: 'success', message: 'Default delivery address updated.' });
+      setFeedback({ type: 'success', message: t('addresses.defaultUpdatedSuccess') });
       await loadAddresses();
     } catch {
-      setFeedback({ type: 'error', message: 'Could not update default address.' });
+      setFeedback({ type: 'error', message: t('addresses.defaultUpdateError') });
     }
   };
 
   const handleDelete = async (id) => {
     try {
       await addressesApi.delete(id);
-      setFeedback({ type: 'success', message: 'Delivery address removed.' });
+      setFeedback({ type: 'success', message: t('addresses.deletedSuccess') });
       await loadAddresses();
     } catch {
-      setFeedback({ type: 'error', message: 'Could not delete address.' });
+      setFeedback({ type: 'error', message: t('addresses.deleteError') });
     }
   };
 
@@ -159,7 +161,7 @@ export default function AddressesPage() {
             className="inline-flex items-center gap-1.5 text-small text-secondary hover:text-ink transition-colors"
           >
             <ArrowLeft size={16} />
-            <span>Back to Account</span>
+            <span>{t('addresses.backToAccount')}</span>
           </Link>
         </div>
 
@@ -169,33 +171,31 @@ export default function AddressesPage() {
             href="/account/profile"
             className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
           >
-            Profile &amp; Security
+            {t('addresses.tabProfileSecurity')}
           </Link>
           <Link
             href="/account/addresses"
             className="px-4 py-2 rounded-xl bg-ink text-white text-small font-medium"
           >
-            Delivery Addresses
+            {t('addresses.tabDeliveryAddresses')}
           </Link>
           <Link
             href="/account/orders"
             className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
           >
-            Order History
+            {t('addresses.tabOrderHistory')}
           </Link>
         </div>
 
         {authStatus === 'signed-out' ? (
           <div className="bg-surface border border-border rounded-2xl p-10 max-w-xl">
-            <h1 className="text-h2 mb-2">Sign in to manage your addresses</h1>
-            <p className="text-small text-secondary mb-6">
-              Save multiple shipping destinations for faster checkout across your devices.
-            </p>
+            <h1 className="text-h2 mb-2">{t('addresses.signInTitle')}</h1>
+            <p className="text-small text-secondary mb-6">{t('addresses.signInDesc')}</p>
             <Link
               href="/login?next=%2Faccount%2Faddresses"
               className="inline-flex items-center px-6 py-3 rounded-xl bg-ink text-white text-small font-medium"
             >
-              Sign in
+              {t('addresses.signInBtn')}
             </Link>
           </div>
         ) : (
@@ -203,12 +203,10 @@ export default function AddressesPage() {
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
               <div>
                 <span className="text-caption font-mono uppercase tracking-wider text-secondary">
-                  Account · Shipping Book
+                  {t('addresses.eyebrow')}
                 </span>
-                <h1 className="text-h1 mt-1">Delivery Addresses</h1>
-                <p className="text-small text-secondary mt-1">
-                  Manage multiple shipping addresses and choose your default checkout destination.
-                </p>
+                <h1 className="text-h1 mt-1">{t('addresses.title')}</h1>
+                <p className="text-small text-secondary mt-1">{t('addresses.subtitle')}</p>
               </div>
 
               <button
@@ -218,7 +216,7 @@ export default function AddressesPage() {
                 className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-ink text-white text-small font-medium hover:bg-ink/90 transition-colors self-start sm:self-auto"
               >
                 <Plus size={16} />
-                <span>Add new address</span>
+                <span>{t('addresses.addNewBtn')}</span>
               </button>
             </div>
 
@@ -243,13 +241,13 @@ export default function AddressesPage() {
                 className="bg-surface border border-border rounded-2xl p-6 mb-8 space-y-4 max-w-2xl"
               >
                 <h2 className="text-h3">
-                  {editingId ? 'Edit Delivery Address' : 'New Delivery Address'}
+                  {editingId ? t('addresses.editFormTitle') : t('addresses.newFormTitle')}
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                      Recipient Full Name *
+                      {t('addresses.recipientNameLabel')}
                     </label>
                     <input
                       type="text"
@@ -264,7 +262,7 @@ export default function AddressesPage() {
                   </div>
                   <div>
                     <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                      Phone Number *
+                      {t('addresses.phoneLabel')}
                     </label>
                     <input
                       type="tel"
@@ -281,7 +279,7 @@ export default function AddressesPage() {
 
                 <div>
                   <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                    Street Address *
+                    {t('addresses.streetAddressLabel')}
                   </label>
                   <input
                     type="text"
@@ -290,7 +288,7 @@ export default function AddressesPage() {
                     onChange={(e) =>
                       setFormData((p) => ({ ...p, address: e.target.value }))
                     }
-                    placeholder="House number, street name, building..."
+                    placeholder={t('addresses.streetAddressPlaceholder')}
                     data-testid="address-street-input"
                     className="w-full h-11 px-3.5 rounded-xl border border-border bg-canvas text-small text-ink focus-ring"
                   />
@@ -299,7 +297,7 @@ export default function AddressesPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                      Ward
+                      {t('addresses.wardLabel')}
                     </label>
                     <input
                       type="text"
@@ -312,7 +310,7 @@ export default function AddressesPage() {
                   </div>
                   <div>
                     <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                      District
+                      {t('addresses.districtLabel')}
                     </label>
                     <input
                       type="text"
@@ -325,7 +323,7 @@ export default function AddressesPage() {
                   </div>
                   <div>
                     <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                      City / Province *
+                      {t('addresses.cityLabel')}
                     </label>
                     <input
                       type="text"
@@ -349,7 +347,7 @@ export default function AddressesPage() {
                     }
                     className="h-4 w-4 rounded border-border text-ink"
                   />
-                  <span>Set as default shipping address</span>
+                  <span>{t('addresses.setDefaultCheckbox')}</span>
                 </label>
 
                 <div className="flex items-center gap-3 pt-2">
@@ -359,7 +357,11 @@ export default function AddressesPage() {
                     data-testid="address-save-button"
                     className="px-6 h-11 rounded-xl bg-ink text-white text-small font-medium hover:bg-ink/90 disabled:opacity-50"
                   >
-                    {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Save Address'}
+                    {saving
+                      ? t('addresses.saving')
+                      : editingId
+                      ? t('addresses.saveChangesBtn')
+                      : t('addresses.saveAddressBtn')}
                   </button>
                   <button
                     type="button"
@@ -369,7 +371,7 @@ export default function AddressesPage() {
                     }}
                     className="px-5 h-11 rounded-xl border border-border bg-surface text-small font-medium text-ink hover:bg-canvas"
                   >
-                    Cancel
+                    {t('addresses.cancelBtn')}
                   </button>
                 </div>
               </form>
@@ -388,17 +390,15 @@ export default function AddressesPage() {
             ) : addresses.length === 0 ? (
               <div className="bg-surface border border-border rounded-2xl p-12 text-center">
                 <MapPin size={28} className="mx-auto text-secondary mb-3" />
-                <h2 className="text-h3 mb-1">No saved addresses yet</h2>
-                <p className="text-small text-secondary mb-6">
-                  Add one or more shipping addresses for one-click checkout pre-fill.
-                </p>
+                <h2 className="text-h3 mb-1">{t('addresses.emptyTitle')}</h2>
+                <p className="text-small text-secondary mb-6">{t('addresses.emptyDesc')}</p>
                 <button
                   type="button"
                   onClick={handleOpenCreate}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ink text-white text-small font-medium"
                 >
                   <Plus size={16} />
-                  Add your first address
+                  {t('addresses.addFirstBtn')}
                 </button>
               </div>
             ) : (
@@ -427,7 +427,7 @@ export default function AddressesPage() {
                         {addr.isDefault && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-ink text-white text-[11px] font-mono uppercase tracking-wider">
                             <Check size={11} />
-                            Default
+                            {t('addresses.defaultBadge')}
                           </span>
                         )}
                       </div>
@@ -448,7 +448,7 @@ export default function AddressesPage() {
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-caption font-medium text-ink hover:bg-canvas"
                         >
                           <Pencil size={12} />
-                          Edit
+                          {t('addresses.editBtn')}
                         </button>
                         <button
                           type="button"
@@ -457,7 +457,7 @@ export default function AddressesPage() {
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-caption font-medium text-secondary hover:text-red-600 hover:bg-canvas"
                         >
                           <Trash2 size={12} />
-                          Delete
+                          {t('addresses.deleteBtn')}
                         </button>
                       </div>
 
@@ -469,7 +469,7 @@ export default function AddressesPage() {
                           className="inline-flex items-center gap-1 text-caption font-medium text-secondary hover:text-ink"
                         >
                           <Star size={12} />
-                          Set as default
+                          {t('addresses.setDefaultBtn')}
                         </button>
                       )}
                     </div>

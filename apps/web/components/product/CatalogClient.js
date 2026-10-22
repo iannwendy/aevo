@@ -288,7 +288,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
           <button
             type="submit"
             data-testid={`${idPrefix}-filter-search-submit`}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-ink text-white text-caption font-medium hover:bg-ink/90 transition-colors"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-primary text-primary-foreground text-caption font-medium hover:bg-primary/90 transition-colors"
           >
             {t('catalog.go')}
           </button>
@@ -318,7 +318,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
             data-testid={`${idPrefix}-category-all`}
             className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-small transition-colors ${
               !currentFilters.category
-                ? 'bg-ink text-white font-medium'
+                ? 'bg-primary text-primary-foreground font-medium'
                 : 'text-ink hover:bg-canvas'
             }`}
           >
@@ -337,7 +337,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 data-testid={`${idPrefix}-category-${cat.slug}`}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-small transition-colors ${
                   isSelected
-                    ? 'bg-ink text-white font-medium'
+                    ? 'bg-primary text-primary-foreground font-medium'
                     : 'text-ink hover:bg-canvas'
                 }`}
               >
@@ -345,7 +345,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 {typeof cat.productCount === 'number' && (
                   <span
                     className={`text-caption font-mono ${
-                      isSelected ? 'text-white/80' : 'text-secondary'
+                      isSelected ? 'text-primary-foreground/80' : 'text-secondary'
                     }`}
                   >
                     {cat.productCount}
@@ -453,7 +453,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
           <button
             type="submit"
             data-testid={`${idPrefix}-apply-price`}
-            className="w-full h-9 rounded-lg border border-border bg-canvas hover:bg-ink hover:text-white text-caption font-medium text-ink transition-colors"
+            className="w-full h-9 rounded-lg border border-border bg-canvas hover:bg-primary hover:text-primary-foreground text-caption font-medium text-ink transition-colors"
           >
             {t('catalog.applyPriceRange')}
           </button>
@@ -475,7 +475,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 }}
                 className={`px-2 py-1.5 rounded-lg border text-[11px] font-medium transition-colors ${
                   isSelected
-                    ? 'bg-ink text-white border-ink'
+                    ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-surface text-secondary border-border hover:border-ink hover:text-ink'
                 }`}
               >
@@ -514,13 +514,13 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 }
                 data-testid={`${idPrefix}-rating-${stars}`}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-small transition-colors ${
-                  active ? 'bg-ink text-white font-medium' : 'text-ink hover:bg-canvas'
+                  active ? 'bg-primary text-primary-foreground font-medium' : 'text-ink hover:bg-canvas'
                 }`}
               >
                 <span className="inline-flex items-center gap-1.5">
                   <Star
                     size={14}
-                    className={active ? 'fill-white text-white' : 'fill-ink text-ink'}
+                    className={active ? 'fill-current text-primary-foreground' : 'fill-ink text-ink'}
                   />
                   <span>{t('catalog.starsAndAbove', { stars })}</span>
                 </span>
@@ -558,7 +558,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                   data-testid={`${idPrefix}-tag-${tagObj.slug}`}
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-caption transition-colors ${
                     active
-                      ? 'bg-ink text-white'
+                      ? 'bg-primary text-primary-foreground'
                       : 'bg-canvas text-secondary hover:text-ink border border-border'
                   }`}
                 >
@@ -806,7 +806,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
             )}
 
             {error && (
-              <div className="p-4 mb-6 rounded-xl border border-red-200 bg-red-50 text-red-800 text-small">
+              <div className="p-4 mb-6 rounded-xl border border-danger/40 bg-danger/10 text-danger text-small">
                 {t('catalog.loadError')}
               </div>
             )}
@@ -833,7 +833,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 <button
                   type="button"
                   onClick={handleResetAll}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ink text-white text-small font-medium hover:bg-ink/90 transition-colors"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 transition-colors"
                 >
                   <RotateCcw size={15} />
                   {t('catalog.resetFiltersLower')}
@@ -876,7 +876,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
       {/* Mobile Filter Drawer */}
       {mobileDrawerOpen && (
         <div
-          className="fixed inset-0 z-50 lg:hidden flex justify-end bg-ink/40 backdrop-blur-xs"
+          className="fixed inset-0 z-50 lg:hidden flex justify-end bg-obsidian/60 backdrop-blur-xs"
           data-testid="mobile-filter-drawer"
         >
           <div className="w-full max-w-sm bg-surface h-full overflow-y-auto p-6 flex flex-col justify-between shadow-xl">
@@ -910,7 +910,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
               <button
                 type="button"
                 onClick={() => setMobileDrawerOpen(false)}
-                className="flex-1 h-11 rounded-xl bg-ink text-white text-small font-medium"
+                className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground text-small font-medium"
               >
                 {t('catalog.applyFiltersBtn')}
               </button>

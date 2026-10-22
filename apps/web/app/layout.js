@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
 import { I18nProvider } from '../lib/i18n';
 import { LOCALE_COOKIE_NAME, normalizeLocale } from '../lib/i18n/dictionaries';
+import { ThemeProvider } from '../components/providers/theme-provider';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'] });
 
@@ -17,11 +18,13 @@ export default function RootLayout({ children }) {
   const locale = normalizeLocale(rawLocale);
 
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <body className={inter.className}>
-        <I18nProvider initialLocale={locale}>
-          {children}
-        </I18nProvider>
+        <ThemeProvider>
+          <I18nProvider initialLocale={locale}>
+            {children}
+          </I18nProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

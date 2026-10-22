@@ -203,7 +203,7 @@ export default function HomeClient({ initialData }) {
                 <Link
                   href="/products"
                   data-testid="hero-explore-cta"
-                  className="inline-flex items-center gap-2 bg-ink text-white px-6 py-3.5 rounded-lg font-medium hover:bg-ink/90 transition-colors"
+                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3.5 rounded-lg font-medium hover:bg-primary/90 transition-colors"
                 >
                   {t('home.exploreCollection')}
                   <ArrowRight size={20} />
@@ -249,7 +249,7 @@ export default function HomeClient({ initialData }) {
 
       {error && (
         <div className="container-main mb-8">
-          <div className="p-4 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-small">
+          <div className="p-4 rounded-xl border border-warning/40 bg-warning/10 text-ink text-small">
             {t('home.loadError')}
           </div>
         </div>
