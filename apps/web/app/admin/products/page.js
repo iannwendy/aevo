@@ -370,7 +370,7 @@ export default function AdminProductsPage() {
                               <img
                                 src={product.image}
                                 alt={product.name}
-                                className="w-11 h-11 rounded-lg object-cover border border-border bg-surface-muted shrink-0"
+                                className="w-11 h-11 rounded-lg object-contain p-1 border border-border bg-white shrink-0"
                               />
                             ) : (
                               <div className="w-11 h-11 rounded-lg border border-border bg-surface-muted shrink-0" />

@@ -34,13 +34,13 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
       >
         <Link
           href={`/products/${product.slug}`}
-          className="relative w-full sm:w-56 aspect-[4/3] rounded-xl overflow-hidden bg-canvas shrink-0 block"
+          className="relative w-full sm:w-56 aspect-[4/3] rounded-xl overflow-hidden bg-white p-4 shrink-0 block"
         >
           <img
             src={primaryImage}
             alt={product.name}
             loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
           />
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
             {product.isNewArrival && (
@@ -124,13 +124,13 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
       <div>
         <Link
           href={`/products/${product.slug}`}
-          className="relative aspect-[4/3] bg-canvas overflow-hidden block"
+          className="relative aspect-[4/3] bg-white p-4 overflow-hidden block"
         >
           <img
             src={primaryImage}
             alt={product.name}
             loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
           />
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
             {product.isNewArrival && (

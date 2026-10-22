@@ -218,11 +218,11 @@ export default function HomeClient({ initialData }) {
             </div>
 
             <div className="lg:col-span-5">
-              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-surface shadow-sm">
+              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-white p-6 shadow-sm">
                 <img
-                  src="https://images.unsplash.com/photo-1517336714731-489689fd1d8a?auto=format&fit=crop&w=1200&q=80"
+                  src="https://m.media-amazon.com/images/I/51Zuib0V6uL._AC_SL1200_.jpg"
                   alt="AEVO Flagship Computing Setup"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain pb-12"
                 />
                 <div className="absolute bottom-4 left-4 right-4 bg-surface/90 backdrop-blur-md border border-border rounded-xl p-4 flex items-center justify-between">
                   <div>

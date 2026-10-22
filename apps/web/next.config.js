@@ -4,7 +4,19 @@ const nextConfig = {
   poweredByHeader: false,
   transpilePackages: ['lucide-react'],
   images: {
-    domains: ['localhost', 'images.unsplash.com'],
+    domains: [
+      'localhost',
+      'images.unsplash.com',
+      'm.media-amazon.com',
+      'bizweb.dktcdn.net',
+      'cdn.shopify.com',
+    ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',

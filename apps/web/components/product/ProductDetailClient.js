@@ -369,12 +369,12 @@ export default function ProductDetailClient({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
           {/* Image Gallery (3+ images required by rubric) */}
           <div className="lg:col-span-7" data-testid="product-gallery">
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-surface border border-border mb-4 relative">
+            <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-white p-6 border border-border mb-4 relative">
               <img
                 src={activeImage?.url}
                 alt={`${product.name} — view ${activeImageIndex + 1}`}
                 data-testid="product-gallery-main-image"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
               <div className="absolute top-4 left-4 flex flex-wrap gap-2">
                 {product.isNewArrival && (
@@ -404,7 +404,7 @@ export default function ProductDetailClient({
                     onClick={() => setActiveImageIndex(idx)}
                     data-testid={`product-gallery-thumb-${idx}`}
                     aria-label={`View image ${idx + 1}`}
-                    className={`aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all ${
+                    className={`aspect-[4/3] rounded-xl overflow-hidden bg-white p-2 border-2 transition-all ${
                       isSelected
                         ? 'border-ink ring-2 ring-ink/20'
                         : 'border-border opacity-75 hover:opacity-100'
@@ -413,7 +413,7 @@ export default function ProductDetailClient({
                     <img
                       src={img.url}
                       alt={`${product.name} thumbnail ${idx + 1}`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </button>
                 );

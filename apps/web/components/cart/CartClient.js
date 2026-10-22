@@ -242,12 +242,12 @@ export default function CartClient({ initialCart }) {
                   >
                     <Link
                       href={`/products/${product?.slug || ''}`}
-                      className="w-full sm:w-32 aspect-[4/3] rounded-xl overflow-hidden bg-canvas border border-border shrink-0 block"
+                      className="w-full sm:w-32 aspect-[4/3] rounded-xl overflow-hidden bg-white p-2 border border-border shrink-0 block"
                     >
                       <img
                         src={imageUrl}
                         alt={product?.name || 'Product'}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     </Link>
 
