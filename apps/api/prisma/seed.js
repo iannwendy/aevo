@@ -24,6 +24,45 @@ const CUSTOMER_PASSWORD = 'customer123';
 
 const IMG = (seed) => `https://images.unsplash.com/photo-${seed}?auto=format&fit=crop&w=1200&q=80`;
 
+const GALLERY_SEEDS = {
+  laptops: [
+    '1517336714731-489689fd1d8a',
+    '1496181133206-80ce9b88a853',
+    '1525547719571-a2d4ac8945e2',
+    '1531297484001-80022131f5a1',
+  ],
+  components: [
+    '1591488320449-0118bb3b4980',
+    '1587202372775-e229f172b9d7',
+    '1555617981-dac3880eac6e',
+    '1518770660439-4636190af475',
+  ],
+  monitors: [
+    '1527443224154-c4a3942d3acf',
+    '1547119957-637f8679db1e',
+    '1593640408182-31c70c8268f5',
+    '1585792180666-f7347c490ee2',
+  ],
+  storage: [
+    '1531492746076-7cae9a3b1a55',
+    '1597852074816-d933c7d2b988',
+    '1544197150-b99a580bb7a8',
+    '1558494949-ef010cbdcc31',
+  ],
+  peripherals: [
+    '1527864550417-7fd91e51d618',
+    '1587829741301-dc798b83add3',
+    '1618384887929-16ec33fab9ef',
+    '1541140532154-b024d705b90a',
+  ],
+  accessories: [
+    '1587825140708-9899a6e4b2f5',
+    '1526738549149-8e07eca6c147',
+    '1572569511254-d8f925fe2cbb',
+    '1498049794561-7780e7231661',
+  ],
+};
+
 // Each product: description is 5+ lines so the "at least five lines" rubric is met.
 const PRODUCTS = [
   // ---- Laptops ----------------------------------------------------------
@@ -286,6 +325,7 @@ const PRODUCTS = [
     ].join('\n'),
     variants: [
       { name: '49" / 5120x1440 / 240Hz', sku: 'SAM-G9-49', price: 24990000, comparePrice: 27990000, inventory: 16 },
+      { name: '49" OLED / 5120x1440 / 240Hz', sku: 'SAM-G9-49-OLED', price: 31990000, comparePrice: 34990000, inventory: 9 },
     ],
     tags: ['samsung', 'ultrawide', 'gaming'],
   },
@@ -304,6 +344,7 @@ const PRODUCTS = [
     ].join('\n'),
     variants: [
       { name: '27" / 4K / Designer', sku: 'BEN-PD2725U', price: 16990000, comparePrice: null, inventory: 26 },
+      { name: '32" / 4K / Designer', sku: 'BEN-PD3225U', price: 23990000, comparePrice: 25990000, inventory: 14 },
     ],
     tags: ['benq', 'designer', 'color-accurate'],
   },
@@ -465,6 +506,7 @@ const PRODUCTS = [
     ].join('\n'),
     variants: [
       { name: '24,000mAh / 140W', sku: 'ANK-737-24K', price: 3490000, comparePrice: 3990000, inventory: 68 },
+      { name: '27,650mAh / 250W Prime', sku: 'ANK-737-27K-P', price: 4490000, comparePrice: null, inventory: 42 },
     ],
     tags: ['anker', 'charging', 'usbc'],
   },
@@ -505,6 +547,101 @@ const PRODUCTS = [
       { name: 'Space Grey', sku: 'LAM-STD-SPC', price: 890000, comparePrice: null, inventory: 180 },
     ],
     tags: ['lamicall', 'stand', 'desk'],
+  },
+  {
+    name: 'HP ZBook Studio G10 Workstation',
+    slug: 'hp-zbook-studio-g10-workstation',
+    brand: 'HP',
+    category: 'laptops',
+    description: [
+      'Engineered for CAD and 3D pipelines in a slim aluminium chassis.',
+      'Intel Core i9 H-series processor sustains high all-core clock speeds.',
+      'DreamColor 4K display ships with Pantone-validated colour presets.',
+      'VaporForce cooling routes heat away from the palm rest under load.',
+      'Dual Thunderbolt 4 ports connect high-speed RAID arrays and displays.',
+      'ISV-certified drivers ensure stability in Blender, AutoCAD and Maya.',
+    ].join('\n'),
+    variants: [
+      { name: 'i7 / 32GB / 1TB / RTX 2000 Ada', sku: 'HP-ZBS10-I7-32', price: 44990000, comparePrice: 48990000, inventory: 15 },
+      { name: 'i9 / 64GB / 2TB / RTX 4000 Ada', sku: 'HP-ZBS10-I9-64', price: 62990000, comparePrice: null, inventory: 8 },
+    ],
+    tags: ['hp', 'workstation', 'creator'],
+  },
+  {
+    name: 'ASUS ProArt Display PA279CRV',
+    slug: 'asus-proart-display-pa279crv',
+    brand: 'ASUS',
+    category: 'monitors',
+    description: [
+      'A 27-inch 4K UHD IPS monitor designed for studio editors and photographers.',
+      'Covers 99% DCI-P3 and 99% Adobe RGB colour spaces with 10-bit depth.',
+      'Calman Verified factory calibration achieves Delta E below 2.',
+      'USB-C port delivers DisplayPort signal, data transfers and 96W charging.',
+      'Daisy-chain DisplayPort output simplifies multi-monitor desk setups.',
+      'Ergonomic stand supports full height, tilt, swivel and 90-degree pivot.',
+    ].join('\n'),
+    variants: [
+      { name: '27" / 4K / 96W USB-C', sku: 'ASU-PA279CRV', price: 13490000, comparePrice: 14990000, inventory: 29 },
+      { name: '32" / 4K / 96W USB-C', sku: 'ASU-PA329CRV', price: 17990000, comparePrice: null, inventory: 17 },
+    ],
+    tags: ['asus', 'designer', 'usb-c'],
+  },
+  {
+    name: 'SanDisk Extreme PRO Portable SSD V2',
+    slug: 'sandisk-extreme-pro-portable-ssd-v2',
+    brand: 'SanDisk',
+    category: 'storage',
+    description: [
+      'Forged aluminium chassis acts as a heatsink to sustain 2000MB/s transfers.',
+      'NVMe solid state performance handles direct 4K ProRes editing from the drive.',
+      'Three-meter drop protection and IP65 water and dust resistance for field work.',
+      '256-bit AES hardware encryption protects sensitive project files.',
+      'Includes both USB-C to USB-C and USB-C to USB-A braided cables.',
+      'Integrated carabiner loop secures the drive to camera bags and backpacks.',
+    ].join('\n'),
+    variants: [
+      { name: '2TB / 2000MB/s', sku: 'SND-EXPRO-2T', price: 4690000, comparePrice: 5290000, inventory: 64 },
+      { name: '4TB / 2000MB/s', sku: 'SND-EXPRO-4T', price: 8290000, comparePrice: null, inventory: 31 },
+    ],
+    tags: ['sandisk', 'portable', 'nvme'],
+  },
+  {
+    name: 'Razer Huntsman V3 Pro TKL',
+    slug: 'razer-huntsman-v3-pro-tkl',
+    brand: 'Razer',
+    category: 'peripherals',
+    description: [
+      'Second-generation Razer Analog Optical Switches allow Rapid Trigger mode.',
+      'Adjustable actuation range from 0.1mm to 4.0mm tuned directly on the board.',
+      'Tenkeyless layout frees desk space for low-sensitivity mouse movement.',
+      'Textured doubleshot PBT keycaps resist shine through years of heavy use.',
+      'Brushed aircraft-grade aluminium top plate prevents deck flex.',
+      'Magnetic leatherette wrist rest snaps cleanly to the front edge.',
+    ].join('\n'),
+    variants: [
+      { name: 'TKL / Black', sku: 'RZR-HV3P-TKL-BLK', price: 5490000, comparePrice: 5990000, inventory: 42 },
+      { name: 'TKL / White Edition', sku: 'RZR-HV3P-TKL-WHT', price: 5690000, comparePrice: null, inventory: 27 },
+    ],
+    tags: ['razer', 'keyboard', 'esports'],
+  },
+  {
+    name: 'TwelveSouth BookArc Flex Vertical Stand',
+    slug: 'twelvesouth-bookarc-flex-vertical-stand',
+    brand: 'TwelveSouth',
+    category: 'accessories',
+    description: [
+      'Cradles your laptop vertically to reclaim desk space in clamshell mode.',
+      'Spring-loaded steel mechanism adjusts automatically to notebooks up to 1 inch.',
+      'Non-slip silicone interior cushions the aluminium lid without marking it.',
+      'Elevates the chassis off the desk surface to prevent accidental liquid spills.',
+      'Rear cable catch keeps USB-C and power leads from dropping behind the desk.',
+      'Minimal architectural profile pairs naturally with studio monitors.',
+    ].join('\n'),
+    variants: [
+      { name: 'Matte Black', sku: 'TWS-BAF-BLK', price: 1490000, comparePrice: 1690000, inventory: 95 },
+      { name: 'Birch White', sku: 'TWS-BAF-WHT', price: 1490000, comparePrice: null, inventory: 80 },
+    ],
+    tags: ['twelvesouth', 'stand', 'desk'],
   },
 ];
 
@@ -643,10 +780,11 @@ async function seedCatalogue() {
     }
 
     // >= 3 images per product (rubric requirement).
+    const catSeeds = GALLERY_SEEDS[p.category] || GALLERY_SEEDS.laptops;
     await prisma.productImage.createMany({
-      data: [0, 1, 2].map((i) => ({
+      data: catSeeds.slice(0, 4).map((seed, i) => ({
         productId: product.id,
-        url: IMG(`1517336714731-489689fd1d${i}a`),
+        url: IMG(seed),
         isPrimary: i === 0,
         position: i,
       })),

@@ -115,17 +115,24 @@ router.post('/items', optionalAuth, async (req, res) => {
         });
       }
     } else {
-      if (!sessionId) {
-        return res.status(400).json({ error: 'Session required' });
+      let currentSessionId = sessionId || req.body.sessionId;
+      if (!currentSessionId) {
+        currentSessionId = `guest_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+        res.cookie('sessionId', currentSessionId, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 30 * 24 * 60 * 60 * 1000,
+        });
       }
 
       cart = await prisma.cart.findUnique({
-        where: { sessionId },
+        where: { sessionId: currentSessionId },
       });
 
       if (!cart) {
         cart = await prisma.cart.create({
-          data: { sessionId },
+          data: { sessionId: currentSessionId },
         });
       }
     }

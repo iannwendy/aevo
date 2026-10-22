@@ -5,6 +5,26 @@ const { optionalAuth } = require('../../middleware/auth');
 
 const prisma = new PrismaClient();
 
+function buildReviewStats(reviews = []) {
+  const ratings = reviews.filter((r) => typeof r.rating === 'number' && r.rating >= 1 && r.rating <= 5);
+  const avgRating = ratings.length
+    ? Number((ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length).toFixed(1))
+    : 0;
+
+  return {
+    averageRating: avgRating,
+    totalReviews: reviews.length,
+    ratingCount: ratings.length,
+    ratingDistribution: {
+      5: ratings.filter((r) => r.rating === 5).length,
+      4: ratings.filter((r) => r.rating === 4).length,
+      3: ratings.filter((r) => r.rating === 3).length,
+      2: ratings.filter((r) => r.rating === 2).length,
+      1: ratings.filter((r) => r.rating === 1).length,
+    },
+  };
+}
+
 // Get reviews for a product
 router.get('/product/:productId', async (req, res) => {
   try {
@@ -18,25 +38,14 @@ router.get('/product/:productId', async (req, res) => {
       orderBy: { createdAt: 'desc' },
     });
 
-    // Calculate average rating
-    const ratings = reviews.filter((r) => r.rating);
-    const avgRating = ratings.length
-      ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
-      : 0;
+    const stats = buildReviewStats(reviews);
 
     res.json({
       reviews,
-      averageRating: avgRating.toFixed(1),
-      totalReviews: reviews.length,
-      ratingDistribution: {
-        5: ratings.filter((r) => r.rating === 5).length,
-        4: ratings.filter((r) => r.rating === 4).length,
-        3: ratings.filter((r) => r.rating === 3).length,
-        2: ratings.filter((r) => r.rating === 2).length,
-        1: ratings.filter((r) => r.rating === 1).length,
-      },
+      ...stats,
     });
   } catch (error) {
+    console.error('Get reviews error:', error);
     res.status(500).json({ error: 'Failed to fetch reviews' });
   }
 });
@@ -46,35 +55,68 @@ router.post('/', optionalAuth, async (req, res) => {
   try {
     const { productId, rating, comment, guestName } = req.body;
 
+    if (!productId) {
+      return res.status(400).json({ error: 'Product ID is required' });
+    }
+
+    const hasRating = rating !== undefined && rating !== null && rating !== '';
+
     // Rating requires login
-    if (rating && !req.user) {
+    if (hasRating && !req.user) {
       return res.status(401).json({ error: 'Login required to rate products' });
     }
 
-    // Validate rating
-    if (rating && (rating < 1 || rating > 5)) {
-      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+    // Validate rating (1-5 integer)
+    let parsedRating = null;
+    if (hasRating) {
+      parsedRating = Number(rating);
+      if (!Number.isInteger(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+        return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+      }
     }
 
-    // Comment requires either login or guest name
-    if (!comment) {
+    // Comment is required
+    const cleanComment = comment ? String(comment).trim() : '';
+    if (!cleanComment) {
       return res.status(400).json({ error: 'Comment is required' });
     }
+
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product || !product.isActive) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    let isVerified = false;
+    if (req.user) {
+      const priorPurchase = await prisma.orderItem.findFirst({
+        where: {
+          productId,
+          order: {
+            userId: req.user.id,
+            status: { not: 'CANCELLED' },
+          },
+        },
+      });
+      isVerified = Boolean(priorPurchase);
+    }
+
+    const cleanGuestName = guestName && String(guestName).trim() ? String(guestName).trim() : 'Guest';
 
     const review = await prisma.review.create({
       data: {
         productId,
-        userId: req.user?.id,
-        guestName: req.user ? undefined : guestName || 'Guest',
-        rating,
-        comment,
+        userId: req.user?.id || null,
+        guestName: req.user ? null : cleanGuestName,
+        rating: parsedRating,
+        comment: cleanComment,
+        isVerified,
       },
       include: {
         user: { select: { id: true, fullName: true } },
       },
     });
 
-    // Emit realtime event
+    // Emit realtime event via Socket.IO
     const io = req.app.get('io');
     if (io) {
       io.to(`product-${productId}`).emit('new-review', review);
@@ -90,6 +132,10 @@ router.post('/', optionalAuth, async (req, res) => {
 // Update review
 router.put('/:id', optionalAuth, async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const { id } = req.params;
     const { rating, comment } = req.body;
 
@@ -100,16 +146,29 @@ router.put('/:id', optionalAuth, async (req, res) => {
     }
 
     // Only author or admin can update
-    if (req.user && existing.userId !== req.user.id && req.user.role !== 'ADMIN') {
+    if (existing.userId !== req.user.id && req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    const data = {};
+    if (rating !== undefined && rating !== null) {
+      const parsedRating = Number(rating);
+      if (!Number.isInteger(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+        return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+      }
+      data.rating = parsedRating;
+    }
+    if (comment !== undefined) {
+      const cleanComment = String(comment).trim();
+      if (!cleanComment) {
+        return res.status(400).json({ error: 'Comment cannot be empty' });
+      }
+      data.comment = cleanComment;
     }
 
     const review = await prisma.review.update({
       where: { id },
-      data: {
-        ...(rating && { rating }),
-        ...(comment && { comment }),
-      },
+      data,
       include: {
         user: { select: { id: true, fullName: true } },
       },
@@ -124,6 +183,10 @@ router.put('/:id', optionalAuth, async (req, res) => {
 // Delete review
 router.delete('/:id', optionalAuth, async (req, res) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const { id } = req.params;
 
     const existing = await prisma.review.findUnique({ where: { id } });
@@ -133,7 +196,7 @@ router.delete('/:id', optionalAuth, async (req, res) => {
     }
 
     // Only author or admin can delete
-    if (req.user && existing.userId !== req.user.id && req.user.role !== 'ADMIN') {
+    if (existing.userId !== req.user.id && req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Not authorized' });
     }
 
