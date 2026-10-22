@@ -596,13 +596,13 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 4.1: Simple Dashboard
 
 ### Checklist
-- [ ] GET `/api/analytics/simple` - KPIs
-- [ ] Total users
-- [ ] New users (30 days)
-- [ ] Total orders
-- [ ] Revenue (non-cancelled orders)
-- [ ] Best selling products
-- [ ] Recent orders
+- [x] GET `/api/analytics/simple` - KPIs
+- [x] Total users
+- [x] New users (30 days)
+- [x] Total orders
+- [x] Revenue (non-cancelled orders)
+- [x] Best selling products
+- [x] Recent orders
 
 ### Test Cases
 
@@ -617,14 +617,14 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 4.2: Advanced Dashboard
 
 ### Checklist
-- [ ] GET `/api/analytics/advanced`
-- [ ] Default: yearly view
-- [ ] Period: quarter, month, week, custom
-- [ ] Date range: startDate, endDate
-- [ ] Metrics: order count, revenue, profit
-- [ ] Revenue comparison (current vs previous period)
-- [ ] Revenue by month chart data
-- [ ] Top products
+- [x] GET `/api/analytics/advanced`
+- [x] Default: yearly view
+- [x] Period: quarter, month, week, custom
+- [x] Date range: startDate, endDate
+- [x] Metrics: order count, revenue, profit
+- [x] Revenue comparison (current vs previous period)
+- [x] Revenue by month chart data
+- [x] Top products
 
 ### Test Cases
 
