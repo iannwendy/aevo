@@ -139,6 +139,17 @@ npm run docker:down  # Stop containers
 - Admin panel limited to allowed features only
 - Pagination always shown, even with single page
 
+## Documentation
+
+Detailed project documentation, requirements, and test plans are organized in the [`docs/`](./docs) directory:
+
+- [Project Requirements](./docs/requirement.md)
+- [System Architecture & Concept](./docs/concept.md)
+- [Dark Mode Specification](./docs/darkmode.md)
+- [Dark Mode Test Plan](./docs/DARKMODE_TEST_PLAN.md)
+- [E2E Test Plan](./docs/E2E_TEST_PLAN.md)
+- [I18n Test Plan](./docs/I18N_TEST_PLAN.md)
+
 ## License
 
 MIT
