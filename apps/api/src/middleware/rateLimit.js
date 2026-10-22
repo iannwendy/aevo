@@ -28,7 +28,13 @@ setInterval(() => {
  *   so counting per account as well requires passing e.g.
  *   `(req) => String(req.body?.email || '').toLowerCase()`.
  */
-function rateLimit({ windowMs = 15 * 60 * 1000, max = 20, message = 'Too many requests, please try again later', keyGenerator } = {}) {
+function rateLimit({
+  windowMs = 15 * 60 * 1000,
+  max = 20,
+  message = 'Too many requests, please try again later',
+  keyGenerator,
+  skipSuccessfulRequests = false,
+} = {}) {
   return (req, res, next) => {
     const suffix = keyGenerator ? `:${keyGenerator(req)}` : '';
     const key = `${req.ip}:${req.path}${suffix}`;
@@ -49,6 +55,16 @@ function rateLimit({ windowMs = 15 * 60 * 1000, max = 20, message = 'Too many re
     }
 
     entry.hits.push(now);
+
+    if (skipSuccessfulRequests) {
+      res.on('finish', () => {
+        if (res.statusCode < 400) {
+          const idx = entry.hits.indexOf(now);
+          if (idx !== -1) entry.hits.splice(idx, 1);
+        }
+      });
+    }
+
     next();
   };
 }

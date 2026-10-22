@@ -286,7 +286,7 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Best Selling Products Chart & List */}
             <div
-              className="lg:col-span-6 surface-card p-6 flex flex-col justify-between"
+              className="lg:col-span-6 surface-card p-6 flex flex-col justify-between min-w-0"
               data-testid="best-sellers-chart"
             >
               <div>
@@ -363,7 +363,7 @@ export default function AdminDashboardPage() {
 
             {/* Recent Orders Table */}
             <div
-              className="lg:col-span-6 surface-card p-6 flex flex-col justify-between"
+              className="lg:col-span-6 surface-card p-6 flex flex-col justify-between min-w-0"
               data-testid="recent-orders-table"
             >
               <div>
@@ -605,7 +605,7 @@ export default function AdminDashboardPage() {
               <span className="text-caption font-mono uppercase tracking-wider text-secondary">
                 {t('admin.breakdownIntervalLabel')}
               </span>
-              <div className="flex items-center gap-1.5 bg-surface border border-border rounded-xl p-1">
+              <div className="flex flex-wrap items-center gap-1.5 bg-surface border border-border rounded-xl p-1">
                 {[
                   { id: 'year', label: t('admin.intervalByYear') },
                   { id: 'quarter', label: t('admin.intervalByQuarter') },
@@ -728,7 +728,7 @@ export default function AdminDashboardPage() {
               className="grid grid-cols-1 lg:grid-cols-12 gap-6"
               data-testid="product-types-mix"
             >
-              <div className="lg:col-span-6 surface-card p-6">
+              <div className="lg:col-span-6 surface-card p-6 min-w-0">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-body font-medium text-ink flex items-center gap-2">
                     <PieChartIcon size={18} className="text-secondary" />
@@ -770,7 +770,7 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
 
-              <div className="lg:col-span-6 surface-card p-6">
+              <div className="lg:col-span-6 surface-card p-6 min-w-0">
                 <h3 className="text-body font-medium text-ink mb-4">
                   Top-Selling Hardware in Selected Period
                 </h3>

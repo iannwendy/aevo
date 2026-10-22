@@ -53,7 +53,7 @@ function publicUser(user) {
 // ---------------------------------------------------------------- Register
 router.post(
   '/register',
-  rateLimit({ windowMs: 15 * 60 * 1000, max: 80, message: 'Too many registration attempts' }),
+  rateLimit({ windowMs: 15 * 60 * 1000, max: 200, message: 'Too many registration attempts' }),
   rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 5,
@@ -128,12 +128,18 @@ router.post(
   // Per-IP limit plus a per-account limit, so one attacker cannot lock a
   // victim out by burning their budget from a single address, and one address
   // cannot spread guesses across many accounts within the IP budget.
-  rateLimit({ windowMs: 15 * 60 * 1000, max: 80, message: 'Too many login attempts' }),
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    message: 'Too many login attempts',
+    skipSuccessfulRequests: true,
+  }),
   rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 10,
     message: 'Too many login attempts for this account',
     keyGenerator: (req) => String(req.body?.email || '').toLowerCase(),
+    skipSuccessfulRequests: true,
   }),
   [
     body('email').isString().isEmail().normalizeEmail(),

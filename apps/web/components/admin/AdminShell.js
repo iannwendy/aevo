@@ -83,7 +83,10 @@ export default function AdminShell({ children }) {
   };
 
   return (
-    <div className="min-h-screen bg-canvas text-ink flex flex-col" data-testid="admin-shell">
+    <div
+      className="min-h-screen bg-canvas text-ink flex flex-col overflow-x-hidden"
+      data-testid="admin-shell"
+    >
       {/* Top Header */}
       <header className="sticky top-0 z-40 h-[72px] bg-surface/90 backdrop-blur-md border-b border-border">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-8 h-full flex items-center justify-between gap-4">
@@ -92,6 +95,7 @@ export default function AdminShell({ children }) {
               type="button"
               onClick={() => setMobileMenuOpen((v) => !v)}
               data-testid="admin-mobile-menu-toggle"
+              aria-expanded={mobileMenuOpen}
               aria-label="Toggle admin navigation"
               className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-surface text-ink hover:bg-surface-muted focus-ring"
             >
@@ -179,7 +183,10 @@ export default function AdminShell({ children }) {
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-b border-border bg-surface px-4 py-4 space-y-1.5">
+          <div
+            data-testid="admin-mobile-menu-drawer"
+            className="lg:hidden border-b border-border bg-surface px-4 py-4 space-y-1.5"
+          >
             {ADMIN_NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const active = isActiveLink(item);

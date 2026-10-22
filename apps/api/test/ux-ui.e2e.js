@@ -443,7 +443,7 @@ async function main() {
 
     await test(
       'UX-09',
-      'RESP-04 Mobile Header Navigation Menu Drawer (open, ARIA state, Escape & link close)',
+      'RESP-04 Mobile Header & Admin Navigation Menu Drawers (open, ARIA state, Escape & link close)',
       async () => {
         devtools.reset();
         await page.setViewportSize({ width: 375, height: 812 });
@@ -464,8 +464,31 @@ async function main() {
         await toggleBtn.click();
         await drawer.locator('a[href="/products?category=laptops"]').click();
         await page.waitForURL('**/products?category=laptops');
+
+        // Verify Admin Mobile Responsive Layout & Navigation Drawer at 375px
+        await loginInBrowser(page, 'admin@aevo.com', 'admin123');
+        await page.goto(`${CLIENT}/admin`, { waitUntil: 'networkidle' });
+        const adminMobileState = await page.evaluate(() => {
+          const sidebarHidden =
+            getComputedStyle(document.querySelector('[data-testid="admin-sidebar"]')).display ===
+            'none';
+          const overflow = document.documentElement.scrollWidth > window.innerWidth;
+          return { sidebarHidden, overflow };
+        });
+        assert.equal(adminMobileState.sidebarHidden, true, 'Admin desktop sidebar should be hidden at 375px');
+        assert.equal(adminMobileState.overflow, false, 'Admin page should have 0 horizontal overflow at 375px');
+
+        const adminToggle = page.locator('[data-testid="admin-mobile-menu-toggle"]');
+        assert.equal(await adminToggle.isVisible(), true, 'Admin mobile menu toggle must be visible at 375px');
+        await adminToggle.click();
+        const adminDrawer = page.locator('[data-testid="admin-mobile-menu-drawer"]');
+        assert.equal(await adminDrawer.isVisible(), true, 'Admin mobile navigation drawer must open');
+        await adminToggle.click();
+        assert.equal(await adminDrawer.isVisible(), false, 'Admin mobile navigation drawer must close');
+        await logoutInBrowser(page);
+
         devtools.assertClean('RESP-04');
-        return 'Mobile navigation drawer opened, closed via Escape, and navigated via link';
+        return 'Storefront & Admin mobile navigation drawers and responsive layouts verified at 375px';
       }
     );
 
