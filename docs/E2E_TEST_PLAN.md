@@ -665,12 +665,12 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 4.4: Admin - User Management
 
 ### Checklist
-- [ ] GET `/api/users` - list users
-- [ ] Search users
-- [ ] GET `/api/users/:id` - user detail
-- [ ] PUT `/api/users/:id/ban` - ban user
-- [ ] PUT `/api/users/:id/unban` - unban user
-- [ ] Pagination
+- [x] GET `/api/users` - list users
+- [x] Search users
+- [x] GET `/api/users/:id` - user detail
+- [x] PUT `/api/users/:id/ban` - ban user
+- [x] PUT `/api/users/:id/unban` - unban user
+- [x] Pagination
 
 ### Test Cases
 

@@ -442,6 +442,89 @@ async function registerCustomer(tag = 'phase4') {
     return `id=${createdProductId}, isActive=${delRes.body.isActive}`;
   });
 
+  // =========================================================================
+  // Task 4.4: Admin - User Management (ADMIN-07 -> ADMIN-10)
+  // =========================================================================
+  console.log('\n=== Task 4.4: Admin - User Management ===');
+
+  const targetUser = await registerCustomer('john.admin44');
+
+  await test('ADMIN-07', 'GET /api/users returns paginated users (admin only)', async () => {
+    const forbidden = await call('/api/users', { token: customer.token });
+    assert.equal(forbidden.status, 403);
+
+    const res = await call('/api/users?page=1&limit=10', { token: admin.token });
+    assert.equal(res.status, 200);
+    assert.ok(Array.isArray(res.body.users));
+    assert.equal(res.body.pagination.page, 1);
+    assert.equal(res.body.pagination.limit, 10);
+    assert.ok(res.body.pagination.total >= 2);
+    // Ensure password is never exposed
+    assert.ok(res.body.users.every((u) => u.password === undefined));
+    return `count=${res.body.users.length}, total=${res.body.pagination.total}`;
+  });
+
+  await test('ADMIN-08', 'GET /api/users?search=... filters users by name or email and GET /api/users/:id returns detail', async () => {
+    const searchRes = await call(
+      `/api/users?search=${encodeURIComponent(targetUser.email)}`,
+      { token: admin.token }
+    );
+    assert.equal(searchRes.status, 200);
+    assert.equal(searchRes.body.users.length, 1);
+    assert.equal(searchRes.body.users[0].id, targetUser.user.id);
+
+    const detailRes = await call(`/api/users/${targetUser.user.id}`, { token: admin.token });
+    assert.equal(detailRes.status, 200);
+    assert.equal(detailRes.body.email, targetUser.email);
+    assert.ok(Array.isArray(detailRes.body.addresses));
+    assert.ok(Array.isArray(detailRes.body.orders));
+
+    // Also test PUT /api/users/:id update user info
+    const updRes = await call(`/api/users/${targetUser.user.id}`, {
+      method: 'PUT',
+      token: admin.token,
+      body: { fullName: 'John Admin Updated' },
+    });
+    assert.equal(updRes.status, 200);
+    assert.equal(updRes.body.fullName, 'John Admin Updated');
+    return `found=${detailRes.body.email}, updatedName=${updRes.body.fullName}`;
+  });
+
+  await test('ADMIN-09', 'PUT /api/users/:id/ban sets isActive = false and blocks user session/login', async () => {
+    const banRes = await call(`/api/users/${targetUser.user.id}/ban`, {
+      method: 'PUT',
+      token: admin.token,
+    });
+    assert.equal(banRes.status, 200);
+    assert.equal(banRes.body.isActive, false);
+
+    // Banned user's active token must immediately be rejected (401)
+    const profileRes = await call('/api/auth/profile', { token: targetUser.token });
+    assert.equal(profileRes.status, 401);
+
+    // Banned user attempting to login must receive 403
+    const loginAttempt = await call('/api/auth/login', {
+      method: 'POST',
+      body: { email: targetUser.email, password: 'password123' },
+    });
+    assert.equal(loginAttempt.status, 403);
+    return `userId=${targetUser.user.id}, isActive=${banRes.body.isActive}`;
+  });
+
+  await test('ADMIN-10', 'PUT /api/users/:id/unban sets isActive = true and restores user access', async () => {
+    const unbanRes = await call(`/api/users/${targetUser.user.id}/unban`, {
+      method: 'PUT',
+      token: admin.token,
+    });
+    assert.equal(unbanRes.status, 200);
+    assert.equal(unbanRes.body.isActive, true);
+
+    const profileRes = await call('/api/auth/profile', { token: targetUser.token });
+    assert.equal(profileRes.status, 200);
+    assert.equal(profileRes.body.id, targetUser.user.id);
+    return `userId=${targetUser.user.id}, isActive=${unbanRes.body.isActive}`;
+  });
+
   await prisma.$disconnect();
 
   const passed = results.filter((r) => r.ok).length;

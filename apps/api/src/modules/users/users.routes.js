@@ -196,14 +196,23 @@ router.delete('/addresses/:id', authMiddleware, async (req, res) => {
 // Get all users (admin)
 router.get('/', authMiddleware, adminOnly, async (req, res) => {
   try {
-    const { page = 1, limit = 20, search } = req.query;
+    const { page = 1, limit = 20, search, role, status } = req.query;
 
     const where = {};
-    if (search) {
+    if (search && String(search).trim()) {
+      const q = String(search).trim();
       where.OR = [
-        { email: { contains: search, mode: 'insensitive' } },
-        { fullName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: q, mode: 'insensitive' } },
+        { fullName: { contains: q, mode: 'insensitive' } },
       ];
+    }
+    if (role && ['CUSTOMER', 'ADMIN'].includes(String(role).toUpperCase())) {
+      where.role = String(role).toUpperCase();
+    }
+    if (status === 'active') {
+      where.isActive = true;
+    } else if (status === 'banned' || status === 'inactive') {
+      where.isActive = false;
     }
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -282,14 +291,18 @@ router.get('/:id', authMiddleware, adminOnly, async (req, res) => {
 router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
-    const { fullName, role, isActive } = req.body;
+    const { fullName, role, isActive, loyaltyPoints } = req.body;
 
     const user = await prisma.user.update({
       where: { id },
       data: {
-        ...(fullName && { fullName }),
-        ...(role && { role }),
-        ...(isActive !== undefined && { isActive }),
+        ...(fullName !== undefined && String(fullName).trim() && { fullName: String(fullName).trim() }),
+        ...(role !== undefined && ['CUSTOMER', 'ADMIN'].includes(role) && { role }),
+        ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+        ...(loyaltyPoints !== undefined &&
+          !Number.isNaN(Number(loyaltyPoints)) && {
+            loyaltyPoints: Math.max(0, parseInt(loyaltyPoints, 10) || 0),
+          }),
       },
       select: {
         id: true,
@@ -297,11 +310,16 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
         fullName: true,
         role: true,
         isActive: true,
+        loyaltyPoints: true,
+        createdAt: true,
       },
     });
 
     res.json(user);
   } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'User not found' });
+    }
     res.status(500).json({ error: 'Failed to update user' });
   }
 });
@@ -311,13 +329,23 @@ router.put('/:id/ban', authMiddleware, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
 
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { id },
       data: { isActive: false },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        isActive: true,
+      },
     });
 
-    res.json({ message: 'User banned' });
+    res.json({ message: 'User banned', ...user, user });
   } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'User not found' });
+    }
     res.status(500).json({ error: 'Failed to ban user' });
   }
 });
@@ -327,13 +355,23 @@ router.put('/:id/unban', authMiddleware, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
 
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { id },
       data: { isActive: true },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        isActive: true,
+      },
     });
 
-    res.json({ message: 'User unbanned' });
+    res.json({ message: 'User unbanned', ...user, user });
   } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'User not found' });
+    }
     res.status(500).json({ error: 'Failed to unban user' });
   }
 });
