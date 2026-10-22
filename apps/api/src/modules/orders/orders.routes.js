@@ -1,9 +1,23 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const prisma = require('../../utils/prisma');
-const { authMiddleware, optionalAuth, adminOnly } = require('../../middleware/auth');
+const { authMiddleware, optionalAuth, adminOnly, signResetToken } = require('../../middleware/auth');
+const { CLIENT_URL } = require('../../config/passport');
 const { generateOrderNumber } = require('../../utils/helpers');
 const { sendOrderConfirmationEmail } = require('../../services/mailer');
+
+const guestCredentialsByOrderNumber = new Map();
+
+function generateGuestPassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let suffix = '';
+  for (let i = 0; i < 6; i++) {
+    suffix += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `Aevo${suffix}`;
+}
 
 const PAYMENT_METHODS = ['cod', 'bank_transfer', 'card', 'momo'];
 const VALID_ORDER_STATUSES = ['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'];
@@ -43,6 +57,35 @@ const ORDER_DETAIL_INCLUDE = {
   discountCode: true,
   payments: true,
 };
+
+function enrichOrder(order, extra = {}) {
+  if (!order) return order;
+  const items = (order.items || []).map((item) => ({
+    ...item,
+    total: item.total !== undefined ? item.total : (Number(item.price) || 0) * (Number(item.quantity) || 1),
+  }));
+  const earnedPoints =
+    extra.earnedPoints !== undefined
+      ? extra.earnedPoints
+      : order.earnedPoints !== undefined
+      ? order.earnedPoints
+      : order.status === 'CANCELLED'
+      ? 0
+      : Math.floor((Number(order.totalAmount) || 0) / EARN_DIVISOR);
+  const autoCreatedAccount =
+    extra.autoCreatedAccount ||
+    order.autoCreatedAccount ||
+    guestCredentialsByOrderNumber.get(order.orderNumber) ||
+    null;
+
+  return {
+    ...order,
+    items,
+    loyaltyDiscount: (order.usedLoyaltyPoints || 0) * POINT_VALUE,
+    earnedPoints,
+    ...(autoCreatedAccount && { autoCreatedAccount }),
+  };
+}
 
 // Create order (checkout — supports both logged-in user and guest checkout)
 router.post('/', optionalAuth, async (req, res) => {
@@ -244,11 +287,11 @@ router.post('/', optionalAuth, async (req, res) => {
       afterDiscount + shippingFee + taxAmount - loyaltyDiscount
     );
 
-    // Earn 10% of order merchandise value in points (1,000,000 VND = 100 points)
-    const netMerchandiseSpend = Math.max(0, afterDiscount - loyaltyDiscount);
-    const pointsToEarn = Math.floor(netMerchandiseSpend / EARN_DIVISOR);
+    // Earn 10% of total order amount in points (1,000,000 VND = 100 points = 100,000 VND)
+    const pointsToEarn = Math.floor(totalAmount / EARN_DIVISOR);
 
     const orderNumber = generateOrderNumber();
+    let autoAccountCredentials = null;
 
     const order = await prisma.$transaction(async (tx) => {
       // 1. Deduct inventory atomically
@@ -285,19 +328,58 @@ router.post('/', optionalAuth, async (req, res) => {
       if (!targetUserId && normalizedGuestEmail) {
         let guestUser = await tx.user.findUnique({
           where: { email: normalizedGuestEmail },
+          include: { oauthAccounts: true },
         });
         if (guestUser && !guestUser.isActive) {
           throw Object.assign(new Error('Account has been banned'), { status: 403 });
         }
         if (!guestUser) {
+          const tempPassword = generateGuestPassword();
+          const hashedTempPassword = await bcrypt.hash(tempPassword, 10);
           guestUser = await tx.user.create({
             data: {
               email: normalizedGuestEmail,
+              password: hashedTempPassword,
               fullName: String(shippingAddress.fullName).trim(),
               role: 'CUSTOMER',
               loyaltyPoints: 0,
             },
           });
+          const resetJwt = signResetToken(guestUser);
+          const resetTokenHash = crypto.createHash('sha256').update(resetJwt).digest('hex');
+          await tx.passwordResetToken.create({
+            data: {
+              userId: guestUser.id,
+              token: resetTokenHash,
+              expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            },
+          });
+          autoAccountCredentials = {
+            email: normalizedGuestEmail,
+            temporaryPassword: tempPassword,
+            resetUrl: `${CLIENT_URL}/reset-password?token=${encodeURIComponent(resetJwt)}`,
+          };
+        } else if (!guestUser.password && (!guestUser.oauthAccounts || guestUser.oauthAccounts.length === 0)) {
+          const tempPassword = generateGuestPassword();
+          const hashedTempPassword = await bcrypt.hash(tempPassword, 10);
+          guestUser = await tx.user.update({
+            where: { id: guestUser.id },
+            data: { password: hashedTempPassword },
+          });
+          const resetJwt = signResetToken(guestUser);
+          const resetTokenHash = crypto.createHash('sha256').update(resetJwt).digest('hex');
+          await tx.passwordResetToken.create({
+            data: {
+              userId: guestUser.id,
+              token: resetTokenHash,
+              expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            },
+          });
+          autoAccountCredentials = {
+            email: normalizedGuestEmail,
+            temporaryPassword: tempPassword,
+            resetUrl: `${CLIENT_URL}/reset-password?token=${encodeURIComponent(resetJwt)}`,
+          };
         }
         targetUserId = guestUser.id;
       }
@@ -425,6 +507,10 @@ router.post('/', optionalAuth, async (req, res) => {
       return newOrder;
     });
 
+    if (autoAccountCredentials) {
+      guestCredentialsByOrderNumber.set(order.orderNumber, autoAccountCredentials);
+    }
+
     // Confirmation email (fire and forget)
     const emailTo = req.user?.email || shippingAddress.email;
     if (emailTo) {
@@ -434,15 +520,17 @@ router.post('/', optionalAuth, async (req, res) => {
         {
           ...order,
           paymentMethod,
-        }
+        },
+        autoAccountCredentials
       ).catch((error) => console.error('Order confirmation email failed:', error));
     }
 
-    res.status(201).json({
-      ...order,
-      loyaltyDiscount,
-      earnedPoints: pointsToEarn,
-    });
+    res.status(201).json(
+      enrichOrder(order, {
+        earnedPoints: pointsToEarn,
+        autoCreatedAccount: autoAccountCredentials,
+      })
+    );
   } catch (error) {
     if (error.status) {
       return res.status(error.status).json({ error: error.message });
@@ -461,7 +549,7 @@ router.get('/', authMiddleware, async (req, res) => {
       include: ORDER_DETAIL_INCLUDE,
     });
 
-    res.json(orders);
+    res.json(orders.map((o) => enrichOrder(o)));
   } catch (error) {
     console.error('Get user orders error:', error);
     res.status(500).json({ error: 'Failed to fetch orders' });
@@ -492,10 +580,7 @@ router.get('/number/:orderNumber', optionalAuth, async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to view this order' });
     }
 
-    res.json({
-      ...order,
-      loyaltyDiscount: (order.usedLoyaltyPoints || 0) * POINT_VALUE,
-    });
+    res.json(enrichOrder(order));
   } catch (error) {
     console.error('Lookup order by number error:', error);
     res.status(500).json({ error: 'Failed to fetch order' });
@@ -602,10 +687,7 @@ router.get('/admin/all', authMiddleware, adminOnly, async (req, res) => {
     ]);
 
     res.json({
-      orders: orders.map((o) => ({
-        ...o,
-        loyaltyDiscount: (o.usedLoyaltyPoints || 0) * POINT_VALUE,
-      })),
+      orders: orders.map((o) => enrichOrder(o)),
       pagination: {
         page: pageNum,
         limit: limitNum,
@@ -646,10 +728,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to view this order' });
     }
 
-    res.json({
-      ...order,
-      loyaltyDiscount: (order.usedLoyaltyPoints || 0) * POINT_VALUE,
-    });
+    res.json(enrichOrder(order));
   } catch (error) {
     console.error('Get order detail error:', error);
     res.status(500).json({ error: 'Failed to fetch order' });
@@ -763,6 +842,9 @@ router.put('/:id/status', authMiddleware, adminOnly, async (req, res) => {
         where: { id },
         data: {
           status,
+          ...(status === 'CANCELLED' &&
+            existingOrder.status !== 'CANCELLED' &&
+            existingOrder.discountCodeId && { discountCodeId: null }),
           statusHistory: {
             create: {
               status,
@@ -774,7 +856,7 @@ router.put('/:id/status', authMiddleware, adminOnly, async (req, res) => {
       });
     });
 
-    res.json(order);
+    res.json(enrichOrder(order));
   } catch (error) {
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'Order not found' });

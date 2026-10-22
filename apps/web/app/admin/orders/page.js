@@ -288,13 +288,13 @@ export default function AdminOrdersPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border bg-surface-muted text-caption font-mono uppercase text-secondary">
-                  <th className="py-3.5 px-4">Order Number</th>
-                  <th className="py-3.5 px-4">Buyer</th>
-                  <th className="py-3.5 px-4">Date & Time</th>
-                  <th className="py-3.5 px-4">Items / Discount</th>
-                  <th className="py-3.5 px-4 text-right">Total Amount</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4">{t('admin.thOrderNumber')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thBuyer')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thDateTime')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thItemsDiscount')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('admin.thTotalAmount')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thStatus')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('admin.thActions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60 text-small">
@@ -406,6 +406,7 @@ export default function AdminOrdersPage() {
           limit={pagination.limit}
           onPageChange={(nextPage) => setPage(nextPage)}
           ariaLabel="Admin Orders Pagination"
+          itemLabel={t('pagination.orders')}
         />
       </div>
     </AdminShell>

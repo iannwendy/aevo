@@ -82,6 +82,7 @@ const DISCOUNT_ADMIN_INCLUDE = {
     },
   },
   orders: {
+    where: { status: { not: 'CANCELLED' } },
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
@@ -101,7 +102,7 @@ const DISCOUNT_ADMIN_INCLUDE = {
       },
     },
   },
-  _count: { select: { orders: true } },
+  _count: { select: { orders: { where: { status: { not: 'CANCELLED' } } } } },
 };
 
 // Get all discounts (admin)

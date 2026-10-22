@@ -294,13 +294,13 @@ export default function AdminDiscountsPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border bg-surface-muted text-caption font-mono uppercase text-secondary">
-                  <th className="py-3.5 px-4">Code</th>
-                  <th className="py-3.5 px-4">Discount Value</th>
-                  <th className="py-3.5 px-4">Usage (Used / Max)</th>
-                  <th className="py-3.5 px-4">Created Time</th>
-                  <th className="py-3.5 px-4">Applied Orders</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4">{t('admin.thCode')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thDiscountValue')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thUsage')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thCreatedTime')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thAppliedOrders')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thStatus')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('admin.thActions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60 text-small">

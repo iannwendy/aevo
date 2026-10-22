@@ -190,9 +190,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
     afterDiscount + shippingFee + taxAmount - loyaltyDiscount
   );
 
-  const estimatedEarnedPoints = Math.floor(
-    Math.max(0, afterDiscount - loyaltyDiscount) / 10000
-  );
+  const estimatedEarnedPoints = Math.floor(Math.max(0, totalAmount) / 10000);
 
   // Discount validation handler
   const handleApplyDiscount = async (e) => {

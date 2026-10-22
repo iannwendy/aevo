@@ -173,6 +173,35 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                   </div>
                 )}
               </div>
+
+              {order?.autoCreatedAccount?.temporaryPassword && (
+                <div
+                  data-testid="success-auto-account-card"
+                  className="mt-5 p-4 rounded-xl border border-sage/40 bg-sage/10 text-small text-ink space-y-1.5"
+                >
+                  <p className="font-medium text-sage">
+                    {t('checkoutSuccess.autoAccountCreatedTitle')}
+                  </p>
+                  <p className="font-mono text-caption">
+                    Email: <strong>{order.autoCreatedAccount.email}</strong> ·{' '}
+                    {t('checkoutSuccess.tempPasswordLabel')}:{' '}
+                    <strong data-testid="success-guest-temp-password">
+                      {order.autoCreatedAccount.temporaryPassword}
+                    </strong>
+                  </p>
+                  <p className="text-caption text-secondary">
+                    {t('checkoutSuccess.autoAccountCreatedDesc')}{' '}
+                    {order.autoCreatedAccount.resetUrl && (
+                      <Link
+                        href={order.autoCreatedAccount.resetUrl}
+                        className="text-ink font-medium underline underline-offset-4"
+                      >
+                        {t('checkoutSuccess.setCustomPasswordLink')}
+                      </Link>
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
 
             {order ? (
@@ -208,7 +237,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                           </p>
                         </div>
                         <div className="font-mono text-[15px] font-medium text-ink">
-                          {formatPrice(item.total)}
+                          {formatPrice(item.total ?? (item.price || 0) * (item.quantity || 1))}
                         </div>
                       </div>
                     ))}

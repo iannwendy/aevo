@@ -83,8 +83,51 @@ async function sendPasswordResetEmail(to, fullName, link) {
   return result;
 }
 
+/** Welcome email with auto-generated password & setup link for new accounts. */
+async function sendWelcomeAccountEmail({ to, fullName, temporaryPassword, resetUrl }) {
+  const subject = 'Welcome to AEVO — Your Account & Password Details';
+  const safeName = escapeHtml(fullName || 'Customer');
+  const safeEmail = escapeHtml(to || '');
+  const safePassword = escapeHtml(temporaryPassword || '');
+  const safeLink = escapeHtml(resetUrl || '');
+
+  const text = [
+    `Hi ${stripCrLf(fullName || 'Customer')},`,
+    '',
+    'Your AEVO account has been created.',
+    temporaryPassword ? `Email: ${stripCrLf(to)}\nTemporary Password: ${stripCrLf(temporaryPassword)}` : '',
+    resetUrl ? `\nSet or change your password anytime using this link:\n${resetUrl}` : '',
+    '',
+    'You can sign in with your email and temporary password to view your order history and loyalty points.',
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  const html = `
+    <div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto">
+      <h1 style="font-size:20px">Welcome to AEVO</h1>
+      <p>Hi ${safeName},</p>
+      <p>Your AEVO account is ready. Use the temporary password below to sign in, or set your own password using the link provided.</p>
+      ${
+        temporaryPassword
+          ? `<div style="padding:12px 16px;background:#F7F6F2;border:1px solid #E5E5E3;border-radius:8px;font-family:monospace;font-size:14px;margin:16px 0">
+              <div><strong>Email:</strong> ${safeEmail}</div>
+              <div><strong>Temporary Password:</strong> ${safePassword}</div>
+            </div>`
+          : ''
+      }
+      ${
+        resetUrl
+          ? `<p><a href="${safeLink}" style="display:inline-block;background:#171717;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none">Set new password</a></p>`
+          : ''
+      }
+    </div>`;
+
+  return sendMail({ to, subject, html, text });
+}
+
 /** Order confirmation email (requirement: "confirmation email with the details of the order"). */
-async function sendOrderConfirmationEmail(to, fullName, order) {
+async function sendOrderConfirmationEmail(to, fullName, order, autoAccountCredentials = null) {
   const safeOrderNum = escapeHtml(order.orderNumber);
   const safeName = escapeHtml(fullName || 'Customer');
   const safePayment = escapeHtml(order.paymentMethod || 'cod');
@@ -96,9 +139,32 @@ async function sendOrderConfirmationEmail(to, fullName, order) {
     )
     .join('');
 
+  const accountText = autoAccountCredentials?.temporaryPassword
+    ? `\n\nAccount Automatically Created for Order Tracking:\nEmail: ${stripCrLf(
+        autoAccountCredentials.email || to
+      )}\nTemporary Password: ${stripCrLf(autoAccountCredentials.temporaryPassword)}${
+        autoAccountCredentials.resetUrl
+          ? `\nSet Your Own Password: ${autoAccountCredentials.resetUrl}`
+          : ''
+      }`
+    : '';
+
+  const accountHtml = autoAccountCredentials?.temporaryPassword
+    ? `<div style="padding:12px 16px;background:#F7F6F2;border:1px solid #E5E5E3;border-radius:8px;font-size:13px;margin:16px 0">
+        <div style="font-weight:600;margin-bottom:6px">Account Automatically Created for Order Tracking</div>
+        <div style="font-family:monospace">Email: ${escapeHtml(autoAccountCredentials.email || to)}</div>
+        <div style="font-family:monospace">Temporary Password: ${escapeHtml(autoAccountCredentials.temporaryPassword)}</div>
+        ${
+          autoAccountCredentials.resetUrl
+            ? `<div style="margin-top:8px"><a href="${escapeHtml(autoAccountCredentials.resetUrl)}" style="color:#171717;text-decoration:underline">Set a new password</a></div>`
+            : ''
+        }
+      </div>`
+    : '';
+
   const text = `Hi ${stripCrLf(fullName || 'Customer')},\n\nThanks for your order ${stripCrLf(order.orderNumber)}.\n\n${(order.items || [])
     .map((i) => `- ${stripCrLf(i.productName)} x${Number(i.quantity) || 1}: ${Number(i.price).toLocaleString('vi-VN')} VND`)
-    .join('\n')}\n\nTotal: ${Number(order.totalAmount).toLocaleString('vi-VN')} VND\nPayment: ${stripCrLf(order.paymentMethod)}\n\nWe will email you when the order ships.`;
+    .join('\n')}\n\nTotal: ${Number(order.totalAmount).toLocaleString('vi-VN')} VND\nPayment: ${stripCrLf(order.paymentMethod)}${accountText}\n\nWe will email you when the order ships.`;
 
   const html = `
     <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto">
@@ -108,9 +174,15 @@ async function sendOrderConfirmationEmail(to, fullName, order) {
       <table style="width:100%;border-collapse:collapse;border-top:1px solid #E5E5E3">${rows}</table>
       <p style="font-size:18px;font-weight:600">Total: ${Number(order.totalAmount).toLocaleString('vi-VN')} VND</p>
       <p style="color:#737373;font-size:13px">Payment method: ${safePayment}. We will email you when the order ships.</p>
+      ${accountHtml}
     </div>`;
 
   return sendMail({ to, subject, html, text });
 }
 
-module.exports = { sendMail, sendPasswordResetEmail, sendOrderConfirmationEmail };
+module.exports = {
+  sendMail,
+  sendPasswordResetEmail,
+  sendWelcomeAccountEmail,
+  sendOrderConfirmationEmail,
+};

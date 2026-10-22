@@ -17,8 +17,10 @@ export default function Pagination({
   limit = 12,
   onPageChange,
   label = 'Pagination',
+  itemLabel,
 }) {
   const { t } = useI18n();
+  const resolvedItemLabel = itemLabel || t('pagination.products');
   const safeTotalPages = Math.max(1, Number(totalPages) || 1);
   const currentPage = Math.min(Math.max(1, Number(page) || 1), safeTotalPages);
 
@@ -50,7 +52,7 @@ export default function Pagination({
               {Math.min(currentPage * limit, total)}
             </strong>{' '}
             {t('pagination.of')} <strong className="font-medium text-ink">{total}</strong>{' '}
-            {t('pagination.products')}
+            {resolvedItemLabel}
           </span>
         ) : (
           <span>

@@ -341,13 +341,13 @@ export default function AdminProductsPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border bg-surface-muted text-caption font-mono uppercase text-secondary">
-                  <th className="py-3.5 px-4">Product</th>
-                  <th className="py-3.5 px-4">Category</th>
-                  <th className="py-3.5 px-4">Brand</th>
-                  <th className="py-3.5 px-4">Variants</th>
-                  <th className="py-3.5 px-4">Inventory</th>
-                  <th className="py-3.5 px-4 text-right">Price</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4">{t('admin.thProduct')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thCategory')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thBrand')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thVariants')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thInventory')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('admin.thPrice')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('admin.thActions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60 text-small">

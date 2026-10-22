@@ -37,7 +37,9 @@ export default function AdminUsersPage() {
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [editFullName, setEditFullName] = useState('');
-  const [editRole, setEditRole] = useState('CUSTOMER');
+  const [editPhone, setEditPhone] = useState('');
+  const [editAddress, setEditAddress] = useState('');
+  const [editLoyaltyPoints, setEditLoyaltyPoints] = useState('0');
   const [feedback, setFeedback] = useState(null);
 
   const loadUsers = useCallback(async () => {
@@ -102,15 +104,21 @@ export default function AdminUsersPage() {
   };
 
   const handleOpenEditUser = async (user) => {
+    const defAddr = (user.addresses || []).find((a) => a.isDefault) || user.addresses?.[0];
     setEditFullName(user.fullName || '');
-    setEditRole(user.role || 'CUSTOMER');
+    setEditPhone(defAddr?.phone || '');
+    setEditAddress(defAddr?.address || '');
+    setEditLoyaltyPoints(String(user.loyaltyPoints ?? 0));
     setSelectedUser(user);
     try {
       const res = await usersApi.getById(user.id);
       if (res.data) {
+        const dAddr = (res.data.addresses || []).find((a) => a.isDefault) || res.data.addresses?.[0];
         setSelectedUser(res.data);
         setEditFullName(res.data.fullName || '');
-        setEditRole(res.data.role || 'CUSTOMER');
+        setEditPhone(dAddr?.phone || '');
+        setEditAddress(dAddr?.address || '');
+        setEditLoyaltyPoints(String(res.data.loyaltyPoints ?? 0));
       }
     } catch {
       // ignore
@@ -124,7 +132,9 @@ export default function AdminUsersPage() {
     try {
       const res = await usersApi.update(selectedUser.id, {
         fullName: editFullName.trim(),
-        role: editRole,
+        phone: editPhone.trim(),
+        address: editAddress.trim(),
+        loyaltyPoints: Math.max(0, parseInt(editLoyaltyPoints, 10) || 0),
       });
       setFeedback({
         type: 'success',
@@ -227,13 +237,13 @@ export default function AdminUsersPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-border bg-surface-muted text-caption font-mono uppercase text-secondary">
-                  <th className="py-3.5 px-4">User</th>
-                  <th className="py-3.5 px-4">Role</th>
-                  <th className="py-3.5 px-4 text-right">Loyalty Points</th>
-                  <th className="py-3.5 px-4 text-right">Orders</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4">Joined</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4">{t('admin.thUser')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thRole')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('admin.thLoyaltyPoints')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('admin.thOrders')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thStatus')}</th>
+                  <th className="py-3.5 px-4">{t('admin.thJoined')}</th>
+                  <th className="py-3.5 px-4 text-right">{t('admin.thActions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60 text-small">
@@ -358,11 +368,11 @@ export default function AdminUsersPage() {
 
             <form
               onSubmit={handleSaveUserChanges}
-              className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end"
             >
               <div>
                 <label className="block text-caption font-mono uppercase text-secondary mb-1.5">
-                  Full Name
+                  {t('auth.fullNameLabel')}
                 </label>
                 <input
                   type="text"
@@ -375,22 +385,52 @@ export default function AdminUsersPage() {
 
               <div>
                 <label className="block text-caption font-mono uppercase text-secondary mb-1.5">
-                  Role
+                  {t('profile.phoneLabel')}
                 </label>
-                <select
-                  value={editRole}
-                  onChange={(e) => setEditRole(e.target.value)}
-                  className="input-field h-10 text-small"
-                >
-                  <option value="CUSTOMER">CUSTOMER</option>
-                  <option value="ADMIN">ADMIN</option>
-                </select>
+                <input
+                  type="text"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  placeholder="0901234567"
+                  className="input-field h-10 text-small font-mono"
+                />
               </div>
 
-              <button type="submit" className="btn-primary h-10 text-small">
-                <Save size={15} className="mr-1.5" />
-                Save User Changes
-              </button>
+              <div>
+                <label className="block text-caption font-mono uppercase text-secondary mb-1.5">
+                  {t('auth.shippingAddressLabel')}
+                </label>
+                <input
+                  type="text"
+                  value={editAddress}
+                  onChange={(e) => setEditAddress(e.target.value)}
+                  placeholder="123 Nguyen Hue, District 1"
+                  className="input-field h-10 text-small"
+                />
+              </div>
+
+              <div>
+                <label className="block text-caption font-mono uppercase text-secondary mb-1.5">
+                  {t('admin.thLoyaltyPoints')}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={editLoyaltyPoints}
+                  onChange={(e) => setEditLoyaltyPoints(e.target.value)}
+                  className="input-field h-10 text-small font-mono"
+                />
+              </div>
+
+              <div className="md:col-span-2 lg:col-span-4 flex items-center justify-between pt-2">
+                <span className="text-caption font-mono text-secondary">
+                  {t('admin.thRole')}: <strong>{selectedUser.role}</strong> (Single pre-created administrator system)
+                </span>
+                <button type="submit" className="btn-primary h-10 px-5 text-small">
+                  <Save size={15} className="mr-1.5" />
+                  {t('admin.saveUserChangesBtn')}
+                </button>
+              </div>
             </form>
 
             {selectedUser.orders?.length > 0 && (
@@ -423,6 +463,7 @@ export default function AdminUsersPage() {
           limit={pagination.limit}
           onPageChange={(nextPage) => setPage(nextPage)}
           ariaLabel="Admin Users Pagination"
+          itemLabel={t('pagination.users')}
         />
       </div>
     </AdminShell>

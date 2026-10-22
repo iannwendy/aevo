@@ -706,6 +706,7 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
       isBestSeller,
       variants,
       images,
+      tags,
     } = req.body;
 
     if (!name || !description || !brand || !categoryId) {
@@ -713,6 +714,9 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
     }
 
     if (Array.isArray(variants)) {
+      if (variants.length > 0 && variants.length < 2) {
+        return res.status(400).json({ error: 'A product must have at least 2 variants' });
+      }
       for (const v of variants) {
         const vp = Number(v?.price);
         if (!Number.isFinite(vp) || vp < 0) {
@@ -722,6 +726,9 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
     }
 
     if (Array.isArray(images)) {
+      if (images.length > 0 && images.length < 3) {
+        return res.status(400).json({ error: 'A product must have at least 3 illustrative images' });
+      }
       for (const img of images) {
         const rawUrl = typeof img === 'string' ? img : img?.url;
         if (!isSafeImageUrl(rawUrl)) {
@@ -736,54 +743,90 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
 
     const slug = await generateUniqueSlug(name);
 
-    const product = await prisma.product.create({
-      data: {
-        name: String(name).trim(),
-        slug,
-        description: String(description).trim(),
-        brand: String(brand).trim(),
-        categoryId,
-        minPrice,
-        isNewArrival: Boolean(isNewArrival),
-        isBestSeller: Boolean(isBestSeller),
-        variants: variants?.length
-          ? {
-              create: variants.map((v, idx) => ({
-                name: String(v.name || `Configuration ${idx + 1}`).trim(),
-                sku:
-                  v.sku && String(v.sku).trim()
-                    ? String(v.sku).trim()
-                    : `AEVO-${Date.now().toString(36).toUpperCase()}-${idx + 1}`,
-                price: Number(v.price) || 0,
-                comparePrice:
-                  v.comparePrice != null && v.comparePrice !== ''
-                    ? Number(v.comparePrice)
-                    : null,
-                inventory: Math.max(0, parseInt(v.inventory, 10) || 0),
-              })),
-            }
-          : undefined,
-        images: images?.length
-          ? {
-              create: images.map((img, idx) => ({
-                url: typeof img === 'string' ? img : img.url,
-                isPrimary:
-                  typeof img === 'object' && img.isPrimary !== undefined
-                    ? Boolean(img.isPrimary)
-                    : idx === 0,
-                position:
-                  typeof img === 'object' && img.position !== undefined
-                    ? Number(img.position)
-                    : idx,
-              })),
-            }
-          : undefined,
-      },
-      include: {
-        category: true,
-        variants: { where: { isActive: true }, orderBy: { price: 'asc' } },
-        images: { orderBy: { position: 'asc' } },
-      },
+    const parsedTags = Array.isArray(tags)
+      ? tags.map((t) => String(t?.name || t || '').trim()).filter(Boolean)
+      : typeof tags === 'string'
+      ? tags
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean)
+      : [];
+
+    const product = await prisma.$transaction(async (tx) => {
+      const created = await tx.product.create({
+        data: {
+          name: String(name).trim(),
+          slug,
+          description: String(description).trim(),
+          brand: String(brand).trim(),
+          categoryId,
+          minPrice,
+          isNewArrival: Boolean(isNewArrival),
+          isBestSeller: Boolean(isBestSeller),
+          variants: variants?.length
+            ? {
+                create: variants.map((v, idx) => ({
+                  name: String(v.name || `Configuration ${idx + 1}`).trim(),
+                  sku:
+                    v.sku && String(v.sku).trim()
+                      ? String(v.sku).trim()
+                      : `AEVO-${Date.now().toString(36).toUpperCase()}-${idx + 1}`,
+                  price: Number(v.price) || 0,
+                  comparePrice:
+                    v.comparePrice != null && v.comparePrice !== ''
+                      ? Number(v.comparePrice)
+                      : null,
+                  inventory: Math.max(0, parseInt(v.inventory, 10) || 0),
+                })),
+              }
+            : undefined,
+          images: images?.length
+            ? {
+                create: images.map((img, idx) => ({
+                  url: typeof img === 'string' ? img : img.url,
+                  isPrimary:
+                    typeof img === 'object' && img.isPrimary !== undefined
+                      ? Boolean(img.isPrimary)
+                      : idx === 0,
+                  position:
+                    typeof img === 'object' && img.position !== undefined
+                      ? Number(img.position)
+                      : idx,
+                })),
+              }
+            : undefined,
+        },
+      });
+
+      if (parsedTags.length > 0) {
+        const seenSlugs = new Set();
+        for (const tagName of parsedTags) {
+          const tagSlug = tagName
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w-]/g, '');
+          if (!tagSlug || seenSlugs.has(tagSlug)) continue;
+          seenSlugs.add(tagSlug);
+          const tagRow = await tx.productTag.upsert({
+            where: { slug: tagSlug },
+            update: {},
+            create: { name: tagName.toLowerCase(), slug: tagSlug },
+          });
+          await tx.productTagOnProduct.create({
+            data: { productId: created.id, tagId: tagRow.id },
+          });
+        }
+      }
+
+      return tx.product.findUnique({
+        where: { id: created.id },
+        include: {
+          category: true,
+          variants: { where: { isActive: true }, orderBy: { price: 'asc' } },
+          images: { orderBy: { position: 'asc' } },
+          tags: { include: { tag: true } },
+        },
+      });
     });
 
     res.status(201).json(product);
@@ -807,6 +850,7 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
       isActive,
       variants,
       images,
+      tags,
     } = req.body;
 
     const existingProduct = await prisma.product.findUnique({ where: { id } });
@@ -815,6 +859,9 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
     }
 
     if (Array.isArray(variants)) {
+      if (variants.length > 0 && variants.length < 2) {
+        return res.status(400).json({ error: 'A product must have at least 2 variants' });
+      }
       for (const v of variants) {
         if (v?.price !== undefined && (!Number.isFinite(Number(v.price)) || Number(v.price) < 0)) {
           return res.status(400).json({ error: 'Variant price must be a non-negative number' });
@@ -823,6 +870,9 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
     }
 
     if (Array.isArray(images)) {
+      if (images.length > 0 && images.length < 3) {
+        return res.status(400).json({ error: 'A product must have at least 3 illustrative images' });
+      }
       for (const img of images) {
         const rawUrl = typeof img === 'string' ? img : img?.url;
         if (!isSafeImageUrl(rawUrl)) {
@@ -937,12 +987,42 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
         await recalculateProductMinPrice(tx, id);
       }
 
+      if (tags !== undefined) {
+        const parsedTags = Array.isArray(tags)
+          ? tags.map((t) => String(t?.name || t || '').trim()).filter(Boolean)
+          : typeof tags === 'string'
+          ? tags
+              .split(',')
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : [];
+        await tx.productTagOnProduct.deleteMany({ where: { productId: id } });
+        const seenSlugs = new Set();
+        for (const tagName of parsedTags) {
+          const tagSlug = tagName
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w-]/g, '');
+          if (!tagSlug || seenSlugs.has(tagSlug)) continue;
+          seenSlugs.add(tagSlug);
+          const tagRow = await tx.productTag.upsert({
+            where: { slug: tagSlug },
+            update: {},
+            create: { name: tagName.toLowerCase(), slug: tagSlug },
+          });
+          await tx.productTagOnProduct.create({
+            data: { productId: id, tagId: tagRow.id },
+          });
+        }
+      }
+
       return tx.product.findUnique({
         where: { id },
         include: {
           category: true,
           variants: { where: { isActive: true }, orderBy: { price: 'asc' } },
           images: { orderBy: { position: 'asc' } },
+          tags: { include: { tag: true } },
         },
       });
     });

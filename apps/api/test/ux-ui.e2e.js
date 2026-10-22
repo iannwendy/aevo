@@ -1269,14 +1269,14 @@ async function main() {
         await page.locator('button[type="submit"]').click();
         await page.waitForSelector('p[role="alert"], p.text-danger');
 
-        // 2. Register validation (short password)
+        // 2. Register validation (missing shipping address)
         await page.goto(`${CLIENT}/register`, { waitUntil: 'networkidle' });
         await page.locator('#fullName').fill('Test User');
         await page.locator('#email').fill('test@example.com');
-        await page.locator('#password').fill('123');
+        await page.locator('#address').fill('');
         await page.locator('button[type="submit"]').click();
-        const regAlert = await page.locator('#password-error').textContent();
-        assert.ok(regAlert.length > 0, 'Expected short password error on /register');
+        const regAlert = await page.locator('#address-error').textContent();
+        assert.ok(regAlert.length > 0, 'Expected shipping address validation error on /register');
 
         // 3. Forgot password empty email validation
         await page.goto(`${CLIENT}/forgot-password`, { waitUntil: 'networkidle' });

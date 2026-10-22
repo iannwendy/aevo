@@ -54,10 +54,11 @@ function pickMessage(status, data) {
   return 'Request failed. Please try again.';
 }
 
-/** PUT /api/auth/profile { fullName, phone? } */
-export function updateProfile({ fullName, phone }) {
+/** PUT /api/auth/profile { fullName, phone?, address? } */
+export function updateProfile({ fullName, phone, address }) {
   const body = { fullName };
-  if (phone) body.phone = phone;
+  if (phone !== undefined) body.phone = phone;
+  if (address !== undefined) body.address = address;
   return request('/auth/profile', { method: 'PUT', body });
 }
 
@@ -76,7 +77,9 @@ export function resetPassword({ token, newPassword }) {
   return request('/auth/reset-password', { method: 'POST', body: { token, newPassword } });
 }
 
-/** POST /api/auth/register { email, password, fullName } */
-export function register({ email, password, fullName }) {
-  return request('/auth/register', { method: 'POST', body: { email, password, fullName } });
+/** POST /api/auth/register { email, fullName, address, password? } */
+export function register({ email, fullName, address, password }) {
+  const body = { email, fullName, address };
+  if (password) body.password = password;
+  return request('/auth/register', { method: 'POST', body });
 }

@@ -618,30 +618,30 @@ const PRODUCTS = [
 
   // ---- Accessories -------------------------------------------------------
   {
-    name: 'Anker 737 Power Bank 24,000mAh',
-    slug: 'anker-737-power-bank-24000mah',
+    name: 'Anker 575 USB-C Docking Station (13-in-1)',
+    slug: 'anker-575-usb-c-docking-station-13-in-1',
     images: [
-      'https://m.media-amazon.com/images/I/51NyluaOSPL._AC_SL1500_.jpg',
-      'https://m.media-amazon.com/images/I/81cSBDjAV4L._AC_SL1500_.jpg',
-      'https://m.media-amazon.com/images/I/719lUzh1T-L._AC_SL1500_.jpg',
-      'https://m.media-amazon.com/images/I/717fYnV0QYL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/61RBOqHLI0L._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71YqWcZ8ufL._AC_SL1250_.jpg',
+      'https://m.media-amazon.com/images/I/612R7T6l3mL._AC_SL1500_.jpg',
+      'https://m.media-amazon.com/images/I/71gk7GAoDaL._AC_SL1500_.jpg',
     ],
     brand: 'Anker',
     category: 'accessories',
     isNewArrival: true,
     description: [
-      'The Anker 737 holds 24,000mAh and outputs 140W of USB-C power.',
-      'A small colour display reports wattage, temperature and remaining hours.',
-      'It can charge a 16-inch laptop at full speed from a single port.',
-      'Two USB-C ports deliver 140W and 100W simultaneously.',
-      'A smart thermal system reallocates power before the pack overheats.',
-      'The capacity stays below 100Wh so it flies hand luggage.',
+      'The Anker 575 expands a single laptop USB-C port into 13 workstation ports.',
+      'Dual HDMI and DisplayPort outputs drive up to three 1080p60 external monitors.',
+      'Simultaneous 85W upstream laptop pass-through and 18W USB-C Power Delivery.',
+      'Includes 10Gbps USB-C data, three USB-A ports, Gigabit Ethernet and 3.5mm audio.',
+      'Built-in SD and microSD UHS-I card readers transfer media at up to 104MB/s.',
+      'Vertical aluminum desktop footprint keeps workstation cables organized.',
     ].join('\n'),
     variants: [
-      { name: '24,000mAh / 140W', sku: 'ANK-737-24K', price: 3490000, comparePrice: 3990000, inventory: 68 },
-      { name: '27,650mAh / 250W Prime', sku: 'ANK-737-27K-P', price: 4490000, comparePrice: null, inventory: 42 },
+      { name: '13-in-1 / 85W Host Pass-Through', sku: 'ANK-575-13IN1', price: 3490000, comparePrice: 3990000, inventory: 68 },
+      { name: '13-in-1 + 40Gbps USB4 Cable Bundle', sku: 'ANK-575-13IN1-PRO', price: 4490000, comparePrice: null, inventory: 42 },
     ],
-    tags: ['anker', 'charging', 'usbc'],
+    tags: ['anker', 'dock', 'usbc'],
   },
   {
     name: 'CalDigit TS4 Thunderbolt Dock',
@@ -826,7 +826,7 @@ const CATEGORIES = [
   { name: 'Monitors', slug: 'monitors', description: 'Colour-accurate and high-refresh displays.', image: 'https://m.media-amazon.com/images/I/81iMclFYKIL._AC_SL1500_.jpg' },
   { name: 'Storage', slug: 'storage', description: 'SSDs, hard drives and portable backup media.', image: 'https://m.media-amazon.com/images/I/71OWtcxKgvL._AC_SL1500_.jpg' },
   { name: 'Peripherals', slug: 'peripherals', description: 'Keyboards, mice and audio for the desk.', image: 'https://m.media-amazon.com/images/I/71ayR53urCL._AC_SL1500_.jpg' },
-  { name: 'Accessories', slug: 'accessories', description: 'Docks, chargers and everyday desk additions.', image: 'https://m.media-amazon.com/images/I/61RBOqHLI0L._AC_SL1500_.jpg' },
+  { name: 'Accessories', slug: 'accessories', description: 'Thunderbolt docks, USB-C hubs, laptop stands and display cables.', image: 'https://m.media-amazon.com/images/I/61RBOqHLI0L._AC_SL1500_.jpg' },
 ];
 
 const DISCOUNTS = [

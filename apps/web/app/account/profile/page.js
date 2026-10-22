@@ -49,6 +49,20 @@ function ProfileView() {
   );
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState(null);
+  const [newAccountCreds, setNewAccountCreds] = useState(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = sessionStorage.getItem('aevo_new_account_credentials');
+      if (raw) {
+        setNewAccountCreds(JSON.parse(raw));
+        sessionStorage.removeItem('aevo_new_account_credentials');
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // ------------- load -------------
   const load = useCallback(async () => {
@@ -163,6 +177,30 @@ function ProfileView() {
 
   return (
     <PageFrame>
+      {newAccountCreds?.generatedPassword && (
+        <div
+          role="status"
+          data-testid="new-account-credentials-banner"
+          className="mb-8 rounded-xl border border-sage/40 bg-sage/10 p-5 text-small text-ink space-y-2"
+        >
+          <p className="font-medium text-sage">
+            {t('profile.autoPasswordBannerTitle')}
+          </p>
+          <p className="font-mono text-caption">
+            {t('auth.emailLabel')}: <strong>{newAccountCreds.email}</strong> ·{' '}
+            {t('profile.temporaryPasswordLabel')}:{' '}
+            <strong data-testid="generated-password-value">{newAccountCreds.generatedPassword}</strong>
+          </p>
+          {newAccountCreds.resetUrl && (
+            <p className="text-caption text-secondary">
+              <Link href={newAccountCreds.resetUrl} className="text-ink font-medium underline underline-offset-4">
+                {t('profile.setCustomPasswordLink')}
+              </Link>
+            </p>
+          )}
+        </div>
+      )}
+
       {loginVia && (
         <p
           role="status"
@@ -366,7 +404,10 @@ function ProfileDetailsForm({ user, onSaved }) {
       return;
     }
 
-    onSaved({ fullName: result.data.fullName });
+    onSaved({
+      fullName: result.data.fullName,
+      ...(Array.isArray(result.data.addresses) && { addresses: result.data.addresses }),
+    });
     setNotice({ kind: 'success', message: t('profile.detailsSaved') });
   }
 

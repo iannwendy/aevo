@@ -68,7 +68,7 @@ export default function AdminDashboardPage() {
   const [period, setPeriod] = useState('year');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [chartInterval, setChartInterval] = useState('month');
+  const [chartInterval, setChartInterval] = useState('year');
   const [advancedData, setAdvancedData] = useState({
     summary: {
       orderCount: 0,
@@ -381,10 +381,10 @@ export default function AdminDashboardPage() {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="border-b border-border text-caption font-mono uppercase text-secondary">
-                        <th className="py-2.5 pr-3">Order</th>
-                        <th className="py-2.5 px-3">Customer</th>
-                        <th className="py-2.5 px-3">Status</th>
-                        <th className="py-2.5 pl-3 text-right">Total</th>
+                        <th className="py-2.5 pr-3">{t('admin.thOrder')}</th>
+                        <th className="py-2.5 px-3">{t('admin.thCustomer')}</th>
+                        <th className="py-2.5 px-3">{t('admin.thStatus')}</th>
+                        <th className="py-2.5 pl-3 text-right">{t('admin.thTotal')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60 text-small">
@@ -643,7 +643,11 @@ export default function AdminDashboardPage() {
                       >
                         <CartesianGrid {...chartTheme.cartesianGrid} />
                         <XAxis dataKey="label" {...chartTheme.axis} />
-                        <YAxis {...chartTheme.axis} />
+                        <YAxis
+                          width={108}
+                          tickFormatter={(val) => formatPrice(Number(val) || 0)}
+                          {...chartTheme.axis}
+                        />
                         <Tooltip
                           contentStyle={chartTheme.tooltip.contentStyle}
                           labelStyle={chartTheme.tooltip.labelStyle}

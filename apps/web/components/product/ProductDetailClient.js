@@ -263,7 +263,7 @@ export default function ProductDetailClient({
     if (!product?.id) return;
 
     const trimmedComment = commentInput.trim();
-    if (!trimmedComment) {
+    if (!currentUser && !trimmedComment) {
       setReviewFeedback({ type: 'error', message: t('productDetail.commentRequiredError') });
       return;
     }
@@ -931,12 +931,14 @@ export default function ProductDetailClient({
                     htmlFor="review-comment"
                     className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
                   >
-                    {t('productDetail.yourCommentLabel')}
+                    {currentUser
+                      ? t('productDetail.yourCommentOptionalLabel')
+                      : t('productDetail.yourCommentLabel')}
                   </label>
                   <textarea
                     id="review-comment"
                     rows={4}
-                    required
+                    required={!currentUser}
                     value={commentInput}
                     onChange={(e) => setCommentInput(e.target.value)}
                     placeholder={t('productDetail.yourCommentPlaceholder')}

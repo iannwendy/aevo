@@ -28,7 +28,7 @@ export default function RegisterPage() {
   // null | { kind: 'error' | 'success', message }
   const [notice, setNotice] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
-  const [form, setForm] = useState({ fullName: '', email: '', password: '' });
+  const [form, setForm] = useState({ fullName: '', email: '', address: '' });
 
   // Already signed in? Skip the form (same pattern as /login).
   useEffect(() => {
@@ -62,21 +62,18 @@ export default function RegisterPage() {
     const errors = {};
     const fullName = form.fullName.trim();
     const email = form.email.trim();
+    const address = form.address.trim();
 
     if (!fullName) errors.fullName = t('auth.register.enterFullNameError');
     if (!email) errors.email = t('auth.register.enterEmailError');
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       errors.email = t('auth.register.validEmailError');
     }
-    if (form.password.length < PASSWORD_MIN) {
-      errors.password = t('auth.register.passwordMinError', { min: PASSWORD_MIN });
-    } else if (form.password.length > PASSWORD_MAX) {
-      errors.password = t('auth.register.passwordMaxError', { max: PASSWORD_MAX });
-    }
+    if (!address) errors.address = t('auth.register.enterAddressError');
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0
-      ? { fullName, email, password: form.password }
+      ? { fullName, email, address }
       : null;
   }
 
@@ -92,6 +89,20 @@ export default function RegisterPage() {
     const result = await register(payload);
 
     if (result.ok) {
+      if (typeof window !== 'undefined' && result.data?.generatedPassword) {
+        try {
+          sessionStorage.setItem(
+            'aevo_new_account_credentials',
+            JSON.stringify({
+              email: result.data.user?.email || payload.email,
+              generatedPassword: result.data.generatedPassword,
+              resetUrl: result.data.resetUrl,
+            })
+          );
+        } catch {
+          // ignore storage quota errors
+        }
+      }
       setNotice({ kind: 'success', message: t('auth.register.accountCreatedOpening') });
       router.replace('/account/profile');
       return;
@@ -195,15 +206,16 @@ export default function RegisterPage() {
               disabled={isBusy}
             />
             <Field
-              id="password"
-              label={t('auth.passwordLabel')}
-              type="password"
-              autoComplete="new-password"
-              value={form.password}
-              onChange={update('password')}
-              error={fieldErrors.password}
+              id="address"
+              label={t('auth.shippingAddressLabel')}
+              type="text"
+              autoComplete="street-address"
+              placeholder={t('auth.register.shippingAddressPlaceholder')}
+              value={form.address}
+              onChange={update('address')}
+              error={fieldErrors.address}
               disabled={isBusy}
-              hint={t('auth.register.passwordHint', { min: PASSWORD_MIN })}
+              hint={t('auth.register.autoPasswordHint')}
             />
 
             <button

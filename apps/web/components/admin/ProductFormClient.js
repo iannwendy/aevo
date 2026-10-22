@@ -56,6 +56,7 @@ export default function ProductFormClient({ productId = null }) {
   const [description, setDescription] = useState('');
   const [isNewArrival, setIsNewArrival] = useState(true);
   const [isBestSeller, setIsBestSeller] = useState(false);
+  const [tagsInput, setTagsInput] = useState('studio, workstation');
   const [images, setImages] = useState(DEFAULT_IMAGES);
   const [variants, setVariants] = useState(DEFAULT_VARIANTS);
 
@@ -83,13 +84,17 @@ export default function ProductFormClient({ productId = null }) {
             setDescription(p.description || '');
             setIsNewArrival(Boolean(p.isNewArrival));
             setIsBestSeller(Boolean(p.isBestSeller));
+            const existingTags = (p.tagList || p.tags || [])
+              .map((t) => t?.tag?.name || t?.name || (typeof t === 'string' ? t : ''))
+              .filter(Boolean);
+            setTagsInput(existingTags.join(', '));
             setImages(
-              p.images?.length > 0
+              p.images?.length >= 3
                 ? p.images.map((img) => img.url)
                 : DEFAULT_IMAGES
             );
             setVariants(
-              p.variants?.length > 0
+              p.variants?.length >= 2
                 ? p.variants.map((v) => ({
                     id: v.id,
                     name: v.name || '',
@@ -126,7 +131,7 @@ export default function ProductFormClient({ productId = null }) {
   };
 
   const handleRemoveImage = (index) => {
-    if (images.length <= 1) return;
+    if (images.length <= 3) return;
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -150,7 +155,7 @@ export default function ProductFormClient({ productId = null }) {
   };
 
   const handleRemoveVariant = (index) => {
-    if (variants.length <= 1) return;
+    if (variants.length <= 2) return;
     setVariants((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -165,8 +170,8 @@ export default function ProductFormClient({ productId = null }) {
     }
 
     const validImages = images.map((u) => u.trim()).filter(Boolean);
-    if (validImages.length === 0) {
-      setError('Please provide at least one product image URL.');
+    if (validImages.length < 3) {
+      setError('Please provide at least 3 illustrative product image URLs.');
       return;
     }
 
@@ -187,8 +192,8 @@ export default function ProductFormClient({ productId = null }) {
         inventory: Math.max(0, parseInt(v.inventory, 10) || 0),
       }));
 
-    if (validVariants.length === 0) {
-      setError('Please configure at least one product variant.');
+    if (validVariants.length < 2) {
+      setError('Please configure at least 2 product variants.');
       return;
     }
 
@@ -203,6 +208,10 @@ export default function ProductFormClient({ productId = null }) {
         isBestSeller,
         images: validImages,
         variants: validVariants,
+        tags: tagsInput
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
       };
 
       if (isEdit) {
@@ -355,7 +364,21 @@ export default function ProductFormClient({ productId = null }) {
 
               <div>
                 <label className="block text-caption font-mono uppercase text-secondary mb-1.5">
-                  Technical Description (Minimum 5 lines recommended) *
+                  Product Tags (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  data-testid="product-tags-input"
+                  value={tagsInput}
+                  onChange={(e) => setTagsInput(e.target.value)}
+                  placeholder="e.g., studio, workstation, thunderbolt"
+                  className="input-field"
+                />
+              </div>
+
+              <div>
+                <label className="block text-caption font-mono uppercase text-secondary mb-1.5">
+                  Technical Description (Minimum 5 lines required) *
                 </label>
                 <textarea
                   rows={6}
@@ -369,7 +392,7 @@ export default function ProductFormClient({ productId = null }) {
               </div>
             </div>
 
-            {/* Product Images (>= 3 recommended) */}
+            {/* Product Images (>= 3 required) */}
             <div className="surface-card p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -378,7 +401,7 @@ export default function ProductFormClient({ productId = null }) {
                     <span>2. Illustrative Images ({images.length})</span>
                   </h2>
                   <p className="text-caption text-secondary mt-0.5">
-                    Minimum 3 studio product images recommended. First image is primary.
+                    Minimum 3 studio product images required. First image is primary.
                   </p>
                 </div>
 
@@ -406,7 +429,7 @@ export default function ProductFormClient({ productId = null }) {
                       placeholder="https://images.unsplash.com/..."
                       className="input-field flex-1"
                     />
-                    {images.length > 1 && (
+                    {images.length > 3 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(idx)}
@@ -421,7 +444,7 @@ export default function ProductFormClient({ productId = null }) {
               </div>
             </div>
 
-            {/* Product Variants & Independent Inventory (>= 2 recommended) */}
+            {/* Product Variants & Independent Inventory (>= 2 required) */}
             <div className="surface-card p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -430,7 +453,7 @@ export default function ProductFormClient({ productId = null }) {
                     <span>3. Product Variants & Inventory ({variants.length})</span>
                   </h2>
                   <p className="text-caption text-secondary mt-0.5">
-                    Each configuration has independent SKU, price, and stock tracking.
+                    Minimum 2 configurations required. Each configuration has independent SKU, price, and stock tracking.
                   </p>
                 </div>
 
@@ -456,7 +479,7 @@ export default function ProductFormClient({ productId = null }) {
                       <span className="text-caption font-mono uppercase text-secondary">
                         Configuration #{idx + 1}
                       </span>
-                      {variants.length > 1 && (
+                      {variants.length > 2 && (
                         <button
                           type="button"
                           onClick={() => handleRemoveVariant(idx)}

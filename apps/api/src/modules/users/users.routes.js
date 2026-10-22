@@ -233,6 +233,10 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
           isActive: true,
           loyaltyPoints: true,
           createdAt: true,
+          addresses: {
+            where: { isDefault: true },
+            take: 1,
+          },
           _count: { select: { orders: true } },
         },
       }),
@@ -291,7 +295,16 @@ router.get('/:id', authMiddleware, adminOnly, async (req, res) => {
 router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
-    const { fullName, role, isActive, loyaltyPoints } = req.body;
+    const { fullName, email, role, isActive, loyaltyPoints, phone, address, city } = req.body;
+
+    const existingUser = await prisma.user.findUnique({
+      where: { id },
+      include: { addresses: true },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
     if (id === req.user.id) {
       if (isActive === false) {
@@ -302,17 +315,74 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
       }
     }
 
-    const user = await prisma.user.update({
+    // Spec II.1: "The system has only one administrator, who is pre-created."
+    if (role === 'ADMIN' && existingUser.role !== 'ADMIN') {
+      return res.status(400).json({
+        error: 'The system has only one pre-created administrator account',
+      });
+    }
+
+    const updatedFullName =
+      fullName !== undefined && String(fullName).trim()
+        ? String(fullName).trim().slice(0, 120)
+        : existingUser.fullName;
+
+    const cleanEmail =
+      email !== undefined && String(email).trim()
+        ? String(email).trim().toLowerCase()
+        : undefined;
+
+    await prisma.user.update({
       where: { id },
       data: {
-        ...(fullName !== undefined && String(fullName).trim() && { fullName: String(fullName).trim().slice(0, 120) }),
-        ...(role !== undefined && ['CUSTOMER', 'ADMIN'].includes(role) && { role }),
+        ...(fullName !== undefined &&
+          String(fullName).trim() && { fullName: updatedFullName }),
+        ...(cleanEmail && { email: cleanEmail }),
+        ...(role !== undefined &&
+          role === 'CUSTOMER' &&
+          id !== req.user.id && { role: 'CUSTOMER' }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
         ...(loyaltyPoints !== undefined &&
           Number.isFinite(Number(loyaltyPoints)) && {
             loyaltyPoints: Math.min(100000000, Math.max(0, parseInt(loyaltyPoints, 10) || 0)),
           }),
       },
+    });
+
+    const cleanPhone = typeof phone === 'string' ? phone.trim() : undefined;
+    const cleanAddress = typeof address === 'string' ? address.trim() : undefined;
+    const cleanCity = typeof city === 'string' && city.trim() ? city.trim() : undefined;
+
+    if (cleanPhone !== undefined || cleanAddress !== undefined) {
+      const defaultAddr =
+        existingUser.addresses.find((a) => a.isDefault) || existingUser.addresses[0];
+      if (defaultAddr) {
+        await prisma.address.update({
+          where: { id: defaultAddr.id },
+          data: {
+            fullName: updatedFullName,
+            ...(cleanPhone !== undefined && { phone: cleanPhone }),
+            ...(cleanAddress !== undefined && cleanAddress && { address: cleanAddress }),
+            ...(cleanCity !== undefined && { city: cleanCity }),
+            isDefault: true,
+          },
+        });
+      } else if (cleanPhone || cleanAddress) {
+        await prisma.address.create({
+          data: {
+            userId: id,
+            fullName: updatedFullName,
+            phone: cleanPhone || '',
+            address: cleanAddress || 'Ho Chi Minh City',
+            city: cleanCity || 'Ho Chi Minh City',
+            isDefault: true,
+          },
+        });
+      }
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
       select: {
         id: true,
         email: true,
@@ -321,11 +391,15 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
         isActive: true,
         loyaltyPoints: true,
         createdAt: true,
+        addresses: true,
       },
     });
 
     res.json(user);
   } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(400).json({ error: 'Email is already in use by another account' });
+    }
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'User not found' });
     }

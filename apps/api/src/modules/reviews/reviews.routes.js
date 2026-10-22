@@ -79,9 +79,9 @@ router.post(
       }
     }
 
-    // Comment is required and bounded to 2000 characters
+    // Comment is required when no star rating is submitted; bounded to 2000 characters
     const cleanComment = comment ? String(comment).trim() : '';
-    if (!cleanComment) {
+    if (!cleanComment && !parsedRating) {
       return res.status(400).json({ error: 'Comment is required' });
     }
     if (cleanComment.length > 2000) {

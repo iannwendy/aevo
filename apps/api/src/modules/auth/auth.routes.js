@@ -13,7 +13,17 @@ const {
 const { rateLimit } = require('../../middleware/rateLimit');
 const { setSessionState, deleteSessionState } = require('../../utils/redis');
 const { asyncHandler } = require('../../middleware/asyncHandler');
-const { sendPasswordResetEmail } = require('../../services/mailer');
+const { sendPasswordResetEmail, sendWelcomeAccountEmail } = require('../../services/mailer');
+const crypto = require('crypto');
+
+function generateTemporaryPassword() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let suffix = '';
+  for (let i = 0; i < 6; i++) {
+    suffix += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `Aevo${suffix}`;
+}
 const {
   passport,
   isGoogleConfigured,
@@ -63,8 +73,9 @@ router.post(
   }),
   [
     body('email').isString().isEmail().normalizeEmail(),
-    body('password').isString().isLength({ min: 6, max: PASSWORD_MAX }),
+    body('password').optional({ checkFalsy: true }).isString().isLength({ min: 6, max: PASSWORD_MAX }),
     body('fullName').isString().trim().isLength({ min: 1, max: 120 }),
+    body('address').optional().isString().trim(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -72,7 +83,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password, fullName, address, phone } = req.body;
+    const { email, password, fullName, address, phone, ward, district, city } = req.body;
 
     try {
       // Rely on the unique index rather than a check-then-create race: two
@@ -82,9 +93,14 @@ router.post(
         return res.status(400).json({ error: 'Email already registered' });
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const generatedPassword = !password ? generateTemporaryPassword() : null;
+      const passwordToHash = password || generatedPassword;
+      const hashedPassword = await bcrypt.hash(passwordToHash, 10);
       const cleanAddress = typeof address === 'string' && address.trim() ? address.trim().slice(0, 300) : null;
       const cleanPhone = typeof phone === 'string' ? phone.trim().slice(0, 30) : '';
+      const cleanWard = typeof ward === 'string' && ward.trim() ? ward.trim().slice(0, 120) : null;
+      const cleanDistrict = typeof district === 'string' && district.trim() ? district.trim().slice(0, 120) : null;
+      const cleanCity = typeof city === 'string' && city.trim() ? city.trim().slice(0, 120) : 'Ho Chi Minh City';
 
       const user = await prisma.user.create({
         data: {
@@ -100,7 +116,9 @@ router.post(
                   fullName,
                   phone: cleanPhone,
                   address: cleanAddress,
-                  city: 'Ho Chi Minh City',
+                  ward: cleanWard,
+                  district: cleanDistrict,
+                  city: cleanCity,
                   isDefault: true,
                 },
               }
@@ -109,10 +127,34 @@ router.post(
         include: { addresses: true },
       });
 
+      const resetJwt = signResetToken(user);
+      const resetTokenHash = crypto.createHash('sha256').update(resetJwt).digest('hex');
+      await prisma.passwordResetToken.create({
+        data: {
+          userId: user.id,
+          token: resetTokenHash,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        },
+      });
+      const resetUrl = `${CLIENT_URL}/reset-password?token=${encodeURIComponent(resetJwt)}`;
+
+      if (generatedPassword) {
+        sendWelcomeAccountEmail({
+          to: user.email,
+          fullName: user.fullName,
+          temporaryPassword: generatedPassword,
+          resetUrl,
+        }).catch(() => {});
+      }
+
       const token = signSessionToken(user);
       setAuthCookie(res, token);
 
-      return res.status(201).json({ user: publicUser(user), token });
+      return res.status(201).json({
+        user: { ...publicUser(user), addresses: user.addresses },
+        token,
+        ...(generatedPassword && { generatedPassword, resetUrl }),
+      });
     } catch (error) {
       if (error.code === 'P2002') {
         return res.status(400).json({ error: 'Email already registered' });
@@ -157,7 +199,7 @@ router.post(
     try {
       const user = await prisma.user.findUnique({
         where: { email },
-        include: { addresses: true },
+        include: { addresses: true, oauthAccounts: true },
       });
 
       // One generic message for both unknown email and wrong password so the
@@ -169,7 +211,10 @@ router.post(
       // A social-only account has no password to compare against, so say how
       // to sign in instead of pretending the password was wrong.
       if (!user.password) {
-        return res.status(401).json({ error: 'Please use social login' });
+        if (user.oauthAccounts && user.oauthAccounts.length > 0) {
+          return res.status(401).json({ error: 'Please use social login' });
+        }
+        return res.status(401).json({ error: 'Invalid email or password' });
       }
 
       const isMatch = await bcrypt.compare(password, user.password);
@@ -265,23 +310,63 @@ router.put(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { fullName, phone } = req.body;
+    const { fullName, phone, address, city } = req.body;
 
     try {
-      const user = await prisma.user.update({
+      await prisma.user.update({
         where: { id: req.user.id },
         data: { fullName },
+      });
+
+      const cleanPhone = typeof phone === 'string' ? phone.trim() : undefined;
+      const cleanAddress = typeof address === 'string' && address.trim() ? address.trim() : undefined;
+      const cleanCity = typeof city === 'string' && city.trim() ? city.trim() : undefined;
+
+      if (cleanPhone !== undefined || cleanAddress !== undefined) {
+        const defaultAddr = await prisma.address.findFirst({
+          where: { userId: req.user.id, isDefault: true },
+        });
+        const fallbackAddr =
+          defaultAddr ||
+          (await prisma.address.findFirst({
+            where: { userId: req.user.id },
+            orderBy: { createdAt: 'desc' },
+          }));
+
+        if (fallbackAddr) {
+          await prisma.address.update({
+            where: { id: fallbackAddr.id },
+            data: {
+              fullName,
+              ...(cleanPhone !== undefined && { phone: cleanPhone }),
+              ...(cleanAddress !== undefined && { address: cleanAddress }),
+              ...(cleanCity !== undefined && { city: cleanCity }),
+              isDefault: true,
+            },
+          });
+        } else if (cleanPhone || cleanAddress) {
+          await prisma.address.create({
+            data: {
+              userId: req.user.id,
+              fullName,
+              phone: cleanPhone || '',
+              address: cleanAddress || 'Ho Chi Minh City',
+              city: cleanCity || 'Ho Chi Minh City',
+              isDefault: true,
+            },
+          });
+        }
+      }
+
+      const updatedUser = await prisma.user.findUnique({
+        where: { id: req.user.id },
         include: { addresses: true },
       });
 
-      if (phone) {
-        await prisma.address.updateMany({
-          where: { userId: req.user.id, isDefault: true },
-          data: { phone },
-        });
-      }
-
-      return res.json(publicUser(user));
+      return res.json({
+        ...publicUser(updatedUser),
+        addresses: updatedUser.addresses,
+      });
     } catch (error) {
       console.error('Update profile error:', error);
       return res.status(500).json({ error: 'Update failed' });
