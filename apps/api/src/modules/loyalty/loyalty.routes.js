@@ -1,17 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../../utils/prisma');
 const { authMiddleware } = require('../../middleware/auth');
 
-const prisma = new PrismaClient();
-
-// Get loyalty points
+// Get loyalty points balance and VND value (100 points = 100,000 VND)
 router.get('/points', authMiddleware, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
       select: { loyaltyPoints: true },
     });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
     res.json({
       points: user.loyaltyPoints,
@@ -22,12 +24,22 @@ router.get('/points', authMiddleware, async (req, res) => {
   }
 });
 
-// Get loyalty history
+// Get loyalty transaction history
 router.get('/history', authMiddleware, async (req, res) => {
   try {
     const transactions = await prisma.loyaltyTransaction.findMany({
       where: { userId: req.user.id },
       orderBy: { createdAt: 'desc' },
+      include: {
+        order: {
+          select: {
+            id: true,
+            orderNumber: true,
+            totalAmount: true,
+            createdAt: true,
+          },
+        },
+      },
     });
 
     res.json(transactions);
