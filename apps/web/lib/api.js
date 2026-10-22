@@ -57,17 +57,27 @@ export const cartApi = {
   clearCart: () => apiClient.delete('/cart'),
 };
 
-// Orders API
+//Orders API
 export const ordersApi = {
   create: (data) => apiClient.post('/orders', data),
   getAll: () => apiClient.get('/orders'),
   getById: (id) => apiClient.get(`/orders/${id}`),
-  updateStatus: (id, status) => apiClient.put(`/orders/${id}/status`, { status }),
+  getByOrderNumber: (orderNumber) => apiClient.get(`/orders/number/${orderNumber}`),
+  updateStatus: (id, status, note) => apiClient.put(`/orders/${id}/status`, { status, note }),
+};
+
+// Addresses API (Customer)
+export const addressesApi = {
+  getAll: () => apiClient.get('/users/addresses'),
+  create: (data) => apiClient.post('/users/addresses', data),
+  update: (id, data) => apiClient.put(`/users/addresses/${id}`, data),
+  setDefault: (id) => apiClient.put(`/users/addresses/${id}/default`),
+  delete: (id) => apiClient.delete(`/users/addresses/${id}`),
 };
 
 // Discounts API
 export const discountsApi = {
-  validate: (code) => apiClient.get(`/discounts/validate/${code}`),
+  validate: (code, params) => apiClient.get(`/discounts/validate/${code}`, { params }),
   getAll: () => apiClient.get('/discounts'),
   create: (data) => apiClient.post('/discounts', data),
   update: (id, data) => apiClient.put(`/discounts/${id}`, data),

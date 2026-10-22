@@ -1,9 +1,197 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../../utils/prisma');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
 
-const prisma = new PrismaClient();
+// ====================================================================
+// Customer Delivery Addresses (/api/users/addresses)
+// Must be declared BEFORE '/:id' so Express does not match 'addresses' as a user ID.
+// ====================================================================
+
+// Get current user's addresses
+router.get('/addresses', authMiddleware, async (req, res) => {
+  try {
+    const addresses = await prisma.address.findMany({
+      where: { userId: req.user.id },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+    });
+
+    res.json(addresses);
+  } catch (error) {
+    console.error('List addresses error:', error);
+    res.status(500).json({ error: 'Failed to fetch addresses' });
+  }
+});
+
+// Add new delivery address
+router.post('/addresses', authMiddleware, async (req, res) => {
+  try {
+    const {
+      fullName,
+      phone,
+      address,
+      ward = null,
+      district = null,
+      city = 'Ho Chi Minh City',
+      isDefault,
+    } = req.body;
+
+    if (!fullName || !String(fullName).trim() || !phone || !String(phone).trim() || !address || !String(address).trim()) {
+      return res.status(400).json({
+        error: 'Full name, phone, and street address are required',
+      });
+    }
+
+    const existingCount = await prisma.address.count({
+      where: { userId: req.user.id },
+    });
+
+    const shouldBeDefault = existingCount === 0 || Boolean(isDefault);
+
+    const created = await prisma.$transaction(async (tx) => {
+      if (shouldBeDefault) {
+        await tx.address.updateMany({
+          where: { userId: req.user.id },
+          data: { isDefault: false },
+        });
+      }
+
+      return tx.address.create({
+        data: {
+          userId: req.user.id,
+          fullName: String(fullName).trim(),
+          phone: String(phone).trim(),
+          address: String(address).trim(),
+          ward: ward ? String(ward).trim() : null,
+          district: district ? String(district).trim() : null,
+          city: city ? String(city).trim() : 'Ho Chi Minh City',
+          isDefault: shouldBeDefault,
+        },
+      });
+    });
+
+    res.status(201).json(created);
+  } catch (error) {
+    console.error('Create address error:', error);
+    res.status(500).json({ error: 'Failed to create address' });
+  }
+});
+
+// Update delivery address
+router.put('/addresses/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fullName, phone, address, ward, district, city, isDefault } = req.body;
+
+    const existing = await prisma.address.findFirst({
+      where: { id, userId: req.user.id },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Address not found' });
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      if (isDefault === true) {
+        await tx.address.updateMany({
+          where: { userId: req.user.id, id: { not: id } },
+          data: { isDefault: false },
+        });
+      }
+
+      return tx.address.update({
+        where: { id },
+        data: {
+          ...(fullName !== undefined && { fullName: String(fullName).trim() }),
+          ...(phone !== undefined && { phone: String(phone).trim() }),
+          ...(address !== undefined && { address: String(address).trim() }),
+          ...(ward !== undefined && { ward: ward ? String(ward).trim() : null }),
+          ...(district !== undefined && { district: district ? String(district).trim() : null }),
+          ...(city !== undefined && { city: String(city).trim() }),
+          ...(isDefault !== undefined && { isDefault: Boolean(isDefault) }),
+        },
+      });
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Update address error:', error);
+    res.status(500).json({ error: 'Failed to update address' });
+  }
+});
+
+// Set default delivery address
+router.put('/addresses/:id/default', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existing = await prisma.address.findFirst({
+      where: { id, userId: req.user.id },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Address not found' });
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      await tx.address.updateMany({
+        where: { userId: req.user.id },
+        data: { isDefault: false },
+      });
+
+      return tx.address.update({
+        where: { id },
+        data: { isDefault: true },
+      });
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Set default address error:', error);
+    res.status(500).json({ error: 'Failed to set default address' });
+  }
+});
+
+// Delete delivery address
+router.delete('/addresses/:id', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existing = await prisma.address.findFirst({
+      where: { id, userId: req.user.id },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Address not found' });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.address.delete({ where: { id } });
+
+      if (existing.isDefault) {
+        const nextDefault = await tx.address.findFirst({
+          where: { userId: req.user.id },
+          orderBy: { createdAt: 'desc' },
+        });
+        if (nextDefault) {
+          await tx.address.update({
+            where: { id: nextDefault.id },
+            data: { isDefault: true },
+          });
+        }
+      }
+    });
+
+    res.json({ message: 'Address deleted' });
+  } catch (error) {
+    console.error('Delete address error:', error);
+    res.status(500).json({ error: 'Failed to delete address' });
+  }
+});
+
+// ====================================================================
+// Admin User Management (/api/users)
+// ====================================================================
 
 // Get all users (admin)
 router.get('/', authMiddleware, adminOnly, async (req, res) => {
@@ -18,13 +206,16 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
       ];
     }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 20));
+    const skip = (pageNum - 1) * limitNum;
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
         where,
         skip,
-        take: parseInt(limit),
+        take: limitNum,
+        orderBy: { createdAt: 'desc' },
         select: {
           id: true,
           email: true,
@@ -42,10 +233,10 @@ router.get('/', authMiddleware, adminOnly, async (req, res) => {
     res.json({
       users,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: pageNum,
+        limit: limitNum,
         total,
-        totalPages: Math.ceil(total / parseInt(limit)),
+        totalPages: Math.max(1, Math.ceil(total / limitNum)),
       },
     });
   } catch (error) {

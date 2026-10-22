@@ -189,6 +189,27 @@ function ProfileView() {
         </p>
       )}
 
+      <div className="flex flex-wrap items-center gap-2 pb-6 mb-8 border-b border-border">
+        <Link
+          href="/account/profile"
+          className="px-4 py-2 rounded-xl bg-ink text-white text-small font-medium"
+        >
+          Profile &amp; Security
+        </Link>
+        <Link
+          href="/account/addresses"
+          className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
+        >
+          Delivery Addresses
+        </Link>
+        <Link
+          href="/account/orders"
+          className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
+        >
+          Order History
+        </Link>
+      </div>
+
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
         <div>
           <span className="text-caption font-mono text-secondary uppercase tracking-wider">
@@ -267,6 +288,17 @@ function ProfileView() {
       </Section>
 
       <Section title="Addresses">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-small text-secondary">
+            Manage multiple delivery addresses for checkout pre-fill.
+          </p>
+          <Link
+            href="/account/addresses"
+            className="text-small font-medium text-ink hover:underline underline-offset-4"
+          >
+            Manage addresses →
+          </Link>
+        </div>
         {user.addresses && user.addresses.length > 0 ? (
           <ul className="divide-y divide-border">
             {user.addresses.map((address) => (
