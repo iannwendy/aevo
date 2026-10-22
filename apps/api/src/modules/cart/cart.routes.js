@@ -1,95 +1,166 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../../utils/prisma');
 const { optionalAuth } = require('../../middleware/auth');
 
-const prisma = new PrismaClient();
+const FREE_SHIPPING_THRESHOLD = 20000000;
+const SHIPPING_FEE = 30000;
+const TAX_RATE = 0.1;
 
-// Get or create cart
-router.get('/', optionalAuth, async (req, res) => {
-  try {
-    let cart;
-
-    if (req.user) {
-      // Get user's cart
-      cart = await prisma.cart.findUnique({
-        where: { userId: req.user.id },
+const CART_INCLUDE = {
+  items: {
+    orderBy: { createdAt: 'asc' },
+    include: {
+      variant: {
         include: {
-          items: {
+          product: {
             include: {
-              variant: {
-                include: {
-                  product: {
-                    include: {
-                      images: { where: { isPrimary: true }, take: 1 },
-                    },
-                  },
-                },
-              },
+              category: true,
+              images: { orderBy: { position: 'asc' } },
             },
           },
         },
+      },
+    },
+  },
+};
+
+function formatCartResponse(cart) {
+  const items = (cart?.items || []).map((item) => {
+    const product = item.variant?.product;
+    const primaryImage =
+      product?.images?.find((img) => img.isPrimary)?.url ||
+      product?.images?.[0]?.url ||
+      null;
+    return {
+      ...item,
+      lineTotal: (item.variant?.price || 0) * item.quantity,
+      productImage: primaryImage,
+    };
+  });
+
+  const subtotal = items.reduce(
+    (sum, item) => sum + (item.variant?.price || 0) * item.quantity,
+    0
+  );
+  const shippingFee =
+    subtotal === 0 ? 0 : subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
+  const taxAmount = Math.round(subtotal * TAX_RATE);
+  const total = subtotal + shippingFee + taxAmount;
+  const itemCount = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+
+  return {
+    id: cart?.id,
+    userId: cart?.userId || null,
+    sessionId: cart?.sessionId || null,
+    items,
+    itemCount,
+    subtotal,
+    shippingFee,
+    taxAmount,
+    total,
+  };
+}
+
+function setSessionCookie(res, sessionId) {
+  res.cookie('sessionId', sessionId, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  });
+}
+
+async function resolveOrCreateCart(req, res) {
+  const cookieSessionId =
+    req.cookies?.sessionId || req.body?.sessionId || req.query?.sessionId;
+
+  if (req.user) {
+    let userCart = await prisma.cart.findUnique({
+      where: { userId: req.user.id },
+      include: CART_INCLUDE,
+    });
+
+    if (!userCart) {
+      userCart = await prisma.cart.create({
+        data: { userId: req.user.id },
+        include: CART_INCLUDE,
+      });
+    }
+
+    // Merge guest session cart into user cart if guest cart has items
+    if (cookieSessionId) {
+      const guestCart = await prisma.cart.findUnique({
+        where: { sessionId: cookieSessionId },
+        include: { items: true },
       });
 
-      if (!cart) {
-        cart = await prisma.cart.create({
-          data: { userId: req.user.id },
-          include: { items: true },
-        });
-      }
-    } else {
-      // Get guest cart from session
-      const sessionId = req.cookies.sessionId || req.body.sessionId;
+      if (guestCart && guestCart.id !== userCart.id && guestCart.items.length > 0) {
+        for (const gItem of guestCart.items) {
+          const variant = await prisma.productVariant.findUnique({
+            where: { id: gItem.variantId },
+          });
+          if (!variant || variant.inventory <= 0) continue;
 
-      if (sessionId) {
-        cart = await prisma.cart.findUnique({
-          where: { sessionId },
-          include: {
-            items: {
-              include: {
-                variant: {
-                  include: {
-                    product: {
-                      include: {
-                        images: { where: { isPrimary: true }, take: 1 },
-                      },
-                    },
-                  },
-                },
+          const existing = userCart.items.find((i) => i.variantId === gItem.variantId);
+          if (existing) {
+            const mergedQty = Math.min(variant.inventory, existing.quantity + gItem.quantity);
+            await prisma.cartItem.update({
+              where: { id: existing.id },
+              data: { quantity: mergedQty },
+            });
+          } else {
+            const allowedQty = Math.min(variant.inventory, gItem.quantity);
+            await prisma.cartItem.create({
+              data: {
+                cartId: userCart.id,
+                variantId: gItem.variantId,
+                quantity: allowedQty,
               },
-            },
-          },
-        });
-      }
-
-      if (!cart) {
-        // Create new guest cart
-        const newSessionId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        cart = await prisma.cart.create({
-          data: { sessionId: newSessionId },
-          include: { items: true },
-        });
-
-        // Set session cookie
-        res.cookie('sessionId', newSessionId, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+            });
+          }
+        }
+        await prisma.cartItem.deleteMany({ where: { cartId: guestCart.id } });
+        userCart = await prisma.cart.findUnique({
+          where: { id: userCart.id },
+          include: CART_INCLUDE,
         });
       }
     }
 
-    // Calculate totals
-    const subtotal = cart.items.reduce(
-      (sum, item) => sum + item.variant.price * item.quantity,
-      0
-    );
+    return userCart;
+  }
 
-    res.json({
-      ...cart,
-      subtotal,
+  // Guest cart
+  let sessionId = cookieSessionId;
+  let cart = null;
+
+  if (sessionId) {
+    cart = await prisma.cart.findUnique({
+      where: { sessionId },
+      include: CART_INCLUDE,
     });
+  }
+
+  if (!cart) {
+    sessionId =
+      sessionId || `guest_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+    cart = await prisma.cart.create({
+      data: { sessionId },
+      include: CART_INCLUDE,
+    });
+    setSessionCookie(res, sessionId);
+  }
+
+  return cart;
+}
+
+// Get or create cart
+router.get('/', optionalAuth, async (req, res) => {
+  try {
+    const cart = await resolveOrCreateCart(req, res);
+    res.json(formatCartResponse(cart));
   } catch (error) {
     console.error('Get cart error:', error);
     res.status(500).json({ error: 'Failed to fetch cart' });
@@ -100,56 +171,31 @@ router.get('/', optionalAuth, async (req, res) => {
 router.post('/items', optionalAuth, async (req, res) => {
   try {
     const { variantId, quantity = 1 } = req.body;
-    const sessionId = req.cookies.sessionId;
+    const parsedQty = Number(quantity);
 
-    // Get or create cart
-    let cart;
-    if (req.user) {
-      cart = await prisma.cart.findUnique({
-        where: { userId: req.user.id },
-      });
-
-      if (!cart) {
-        cart = await prisma.cart.create({
-          data: { userId: req.user.id },
-        });
-      }
-    } else {
-      let currentSessionId = sessionId || req.body.sessionId;
-      if (!currentSessionId) {
-        currentSessionId = `guest_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
-        res.cookie('sessionId', currentSessionId, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 30 * 24 * 60 * 60 * 1000,
-        });
-      }
-
-      cart = await prisma.cart.findUnique({
-        where: { sessionId: currentSessionId },
-      });
-
-      if (!cart) {
-        cart = await prisma.cart.create({
-          data: { sessionId: currentSessionId },
-        });
-      }
+    if (!variantId) {
+      return res.status(400).json({ error: 'Variant ID is required' });
     }
 
-    // Check variant exists and has inventory
+    if (!Number.isInteger(parsedQty) || parsedQty < 1) {
+      return res.status(400).json({ error: 'Quantity must be a positive integer' });
+    }
+
+    // Check variant exists and has inventory before modifying cart
     const variant = await prisma.productVariant.findUnique({
       where: { id: variantId },
       include: { product: true },
     });
 
-    if (!variant) {
+    if (!variant || !variant.isActive) {
       return res.status(404).json({ error: 'Product variant not found' });
     }
 
-    if (variant.inventory < quantity) {
+    if (variant.inventory < parsedQty) {
       return res.status(400).json({ error: 'Insufficient inventory' });
     }
+
+    const cart = await resolveOrCreateCart(req, res);
 
     // Check if item already in cart
     const existingItem = await prisma.cartItem.findFirst({
@@ -157,12 +203,11 @@ router.post('/items', optionalAuth, async (req, res) => {
     });
 
     if (existingItem) {
-      // Update quantity
-      const newQuantity = existingItem.quantity + quantity;
+      const newQuantity = existingItem.quantity + parsedQty;
 
       if (newQuantity > variant.inventory) {
         return res.status(400).json({
-          error: `Only ${variant.inventory} items available`
+          error: `Insufficient inventory: only ${variant.inventory} items available`,
         });
       }
 
@@ -171,45 +216,21 @@ router.post('/items', optionalAuth, async (req, res) => {
         data: { quantity: newQuantity },
       });
     } else {
-      // Add new item
       await prisma.cartItem.create({
         data: {
           cartId: cart.id,
           variantId,
-          quantity,
+          quantity: parsedQty,
         },
       });
     }
 
-    // Return updated cart
     const updatedCart = await prisma.cart.findUnique({
       where: { id: cart.id },
-      include: {
-        items: {
-          include: {
-            variant: {
-              include: {
-                product: {
-                  include: {
-                    images: { where: { isPrimary: true }, take: 1 },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      include: CART_INCLUDE,
     });
 
-    const subtotal = updatedCart.items.reduce(
-      (sum, item) => sum + item.variant.price * item.quantity,
-      0
-    );
-
-    res.json({
-      ...updatedCart,
-      subtotal,
-    });
+    res.json(formatCartResponse(updatedCart));
   } catch (error) {
     console.error('Add to cart error:', error);
     res.status(500).json({ error: 'Failed to add to cart' });
@@ -221,33 +242,47 @@ router.put('/items/:itemId', optionalAuth, async (req, res) => {
   try {
     const { itemId } = req.params;
     const { quantity } = req.body;
+    const parsedQty = Number(quantity);
+
+    if (quantity === undefined || Number.isNaN(parsedQty)) {
+      return res.status(400).json({ error: 'Valid quantity is required' });
+    }
 
     const cartItem = await prisma.cartItem.findUnique({
       where: { id: itemId },
-      include: { variant: true },
+      include: { variant: true, cart: true },
     });
 
     if (!cartItem) {
       return res.status(404).json({ error: 'Item not found in cart' });
     }
 
-    if (quantity > cartItem.variant.inventory) {
+    if (parsedQty > cartItem.variant.inventory) {
       return res.status(400).json({
-        error: `Only ${cartItem.variant.inventory} items available`
+        error: `Insufficient inventory: only ${cartItem.variant.inventory} items available`,
       });
     }
 
-    if (quantity <= 0) {
+    if (parsedQty <= 0) {
       await prisma.cartItem.delete({ where: { id: itemId } });
     } else {
       await prisma.cartItem.update({
         where: { id: itemId },
-        data: { quantity },
+        data: { quantity: Math.floor(parsedQty) },
       });
     }
 
-    res.json({ message: 'Cart updated' });
+    const updatedCart = await prisma.cart.findUnique({
+      where: { id: cartItem.cartId },
+      include: CART_INCLUDE,
+    });
+
+    res.json({
+      message: 'Cart updated',
+      ...formatCartResponse(updatedCart),
+    });
   } catch (error) {
+    console.error('Update cart item error:', error);
     res.status(500).json({ error: 'Failed to update cart' });
   }
 });
@@ -257,12 +292,29 @@ router.delete('/items/:itemId', optionalAuth, async (req, res) => {
   try {
     const { itemId } = req.params;
 
+    const cartItem = await prisma.cartItem.findUnique({
+      where: { id: itemId },
+    });
+
+    if (!cartItem) {
+      return res.status(404).json({ error: 'Item not found in cart' });
+    }
+
     await prisma.cartItem.delete({
       where: { id: itemId },
     });
 
-    res.json({ message: 'Item removed from cart' });
+    const updatedCart = await prisma.cart.findUnique({
+      where: { id: cartItem.cartId },
+      include: CART_INCLUDE,
+    });
+
+    res.json({
+      message: 'Item removed from cart',
+      ...formatCartResponse(updatedCart),
+    });
   } catch (error) {
+    console.error('Remove cart item error:', error);
     res.status(500).json({ error: 'Failed to remove item' });
   }
 });
@@ -270,24 +322,22 @@ router.delete('/items/:itemId', optionalAuth, async (req, res) => {
 // Clear cart
 router.delete('/', optionalAuth, async (req, res) => {
   try {
-    const sessionId = req.cookies.sessionId;
+    const cart = await resolveOrCreateCart(req, res);
+    await prisma.cartItem.deleteMany({
+      where: { cartId: cart.id },
+    });
 
-    if (req.user) {
-      await prisma.cart.delete({
-        where: { userId: req.user.id },
-      });
+    const clearedCart = await prisma.cart.findUnique({
+      where: { id: cart.id },
+      include: CART_INCLUDE,
+    });
 
-      await prisma.cart.create({
-        data: { userId: req.user.id },
-      });
-    } else if (sessionId) {
-      await prisma.cartItem.deleteMany({
-        where: { cart: { sessionId } },
-      });
-    }
-
-    res.json({ message: 'Cart cleared' });
+    res.json({
+      message: 'Cart cleared',
+      ...formatCartResponse(clearedCart),
+    });
   } catch (error) {
+    console.error('Clear cart error:', error);
     res.status(500).json({ error: 'Failed to clear cart' });
   }
 });
