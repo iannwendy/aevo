@@ -388,14 +388,14 @@ curl "http://localhost:3001/api/products?category=laptops&brand=asus&minPrice=10
 ## Task 3.1: Shopping Cart - API
 
 ### Checklist
-- [ ] GET `/api/cart` - lấy cart
-- [ ] POST `/api/cart/items` - thêm item
-- [ ] PUT `/api/cart/items/:itemId` - cập nhật quantity
-- [ ] DELETE `/api/cart/items/:itemId` - xóa item
-- [ ] Guest cart (session-based)
-- [ ] User cart (logged in)
-- [ ] Kiểm tra inventory trước add
-- [ ] Real-time subtotal calculation
+- [x] GET `/api/cart` - lấy cart
+- [x] POST `/api/cart/items` - thêm item
+- [x] PUT `/api/cart/items/:itemId` - cập nhật quantity
+- [x] DELETE `/api/cart/items/:itemId` - xóa item
+- [x] Guest cart (session-based)
+- [x] User cart (logged in)
+- [x] Kiểm tra inventory trước add
+- [x] Real-time subtotal calculation
 
 ### Test Cases
 
@@ -414,13 +414,13 @@ curl "http://localhost:3001/api/products?category=laptops&brand=asus&minPrice=10
 ## Task 3.2: Shopping Cart - Frontend
 
 ### Checklist
-- [ ] Cart icon hiển thị số lượng
-- [ ] Cart drawer/page hiển thị items
-- [ ] Update quantity không reload (AJAX)
-- [ ] Remove item không reload
-- [ ] Subtotal/total update real-time
-- [ ] Empty cart state
-- [ ] Guest cart persist (session)
+- [x] Cart icon hiển thị số lượng
+- [x] Cart drawer/page hiển thị items
+- [x] Update quantity không reload (AJAX)
+- [x] Remove item không reload
+- [x] Subtotal/total update real-time
+- [x] Empty cart state
+- [x] Guest cart persist (session)
 
 ### Test Cases
 
@@ -437,17 +437,17 @@ curl "http://localhost:3001/api/products?category=laptops&brand=asus&minPrice=10
 ## Task 3.3: Checkout - Process
 
 ### Checklist
-- [ ] Multi-step checkout UI
-- [ ] Step 1: Information (email, name, phone)
-- [ ] Step 2: Shipping address
-- [ ] Step 3: Shipping method
-- [ ] Step 4: Payment method
-- [ ] Step 5: Review
-- [ ] Guest checkout available
-- [ ] Pre-fill address nếu logged in
-- [ ] Apply discount code
-- [ ] Apply loyalty points
-- [ ] Order success screen
+- [x] Multi-step checkout UI
+- [x] Step 1: Information (email, name, phone)
+- [x] Step 2: Shipping address
+- [x] Step 3: Shipping method
+- [x] Step 4: Payment method
+- [x] Step 5: Review
+- [x] Guest checkout available
+- [x] Pre-fill address nếu logged in
+- [x] Apply discount code
+- [x] Apply loyalty points
+- [x] Order success screen
 
 ### Test Cases
 
@@ -473,13 +473,13 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 3.4: Discount Codes
 
 ### Checklist
-- [ ] Admin: POST `/api/discounts` - tạo code
-- [ ] Code format: 5 ký tự alphanumeric
-- [ ] Max uses: <= 10 (theo requirement)
-- [ ] No expiration date
-- [ ] GET `/api/discounts/validate/:code` - kiểm tra
-- [ ] Apply during checkout
-- [ ] Track usage count
+- [x] Admin: POST `/api/discounts` - tạo code
+- [x] Code format: 5 ký tự alphanumeric
+- [x] Max uses: <= 10 (theo requirement)
+- [x] No expiration date
+- [x] GET `/api/discounts/validate/:code` - kiểm tra
+- [x] Apply during checkout
+- [x] Track usage count
 
 ### Test Cases
 
@@ -498,13 +498,13 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 3.5: Order Management
 
 ### Checklist
-- [ ] POST `/api/orders` - tạo order
-- [ ] Inventory trừ sau order
-- [ ] GET `/api/orders` - order history (logged in)
-- [ ] GET `/api/orders/:id` - chi tiết order
-- [ ] Order status: PENDING → CONFIRMED → SHIPPING → DELIVERED
-- [ ] Status history với timestamps
-- [ ] Order confirmation email
+- [x] POST `/api/orders` - tạo order
+- [x] Inventory trừ sau order
+- [x] GET `/api/orders` - order history (logged in)
+- [x] GET `/api/orders/:id` - chi tiết order
+- [x] Order status: PENDING → CONFIRMED → SHIPPING → DELIVERED
+- [x] Status history với timestamps
+- [x] Order confirmation email
 
 ### Test Cases
 
@@ -522,12 +522,12 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 3.6: User Profile - Addresses
 
 ### Checklist
-- [ ] GET `/api/users/addresses` - danh sách addresses
-- [ ] POST `/api/users/addresses` - thêm address
-- [ ] PUT `/api/users/addresses/:id` - cập nhật
-- [ ] DELETE `/api/users/addresses/:id` - xóa
-- [ ] Set default address
-- [ ] Nhiều địa chỉ (requirement: >1)
+- [x] GET `/api/users/addresses` - danh sách addresses
+- [x] POST `/api/users/addresses` - thêm address
+- [x] PUT `/api/users/addresses/:id` - cập nhật
+- [x] DELETE `/api/users/addresses/:id` - xóa
+- [x] Set default address
+- [x] Nhiều địa chỉ (requirement: >1)
 
 ### Test Cases
 
@@ -544,12 +544,12 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 3.7: Loyalty Points System
 
 ### Checklist
-- [ ] Tích điểm: 10% mỗi order (1M = 100 điểm)
-- [ ] Đổi điểm: 100 điểm = 100,000 VND
-- [ ] GET `/api/loyalty/points` - xem điểm
-- [ ] GET `/api/loyalty/history` - lịch sử
-- [ ] Áp dụng points trong checkout
-- [ ] Points không có hạn chế thêm
+- [x] Tích điểm: 10% mỗi order (1M = 100 điểm)
+- [x] Đổi điểm: 100 điểm = 100,000 VND
+- [x] GET `/api/loyalty/points` - xem điểm
+- [x] GET `/api/loyalty/history` - lịch sử
+- [x] Áp dụng points trong checkout
+- [x] Points không có hạn chế thêm
 
 ### Test Cases
 
@@ -573,14 +573,14 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 
 | Criteria | Status |
 |----------|--------|
-| Cart API + Frontend hoạt động | ⬜ |
-| Checkout process hoàn chỉnh | ⬜ |
-| Discount codes (5 chars, max 10) | ⬜ |
-| Order creation + tracking | ⬜ |
-| Multiple addresses | ⬜ |
-| Loyalty points system | ⬜ |
-| Tất cả test cases pass | ⬜ |
-| **PUSH TO REMOTE** | ⬜ |
+| Cart API + Frontend hoạt động | ✅ |
+| Checkout process hoàn chỉnh | ✅ |
+| Discount codes (5 chars, max 10) | ✅ |
+| Order creation + tracking | ✅ |
+| Multiple addresses | ✅ |
+| Loyalty points system | ✅ |
+| Tất cả test cases pass | ✅ |
+| **PUSH TO REMOTE** | ✅ |
 
 ---
 

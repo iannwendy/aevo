@@ -38,9 +38,10 @@ async function fetchOrderDetails(searchParams) {
     if (cookieHeader) reqHeaders.Cookie = cookieHeader;
     if (authHeader) reqHeaders.Authorization = authHeader;
 
-    const endpoint = ref.startsWith('ORD-')
-      ? `${API_URL}/api/orders/number/${encodeURIComponent(ref)}`
-      : `${API_URL}/api/orders/${encodeURIComponent(ref)}`;
+    const endpoint =
+      ref.startsWith('AEVO-') || ref.startsWith('ORD-')
+        ? `${API_URL}/api/orders/number/${encodeURIComponent(ref)}`
+        : `${API_URL}/api/orders/${encodeURIComponent(ref)}`;
 
     const res = await fetch(endpoint, {
       headers: reqHeaders,
@@ -146,13 +147,15 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                     </strong>
                   </span>
                 </div>
-                {order?.earnedLoyaltyPoints > 0 && (
+                {(order?.earnedPoints > 0 || order?.earnedLoyaltyPoints > 0) && (
                   <div
                     className="flex items-center gap-1.5 font-mono text-success"
                     data-testid="success-earned-points"
                   >
                     <Sparkles className="w-4 h-4" />
-                    <span>+{order.earnedLoyaltyPoints} Loyalty Points Earned</span>
+                    <span>
+                      +{order.earnedPoints || order.earnedLoyaltyPoints} Loyalty Points Earned
+                    </span>
                   </div>
                 )}
               </div>
@@ -203,7 +206,10 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                     {order.discountAmount > 0 && (
                       <div className="flex justify-between text-success">
                         <span>
-                          Discount{order.discountCode ? ` (${order.discountCode})` : ''}
+                          Discount
+                          {order.discountCode
+                            ? ` (${order.discountCode.code || order.discountCode})`
+                            : ''}
                         </span>
                         <span className="font-mono" data-testid="success-discount">
                           -{formatPrice(order.discountAmount)}
