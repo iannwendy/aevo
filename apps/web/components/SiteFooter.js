@@ -34,16 +34,17 @@ export default function SiteFooter() {
             </Link>
             <Link
               href="/account/profile"
+              prefetch={false}
               className="nav-link-animated text-small text-secondary hover:text-ink focus-ring rounded"
             >
               {t('footer.account')}
             </Link>
-            <Link
+            <a
               href="/admin"
               className="nav-link-animated text-small text-secondary hover:text-ink focus-ring rounded"
             >
               {t('footer.admin')}
-            </Link>
+            </a>
           </nav>
         </div>
 

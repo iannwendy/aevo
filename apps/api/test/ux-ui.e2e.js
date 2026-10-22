@@ -135,11 +135,50 @@ function attachDevToolsMonitor(page) {
   return monitor;
 }
 
+const sessionCache = new Map();
+
+async function getOrCreateSession(email, password) {
+  if (sessionCache.has(email)) {
+    return sessionCache.get(email);
+  }
+  const res = await fetch(`${API}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  assert.equal(res.status, 200, `API login failed for ${email}: ${res.status}`);
+  const data = await res.json();
+  sessionCache.set(email, data);
+  return data;
+}
+
 /**
- * Helper to log in directly from the browser context so the httpOnly `token` cookie
- * is stored in the browser's cookie jar.
+ * Helper to log in inside the browser context so both the httpOnly `token` cookie
+ * and localStorage are populated without exhausting per-account rate limits.
  */
 async function loginInBrowser(page, email, password) {
+  await page.context().clearCookies({ name: 'token' });
+  if (sessionCache.has(email)) {
+    const session = sessionCache.get(email);
+    await page.context().addCookies([
+      {
+        name: 'token',
+        value: session.token,
+        url: CLIENT,
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
+    await page.evaluate(
+      ({ token, user }) => {
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+      },
+      { token: session.token, user: session.user }
+    );
+    return session;
+  }
+
   const result = await page.evaluate(
     async ({ apiUrl, email, password }) => {
       const res = await fetch(`${apiUrl}/api/auth/login`, {
@@ -158,6 +197,7 @@ async function loginInBrowser(page, email, password) {
     { apiUrl: API, email, password }
   );
   assert.equal(result.status, 200, `Browser login failed for ${email}: ${result.status}`);
+  sessionCache.set(email, result.data);
   return result.data;
 }
 
@@ -170,6 +210,7 @@ async function logoutInBrowser(page) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
   }, API);
+  await page.context().clearCookies({ name: 'token' });
 }
 
 async function launchBrowser() {
@@ -531,25 +572,27 @@ async function main() {
       'SettingsMenu popover interaction (click trigger -> open -> Escape close -> outside click close)',
       async () => {
         devtools.reset();
+        await page.setViewportSize({ width: 1280, height: 800 });
         await page.goto(`${CLIENT}/`, { waitUntil: 'networkidle' });
+        await page.waitForTimeout(200);
         const trigger = page.locator('[data-testid="settings-menu-trigger"]').first();
         const panel = page.locator('[data-testid="settings-menu-panel"]').first();
 
         assert.equal(await trigger.getAttribute('aria-expanded'), 'false');
         await trigger.click();
-        await page.waitForTimeout(100);
+        await page.waitForTimeout(150);
         assert.equal(await trigger.getAttribute('aria-expanded'), 'true');
         assert.equal(await panel.evaluate((el) => el.classList.contains('visible')), true);
 
         await page.keyboard.press('Escape');
-        await page.waitForTimeout(100);
+        await page.waitForTimeout(150);
         assert.equal(await trigger.getAttribute('aria-expanded'), 'false');
 
         await trigger.click();
-        await page.waitForTimeout(100);
+        await page.waitForTimeout(150);
         assert.equal(await trigger.getAttribute('aria-expanded'), 'true');
         await page.mouse.click(10, 200);
-        await page.waitForTimeout(100);
+        await page.waitForTimeout(150);
         assert.equal(await trigger.getAttribute('aria-expanded'), 'false');
         devtools.assertClean('UX-11');
         return 'SettingsMenu panel open, Escape close, and outside-click close verified';
@@ -1086,17 +1129,12 @@ async function main() {
       async () => {
         devtools.reset();
         // Ensure a valid 5-char discount code exists via API
-        const adminLoginRes = await fetch(`${API}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: 'admin@aevo.com', password: 'admin123' }),
-        });
-        const adminData = await adminLoginRes.json();
+        const adminData = await getOrCreateSession('admin@aevo.com', 'admin123');
         const discRes = await fetch(`${API}/api/discounts`, {
           headers: { Authorization: `Bearer ${adminData.token}` },
         });
         const discList = await discRes.json();
-        const validDiscount = (discList || []).find(
+        const validDiscount = (Array.isArray(discList) ? discList : []).find(
           (d) => d.isActive && d.usedCount < d.maxUses && d.code.length === 5
         );
         const couponCode = validDiscount ? validDiscount.code : 'AEV10';

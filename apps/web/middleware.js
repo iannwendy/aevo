@@ -41,7 +41,14 @@ async function verifyJwtHmacSha256(token, secret) {
   }
 }
 
-function forbiddenAdminResponse() {
+function forbiddenAdminResponse(request) {
+  if (
+    request?.headers?.get('next-router-prefetch') === '1' ||
+    request?.headers?.get('purpose') === 'prefetch' ||
+    request?.nextUrl?.searchParams?.has('_rsc')
+  ) {
+    return new NextResponse(null, { status: 204 });
+  }
   return new NextResponse(
     `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>403 Forbidden — AEVO Control</title></head><body data-testid="admin-forbidden" style="font-family:sans-serif;padding:48px;background:#F5F5F3;color:#171717;"><h1>403 — Admin access required</h1><p>Your account does not have administrator privileges to access AEVO Control.</p><a href="/">Return to AEVO Store</a></body></html>`,
     {
@@ -70,7 +77,7 @@ export async function middleware(request) {
     if (token) {
       const parts = token.split('.');
       if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) {
-        return forbiddenAdminResponse();
+        return forbiddenAdminResponse(request);
       }
 
       const header = decodeJwtPart(parts[0]);
@@ -85,14 +92,14 @@ export async function middleware(request) {
         payload.role !== 'ADMIN' ||
         (typeof payload.exp === 'number' && payload.exp * 1000 < Date.now())
       ) {
-        return forbiddenAdminResponse();
+        return forbiddenAdminResponse(request);
       }
 
       const secret = process.env.JWT_SECRET;
       if (secret) {
         const validSig = await verifyJwtHmacSha256(token, secret);
         if (!validSig) {
-          return forbiddenAdminResponse();
+          return forbiddenAdminResponse(request);
         }
       }
     }

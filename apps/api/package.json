@@ -8,7 +8,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "node prisma/seed.js",
-    "test:ux-ui": "node test/ux-ui.e2e.js"
+    "test:ux-ui": "node test/ux-ui.e2e.js",
+    "test:phase5": "node test/phase5.e2e.js"
   },
   "dependencies": {
     "express": "^4.19.0",
