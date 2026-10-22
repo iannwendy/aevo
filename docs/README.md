@@ -10,5 +10,5 @@ This directory contains specifications, architectural concepts, and test plans f
 | [requirement.md](./requirement.md) | Comprehensive functional and business requirements for all phases. |
 | [darkmode.md](./darkmode.md) | Dark mode technical architecture, styling rules, and component implementation. |
 | [DARKMODE_TEST_PLAN.md](./DARKMODE_TEST_PLAN.md) | Dark mode test plan, test cases, and verification checklist. |
-| [E2E_TEST_PLAN.md](./E2E_TEST_PLAN.md) | End-to-end testing plan covering Phase 1, Phase 2, and Phase 3 deliverables. |
+| [E2E_TEST_PLAN.md](./E2E_TEST_PLAN.md) | End-to-end testing plan covering Phase 1, Phase 2, Phase 3, and Phase 4 deliverables. |
 | [I18N_TEST_PLAN.md](./I18N_TEST_PLAN.md) | Internationalization (ENG / VIE) test plan and verification results. |

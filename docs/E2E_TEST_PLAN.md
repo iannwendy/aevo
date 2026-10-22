@@ -730,13 +730,13 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 4.7: Admin Frontend Pages
 
 ### Checklist
-- [ ] `/admin` - Dashboard overview
-- [ ] `/admin/products` - Product list
-- [ ] `/admin/products/new` - Create product form
-- [ ] `/admin/users` - User list
-- [ ] `/admin/orders` - Order list
-- [ ] `/admin/orders/[id]` - Order detail + update status
-- [ ] `/admin/discounts` - Discount list + create
+- [x] `/admin` - Dashboard overview
+- [x] `/admin/products` - Product list
+- [x] `/admin/products/new` - Create product form
+- [x] `/admin/users` - User list
+- [x] `/admin/orders` - Order list
+- [x] `/admin/orders/[id]` - Order detail + update status
+- [x] `/admin/discounts` - Discount list + create
 
 ### Test Cases
 
@@ -755,15 +755,15 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 
 | Criteria | Status |
 |----------|--------|
-| Simple Dashboard hoạt động | ⬜ |
-| Advanced Dashboard hoạt động | ⬜ |
-| Admin Product Management | ⬜ |
-| Admin User Management | ⬜ |
-| Admin Order Management | ⬜ |
-| Admin Discount Management | ⬜ |
-| Admin Frontend pages | ⬜ |
-| Tất cả test cases pass | ⬜ |
-| **PUSH TO REMOTE** | ⬜ |
+| Simple Dashboard hoạt động | ✅ |
+| Advanced Dashboard hoạt động | ✅ |
+| Admin Product Management | ✅ |
+| Admin User Management | ✅ |
+| Admin Order Management | ✅ |
+| Admin Discount Management | ✅ |
+| Admin Frontend pages | ✅ |
+| Tất cả test cases pass | ✅ |
+| **PUSH TO REMOTE** | ✅ |
 
 ---
 
