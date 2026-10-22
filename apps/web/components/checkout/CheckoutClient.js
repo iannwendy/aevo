@@ -372,7 +372,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                   data-testid={`checkout-step-tab-${s.id}`}
                   className={`px-3 py-1.5 rounded-lg text-caption font-mono transition-colors ${
                     isCurrent
-                      ? 'bg-ink text-white font-medium'
+                      ? 'bg-primary text-primary-foreground font-medium'
                       : isCompleted
                       ? 'bg-sage/15 text-sage font-medium'
                       : 'bg-surface border border-border text-secondary'
@@ -388,7 +388,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
         {stepError && (
           <div
             data-testid="checkout-error"
-            className="mt-6 p-4 rounded-xl border border-red-200 bg-red-50 text-red-800 text-small"
+            className="mt-6 p-4 rounded-xl border border-danger/30 bg-danger/10 text-danger text-small"
           >
             {stepError}
           </div>
@@ -496,7 +496,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="button"
                     onClick={handleNextStep}
                     data-testid="checkout-continue-to-shipping"
-                    className="h-12 px-6 rounded-xl bg-ink text-white font-medium text-small hover:bg-ink/90 inline-flex items-center gap-2 transition-colors"
+                    className="h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 inline-flex items-center gap-2 transition-colors"
                   >
                     <span>{t('checkout.continueToAddressBtn')}</span>
                     <ArrowRight size={17} />
@@ -544,7 +544,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                                 {addr.fullName}
                               </span>
                               {addr.isDefault && (
-                                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-ink text-white">
+                                <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-primary text-primary-foreground">
                                   {t('checkout.defaultBadge')}
                                 </span>
                               )}
@@ -639,7 +639,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="button"
                     onClick={handleNextStep}
                     data-testid="checkout-continue-to-method"
-                    className="h-12 px-6 rounded-xl bg-ink text-white font-medium text-small hover:bg-ink/90 inline-flex items-center gap-2"
+                    className="h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 inline-flex items-center gap-2"
                   >
                     <span>{t('checkout.continueToMethodBtn')}</span>
                     <ArrowRight size={17} />
@@ -732,7 +732,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="button"
                     onClick={handleNextStep}
                     data-testid="checkout-continue-to-payment"
-                    className="h-12 px-6 rounded-xl bg-ink text-white font-medium text-small hover:bg-ink/90 inline-flex items-center gap-2"
+                    className="h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 inline-flex items-center gap-2"
                   >
                     <span>{t('checkout.continueToPaymentBtn')}</span>
                     <ArrowRight size={17} />
@@ -776,11 +776,11 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                       </div>
                       <span
                         className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                          paymentMethod === opt.value ? 'border-ink bg-ink' : 'border-border'
+                          paymentMethod === opt.value ? 'border-primary bg-primary' : 'border-border'
                         }`}
                       >
                         {paymentMethod === opt.value && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
                         )}
                       </span>
                     </button>
@@ -813,7 +813,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="button"
                     onClick={handleNextStep}
                     data-testid="checkout-continue-to-review"
-                    className="h-12 px-6 rounded-xl bg-ink text-white font-medium text-small hover:bg-ink/90 inline-flex items-center gap-2"
+                    className="h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 inline-flex items-center gap-2"
                   >
                     <span>{t('checkout.reviewOrderBtn')}</span>
                     <ArrowRight size={17} />
@@ -893,7 +893,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     onClick={handlePlaceOrder}
                     disabled={placingOrder || items.length === 0}
                     data-testid="place-order-button"
-                    className="h-12 px-8 rounded-xl bg-ink text-white font-medium text-small hover:bg-ink/90 disabled:opacity-50 inline-flex items-center gap-2"
+                    className="h-12 px-8 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 disabled:opacity-50 inline-flex items-center gap-2"
                   >
                     <Check size={18} />
                     <span>
@@ -964,7 +964,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="submit"
                     disabled={validatingDiscount}
                     data-testid="checkout-apply-discount"
-                    className="h-10 px-4 rounded-xl bg-ink text-white text-caption font-medium hover:bg-ink/90"
+                    className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-caption font-medium hover:bg-primary/90"
                   >
                     {t('checkout.applyBtn')}
                   </button>
@@ -974,8 +974,8 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     data-testid="checkout-discount-feedback"
                     className={`mt-2 text-caption ${
                       discountFeedback.type === 'success'
-                        ? 'text-emerald-700'
-                        : 'text-red-600'
+                        ? 'text-success'
+                        : 'text-danger'
                     }`}
                   >
                     {discountFeedback.message}
@@ -1033,8 +1033,8 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     data-testid="checkout-points-feedback"
                     className={`mt-2 text-caption ${
                       pointsFeedback.type === 'success'
-                        ? 'text-emerald-700'
-                        : 'text-red-600'
+                        ? 'text-success'
+                        : 'text-danger'
                     }`}
                   >
                     {pointsFeedback.message}
@@ -1052,7 +1052,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                 </div>
 
                 {discountAmount > 0 && (
-                  <div className="flex justify-between text-emerald-700">
+                  <div className="flex justify-between text-success">
                     <dt>{t('checkout.discountWithCode', { code: appliedDiscount?.code })}</dt>
                     <dd data-testid="checkout-discount-amount" className="font-mono">
                       -{formatPrice(discountAmount)}
@@ -1075,7 +1075,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                 </div>
 
                 {loyaltyDiscount > 0 && (
-                  <div className="flex justify-between text-emerald-700">
+                  <div className="flex justify-between text-success">
                     <dt>{t('checkout.loyaltyPointsWithCount', { points: appliedPoints })}</dt>
                     <dd data-testid="checkout-loyalty-discount" className="font-mono">
                       -{formatPrice(loyaltyDiscount)}
