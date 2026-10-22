@@ -216,8 +216,8 @@ async function main() {
   });
 
   await test('PROD-07', 'GET /api/products?sort=name_desc, name_asc, best-selling sorts accurately', async () => {
-    const desc = await call('/api/products?sort=name_desc&limit=100');
-    const asc = await call('/api/products?sort=name_asc&limit=100');
+    const desc = await call('/api/products?sort=name_desc&limit=500');
+    const asc = await call('/api/products?sort=name_asc&limit=500');
     assert.equal(desc.status, 200);
     assert.equal(asc.status, 200);
     assert.ok(desc.body.products.length > 1);
@@ -257,7 +257,7 @@ async function main() {
   });
 
   await test('PROD-09', 'Single-page product list still returns complete pagination metadata', async () => {
-    const res = await call('/api/products?category=laptops&page=1&limit=12');
+    const res = await call('/api/products?category=laptops&page=1&limit=500');
     assert.equal(res.status, 200);
     assert.ok(res.body.pagination);
     assert.equal(res.body.pagination.page, 1);
@@ -300,7 +300,7 @@ async function main() {
     }
 
     // Rubric check: every active product in catalogue has >= 2 variants
-    const allRes = await call('/api/products?limit=100');
+    const allRes = await call('/api/products?limit=500');
     for (const p of allRes.body.products) {
       assert.ok(
         p.variants.length >= 2,

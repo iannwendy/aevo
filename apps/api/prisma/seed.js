@@ -14,6 +14,7 @@
  */
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
+const NEW_PRODUCTS_2026 = require('./products-2026.json');
 
 const prisma = new PrismaClient();
 
@@ -924,8 +925,10 @@ async function seedCatalogue() {
 
   const tagMap = new Map();
   const products = [];
+  const allProducts = [...NEW_PRODUCTS_2026, ...PRODUCTS];
+  const baseTime = Date.now() - allProducts.length * 60000;
 
-  for (const p of PRODUCTS) {
+  for (const [idx, p] of allProducts.entries()) {
     const product = await prisma.product.create({
       data: {
         name: p.name,
@@ -936,6 +939,7 @@ async function seedCatalogue() {
         isNewArrival: !!p.isNewArrival,
         isBestSeller: !!p.isBestSeller,
         minPrice: Math.min(...p.variants.map((v) => v.price)),
+        createdAt: new Date(baseTime + idx * 60000),
       },
     });
 
@@ -996,7 +1000,7 @@ async function seedReviews(products, users) {
   const RATINGS = [5, 5, 4, 5, 4, 3, 5, 4];
 
   // Deterministic spread: one review on most products, a couple of hot products get more.
-  const hot = new Set([products[0].id, products[4].id, products[10].id]);
+  const hot = new Set(products.filter((p) => ['macbook-pro-m3', 'nvidia-geforce-rtx-4090-founders-edition', 'dell-ultrasharp-u2723qe'].includes(p.slug)).map((p) => p.id));
   const reviewers = [users.customer, users.customer2, users.admin];
 
   let idx = 0;
