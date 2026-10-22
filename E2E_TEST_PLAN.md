@@ -31,18 +31,18 @@
 ## Task 1.1: Database Setup & Migration
 
 ### Checklist
-- [ ] Cài đặt PostgreSQL (local hoặc Docker)
-- [ ] Cấu hình `.env` với `DATABASE_URL`
-- [ ] Chạy `prisma generate`
-- [ ] Chạy `prisma db push` tạo tables
-- [ ] Tạo seed data mẫu (categories, products, admin user)
-- [ ] Xác thực database connection
+- [x] Cài đặt PostgreSQL (local hoặc Docker)
+- [x] Cấu hình `.env` với `DATABASE_URL`
+- [x] Chạy `prisma generate`
+- [x] Chạy `prisma db push` tạo tables
+- [x] Tạo seed data mẫu (categories, products, admin user)
+- [x] Xác thực database connection
 
 ### Test Cases
 
 | TC ID | Mô tả | Steps | Expected Result |
 |-------|-------|-------|-----------------|
-| DB-01 | Kết nối database thành công | 1. Chạy `npx prisma studio` | Hiển thị schema với 17 tables |
+| DB-01 | Kết nối database thành công | 1. Chạy `npx prisma studio` | Hiển thị schema với 20 tables |
 | DB-02 | Seed data được tạo | 1. Chạy seed script<br>2. Query categories | Có ít nhất 3 categories (laptops, components, monitors) |
 | DB-03 | Admin user được tạo | 1. Query user với email admin | User có role = ADMIN |
 
@@ -59,11 +59,11 @@ npm run db:seed
 ## Task 1.2: API Server Basic Setup
 
 ### Checklist
-- [ ] Express server khởi động không lỗi
-- [ ] CORS được cấu hình đúng
-- [ ] Health check endpoint `/health` hoạt động
-- [ ] Socket.IO connection hoạt động
-- [ ] Error handler middleware hoạt động
+- [x] Express server khởi động không lỗi
+- [x] CORS được cấu hình đúng
+- [x] Health check endpoint `/health` hoạt động
+- [x] Socket.IO connection hoạt động
+- [x] Error handler middleware hoạt động
 
 ### Test Cases
 
@@ -83,11 +83,11 @@ curl http://localhost:3001/health
 ## Task 1.3: Authentication - Register & Login
 
 ### Checklist
-- [ ] API register tạo user mới
-- [ ] API login trả về JWT token
-- [ ] Token được lưu trong cookie httpOnly
-- [ ] Validation: email hợp lệ, password >= 6 ký tự
-- [ ] Error handling: email đã tồn tại, sai password
+- [x] API register tạo user mới
+- [x] API login trả về JWT token
+- [x] Token được lưu trong cookie httpOnly
+- [x] Validation: email hợp lệ, password >= 6 ký tự
+- [x] Error handling: email đã tồn tại, sai password
 
 ### Test Cases
 
@@ -118,11 +118,11 @@ curl -X POST http://localhost:3001/api/auth/login \
 ## Task 1.4: Authentication - Profile & Password
 
 ### Checklist
-- [ ] GET `/api/auth/profile` - lấy thông tin user
-- [ ] PUT `/api/auth/profile` - cập nhật fullName
-- [ ] PUT `/api/auth/password` - đổi password (cần current password)
-- [ ] POST `/api/auth/forgot-password` - gửi link reset
-- [ ] POST `/api/auth/reset-password` - reset với token
+- [x] GET `/api/auth/profile` - lấy thông tin user
+- [x] PUT `/api/auth/profile` - cập nhật fullName
+- [x] PUT `/api/auth/password` - đổi password (cần current password)
+- [x] POST `/api/auth/forgot-password` - gửi link reset
+- [x] POST `/api/auth/reset-password` - reset với token
 
 ### Test Cases
 
@@ -136,15 +136,14 @@ curl -X POST http://localhost:3001/api/auth/login \
 
 ---
 
-## Task 1.5: Social Login Setup (Google/Facebook)
+## Task 1.5: Social Login Setup (Google)
 
 ### Checklist
-- [ ] Cấu hình Google OAuth credentials
-- [ ] Cấu hình Facebook OAuth credentials
-- [ ] GET `/api/auth/google` - redirect to Google
-- [ ] GET `/api/auth/google/callback` - callback handler
-- [ ] Tạo user mới nếu chưa có
-- [ ] Link OAuth account với existing user
+- [x] Cấu hình Google OAuth credentials
+- [x] GET `/api/auth/google` - redirect to Google
+- [x] GET `/api/auth/google/callback` - callback handler
+- [x] Tạo user mới nếu chưa có
+- [x] Link OAuth account với existing user
 
 ### Test Cases
 
@@ -152,18 +151,18 @@ curl -X POST http://localhost:3001/api/auth/login \
 |-------|-------|-------|----------------|
 | AUTH-12 | Google OAuth redirect | GET `/api/auth/google` | Redirect to Google login page |
 | AUTH-13 | Google OAuth callback | 1. Complete Google login<br>2. Redirect về | User created/linked, redirect to frontend |
-| AUTH-14 | Facebook OAuth redirect | GET `/api/auth/facebook` | Redirect to Facebook login page |
+| AUTH-14 | Facebook login (không dùng) | GET `/api/auth/facebook` | 503 - không cấu hình provider |
 
 ---
 
 ## Task 1.6: Frontend - Project Setup
 
 ### Checklist
-- [ ] Next.js dev server chạy không lỗi
-- [ ] Tailwind CSS được cấu hình
-- [ ] AEVO design tokens trong `tailwind.config.js`
-- [ ] Layout cơ bản: Header, Footer
-- [ ] Homepage render không lỗi
+- [x] Next.js dev server chạy không lỗi
+- [x] Tailwind CSS được cấu hình
+- [x] AEVO design tokens trong `tailwind.config.js`
+- [x] Layout cơ bản: Header, Footer
+- [x] Homepage render không lỗi
 
 ### Test Cases
 
@@ -177,13 +176,13 @@ curl -X POST http://localhost:3001/api/auth/login \
 
 ## Phase 1 Completion Criteria
 
-| Criteria | Status |
-|----------|--------|
-| Database hoạt động với seed data | ⬜ |
-| API server chạy ổn định | ⬜ |
-| Authentication (register/login/profile/password) hoạt động | ⬜ |
-| Frontend basic setup hoàn chỉnh | ⬜ |
-| Tất cả test cases pass | ⬜ |
+| Criteria                                                   | Status |
+| ---------------------------------------------------------- | ------ |
+| Database hoạt động với seed data                           | ✅      |
+| API server chạy ổn định                                    | ✅      |
+| Authentication (register/login/profile/password) hoạt động | ✅      |
+| Frontend basic setup hoàn chỉnh                            | ✅      |
+| Tất cả test cases pass                                     | ⬜      |
 
 ---
 
