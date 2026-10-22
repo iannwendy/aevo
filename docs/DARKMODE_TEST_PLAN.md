@@ -40,7 +40,7 @@
 ## Task DM.1: Semantic Color Tokens & Tailwind CSS Integration
 
 ### Checklist
-- [ ] Khai báo đầy đủ bộ biến CSS semantic tokens cho `:root` (Light Mode — `color-scheme: light`) và `.dark` (Dark Mode — `color-scheme: dark`) trong `apps/web/app/globals.css` theo `darkmode.md` Mục 3 & 5.2:
+- [x] Khai báo đầy đủ bộ biến CSS semantic tokens cho `:root` (Light Mode — `color-scheme: light`) và `.dark` (Dark Mode — `color-scheme: dark`) trong `apps/web/app/globals.css` theo `darkmode.md` Mục 3 & 5.2:
   - `--aevo-bg`: `#F5F5F3` (Light) / `#111214` (Dark)
   - `--aevo-surface`: `#FFFFFF` (Light) / `#1C1D20` (Dark)
   - `--aevo-surface-muted`: `#F0F0EE` (Light) / `#25262A` (Dark)
@@ -54,10 +54,10 @@
   - `--aevo-danger`: `#B42318` (Light) / `#FF8A80` (Dark)
   - `--aevo-success`: `#237A4B` (Light) / `#70D8A0` (Dark)
   - `--aevo-warning`: `#946200` (Light) / `#F0C674` (Dark)
-- [ ] Cung cấp các biến kênh màu RGB tương ứng (`--aevo-bg-rgb`, `--aevo-surface-rgb`, `--aevo-text-rgb`, ...) và giữ lại các biến `--color-canvas: #F5F5F3` / `--color-surface: #FFFFFF` trong `:root` để tương thích 100% với E2E test `FE-02`
-- [ ] Cập nhật `apps/web/tailwind.config.js` (`darkMode: ["class"]`) ánh xạ toàn bộ semantic tokens (`canvas`, `bg`, `surface`, `surface-muted`, `ink`, `primary`, `primary-foreground`, `secondary`, `border`, `sage`, `accent`, `focus`, `danger`, `success`, `warning`) hỗ trợ cú pháp `<alpha-value>` của Tailwind
-- [ ] Cập nhật các utility classes `.btn-primary`, `.btn-secondary`, `.btn-ghost`, `.focus-ring` trong `apps/web/app/globals.css` để tự động đảo màu chữ/nền chuẩn xác giữa Light & Dark Mode và tôn trọng `prefers-reduced-motion: reduce`
-- [ ] Đảm bảo `apps/web/components.json` giữ cấu hình `"tsx": false` và `"cssVariables": true`
+- [x] Cung cấp các biến kênh màu RGB tương ứng (`--aevo-bg-rgb`, `--aevo-surface-rgb`, `--aevo-text-rgb`, ...) và giữ lại các biến `--color-canvas: #F5F5F3` / `--color-surface: #FFFFFF` trong `:root` để tương thích 100% với E2E test `FE-02`
+- [x] Cập nhật `apps/web/tailwind.config.js` (`darkMode: ["class"]`) ánh xạ toàn bộ semantic tokens (`canvas`, `bg`, `surface`, `surface-muted`, `ink`, `primary`, `primary-foreground`, `secondary`, `border`, `sage`, `accent`, `focus`, `danger`, `success`, `warning`) hỗ trợ cú pháp `<alpha-value>` của Tailwind
+- [x] Cập nhật các utility classes `.btn-primary`, `.btn-secondary`, `.btn-ghost`, `.focus-ring` trong `apps/web/app/globals.css` để tự động đảo màu chữ/nền chuẩn xác giữa Light & Dark Mode và tôn trọng `prefers-reduced-motion: reduce`
+- [x] Đảm bảo `apps/web/components.json` giữ cấu hình `"tsx": false` và `"cssVariables": true`
 
 ### Test Cases
 
@@ -78,16 +78,16 @@ curl -s http://localhost:3000/ | grep -o '/_next/static/css/[^"]*\.css' | head -
 ## Task DM.2: Theme Provider, Anti-FOUC SSR Setup & Theme Switcher (`Light` / `Dark` / `System`)
 
 ### Checklist
-- [ ] Cài đặt `next-themes` vào `apps/web/package.json` (giữ nguyên `lucide-react` hiện có)
-- [ ] Tạo `apps/web/components/providers/theme-provider.jsx` cấu hình `NextThemesProvider` với `attribute="class"`, `defaultTheme="light"`, `enableSystem`, `disableTransitionOnChange`
-- [ ] Tích hợp `ThemeProvider` vào `apps/web/app/layout.js` và thêm `suppressHydrationWarning` vào thẻ `<html>` để ngăn lỗi hydration mismatch và FOUC
-- [ ] Xây dựng component `ThemeSwitcher` (`apps/web/components/ThemeSwitcher.js` & `apps/web/components/theme-switcher.jsx`) hỗ trợ 3 chế độ:
+- [x] Cài đặt `next-themes` vào `apps/web/package.json` (giữ nguyên `lucide-react` hiện có)
+- [x] Tạo `apps/web/components/providers/theme-provider.jsx` cấu hình `NextThemesProvider` với `attribute="class"`, `defaultTheme="light"`, `enableSystem`, `disableTransitionOnChange`
+- [x] Tích hợp `ThemeProvider` vào `apps/web/app/layout.js` và thêm `suppressHydrationWarning` vào thẻ `<html>` để ngăn lỗi hydration mismatch và FOUC
+- [x] Xây dựng component `ThemeSwitcher` (`apps/web/components/ThemeSwitcher.js` & `apps/web/components/theme-switcher.jsx`) hỗ trợ 3 chế độ:
   - `light` (`Light` / `Sáng` — icon `Sun`)
   - `dark` (`Dark` / `Tối` — icon `Moon`)
   - `system` (`System` / `Hệ thống` — icon `Monitor`)
-- [ ] Đảm bảo accessibility cho `ThemeSwitcher`: dùng `<fieldset>` / `role="group"`, `aria-label`, `aria-pressed`, `focus-visible` outline theo `--aevo-focus`, và placeholder kích thước cố định khi chưa mount để tránh layout shift (CLS)
-- [ ] Bổ sung từ khóa đa ngôn ngữ (`ENG` / `VIE`) cho `ThemeSwitcher` trong `apps/web/lib/i18n/dictionaries.js`
-- [ ] Tích hợp `ThemeSwitcher` lên `SiteHeader` (cạnh `LanguageSwitcher`) và trên các trang Auth (`/login`, `/register`, `/forgot-password`, `/reset-password`)
+- [x] Đảm bảo accessibility cho `ThemeSwitcher`: dùng `<fieldset>` / `role="group"`, `aria-label`, `aria-pressed`, `focus-visible` outline theo `--aevo-focus`, và placeholder kích thước cố định khi chưa mount để tránh layout shift (CLS)
+- [x] Bổ sung từ khóa đa ngôn ngữ (`ENG` / `VIE`) cho `ThemeSwitcher` trong `apps/web/lib/i18n/dictionaries.js`
+- [x] Tích hợp `ThemeSwitcher` lên `SiteHeader` (cạnh `LanguageSwitcher`) và trên các trang Auth (`/login`, `/register`, `/forgot-password`, `/reset-password`)
 
 ### Test Cases
 
@@ -109,19 +109,19 @@ curl -s http://localhost:3000/login | grep -o 'data-testid="theme-switcher"'
 ## Task DM.3: Dark Mode Storefront (Homepage, Catalog, Product Card, Pagination & Product Detail)
 
 ### Checklist
-- [ ] Cập nhật `SiteHeader.js` và `SiteFooter.js`: badge số lượng giỏ hàng (`header-cart-count`), thanh điều hướng cố định (`bg-surface/80 backdrop-blur-md`) và chữ logo `aevo.` tự động chuyển sang `#F5F5F3` trên nền tối
-- [ ] Cập nhật `HomeClient.js`:
+- [x] Cập nhật `SiteHeader.js` và `SiteFooter.js`: badge số lượng giỏ hàng (`header-cart-count`), thanh điều hướng cố định (`bg-surface/80 backdrop-blur-md`) và chữ logo `aevo.` tự động chuyển sang `#F5F5F3` trên nền tối
+- [x] Cập nhật `HomeClient.js`:
   - Hero CTA chính dùng `bg-primary text-primary-foreground` (nền sáng `#F5F5F3`, chữ tối `#171717` trong Dark Mode)
   - Khung thông báo lỗi tải dữ liệu hỗ trợ Dark Mode (`dark:bg-amber-950/40 dark:border-amber-800/60 dark:text-amber-200`)
   - Không áp dụng `filter: invert(1)` lên ảnh Hero hay ảnh sản phẩm
-- [ ] Cập nhật `ProductCard.js` & `Pagination.js`:
+- [x] Cập nhật `ProductCard.js` & `Pagination.js`:
   - Badge `NEW ARRIVAL` và nút trang hiện tại (`isCurrent`) dùng `bg-primary text-primary-foreground` thay vì `bg-ink text-white` cứng
   - Khung ảnh sản phẩm giữ nền trung tính, không biến đổi màu ảnh gốc
-- [ ] Cập nhật `CatalogClient.js`:
+- [x] Cập nhật `CatalogClient.js`:
   - Các nút category đang chọn, quick price range đang chọn, rating filter đang chọn, tag filter đang chọn và nút Apply Filters dùng `bg-primary text-primary-foreground`
   - Biểu tượng ngôi sao trong bộ lọc đánh giá hiển thị rõ ở cả hai chế độ
   - Mobile filter drawer có lớp phủ tối (`bg-black/60 backdrop-blur-xs`) và nút đóng rõ ràng
-- [ ] Cập nhật `ProductDetailClient.js`:
+- [x] Cập nhật `ProductDetailClient.js`:
   - Nút `Add to cart` và nút gửi đánh giá dùng `bg-primary text-primary-foreground`
   - Trạng thái tồn kho (`In stock` / `Out of stock`), thông báo thêm giỏ hàng và thông báo gửi bình luận dùng token màu ngữ nghĩa (`text-success`, `text-danger`, nền thông báo tương thích Dark Mode)
   - Khu vực Reviews, Rating distribution bars và trạng thái Socket.IO (`Live updates active`) hiển thị độ tương phản cao trên nền `#1C1D20`
@@ -144,19 +144,19 @@ curl -s http://localhost:3000/products/macbook-pro-m3 | grep -o 'data-testid="pr
 ## Task DM.4: Dark Mode Commerce & Customer Account (Cart, Checkout, Auth, Profile, Addresses & Orders)
 
 ### Checklist
-- [ ] Cập nhật `CartClient.js`:
+- [x] Cập nhật `CartClient.js`:
   - Nút `Checkout`, nút `Explore Collection` (khi giỏ trống) dùng `bg-primary text-primary-foreground`
   - Khung `Order Summary` dùng `bg-surface` nổi bật trên nền `bg-canvas` (`#1C1D20` trên `#111214`)
   - Thông báo lỗi tồn kho / giỏ hàng dùng màu ngữ nghĩa hỗ trợ Dark Mode
-- [ ] Cập nhật `CheckoutClient.js` và `app/(store)/checkout/success/page.js`:
+- [x] Cập nhật `CheckoutClient.js` và `app/(store)/checkout/success/page.js`:
   - Thanh tiến trình 5 bước (`1. Information` → `5. Review`) hiển thị trạng thái hiện tại / hoàn thành rõ ràng ở cả Light và Dark Mode
   - Các ô input, textarea, nút chọn địa chỉ đã lưu, phương thức vận chuyển, phương thức thanh toán (radio indicator), mã giảm giá và điểm thưởng hiển thị rõ trên nền tối
   - Hoàn thiện đồng bộ hiển thị đa ngôn ngữ (`ENG`/`VIE`) trên `CheckoutClient.js` mà vẫn giữ nguyên 100% tương thích với `phase3.e2e.js`
   - Trang `/checkout/success` hiển thị chi tiết đơn hàng, trạng thái, điểm thưởng và nút điều hướng chuẩn Dark Mode
-- [ ] Cập nhật các trang Auth (`/login`, `/register`, `/forgot-password`, `/reset-password`, `/logout`):
+- [x] Cập nhật các trang Auth (`/login`, `/register`, `/forgot-password`, `/reset-password`, `/logout`):
   - Tích hợp `ThemeSwitcher` cạnh `LanguageSwitcher`
   - Các thông báo lỗi/thành công và input lỗi hiển thị tương phản tốt trên nền tối
-- [ ] Cập nhật các trang Account (`/account/profile`, `/account/addresses`, `/account/orders`, `/account/orders/[id]`):
+- [x] Cập nhật các trang Account (`/account/profile`, `/account/addresses`, `/account/orders`, `/account/orders/[id]`):
   - Thanh tab điều hướng Account (`Profile & Security`, `Delivery Addresses`, `Order History`) dùng `bg-primary text-primary-foreground` cho tab đang chọn
   - Badge trạng thái đơn hàng (`PENDING`, `CONFIRMED`, `SHIPPING`, `DELIVERED`, `CANCELLED`) và bảng lịch sử trạng thái (`status-history-table`) hỗ trợ Dark Mode rõ ràng, kết hợp cả icon + text + màu sắc
 
@@ -180,9 +180,9 @@ curl -s http://localhost:3000/account/orders | grep -o 'data-testid="orders-hist
 ## Task DM.5: Dark Mode Admin Foundation & Theme-Aware Chart/Table Helpers (AEVO Control)
 
 ### Checklist
-- [ ] Tạo module cấu hình theme cho biểu đồ & bảng quản trị tại `apps/web/lib/theme-config.js` (cung cấp bảng màu `LIGHT_THEME_TOKENS`, `DARK_THEME_TOKENS` và helper `getChartTheme(resolvedTheme)` cho Recharts: axis ticks, grid lines, tooltip surface/border/text, primary/accent/success/warning/danger series)
-- [ ] Bổ sung các utility classes cho Data Table & Admin Surface trong `apps/web/app/globals.css` (`.surface-card`, `.surface-muted-panel`, `.table-row-interactive`) để phục vụ các trang AEVO Control (`Dashboard`, `Products`, `Users`, `Orders`, `Discounts`)
-- [ ] Tuân thủ tuyệt đối giới hạn của `requirement.md` và `darkmode.md`: không thêm bất kỳ module quản trị hay tính năng nghiệp vụ nào ngoài đề bài
+- [x] Tạo module cấu hình theme cho biểu đồ & bảng quản trị tại `apps/web/lib/theme-config.js` (cung cấp bảng màu `LIGHT_THEME_TOKENS`, `DARK_THEME_TOKENS` và helper `getChartTheme(resolvedTheme)` cho Recharts: axis ticks, grid lines, tooltip surface/border/text, primary/accent/success/warning/danger series)
+- [x] Bổ sung các utility classes cho Data Table & Admin Surface trong `apps/web/app/globals.css` (`.surface-card`, `.surface-muted-panel`, `.table-row-interactive`) để phục vụ các trang AEVO Control (`Dashboard`, `Products`, `Users`, `Orders`, `Discounts`)
+- [x] Tuân thủ tuyệt đối giới hạn của `requirement.md` và `darkmode.md`: không thêm bất kỳ module quản trị hay tính năng nghiệp vụ nào ngoài đề bài
 
 ### Test Cases
 
@@ -196,9 +196,9 @@ curl -s http://localhost:3000/account/orders | grep -o 'data-testid="orders-hist
 ## Task DM.6: End-to-End Verification & Regression Suite (`darkmode.e2e.js`)
 
 ### Checklist
-- [ ] Viết bộ kiểm thử tự động `apps/api/test/darkmode.e2e.js` kiểm tra toàn diện các tiêu chí nghiệm thu trong `darkmode.md` (Mục 9 — Testing Matrix & Acceptance Criteria)
-- [ ] Kiểm tra kết hợp đồng thời cả 2 tính năng mở rộng: **Adaptive Dark Mode** (`light`/`dark`/`system`) + **Internationalization** (`ENG`/`VIE`)
-- [ ] Chạy lại toàn bộ các bộ E2E test hiện có (`phase1.e2e.js`, `phase2.e2e.js`, `phase3.e2e.js`) cùng `darkmode.e2e.js` để đảm bảo 100% PASS không có bất kỳ hồi quy (regression) nào
+- [x] Viết bộ kiểm thử tự động `apps/api/test/darkmode.e2e.js` kiểm tra toàn diện các tiêu chí nghiệm thu trong `darkmode.md` (Mục 9 — Testing Matrix & Acceptance Criteria)
+- [x] Kiểm tra kết hợp đồng thời cả 2 tính năng mở rộng: **Adaptive Dark Mode** (`light`/`dark`/`system`) + **Internationalization** (`ENG`/`VIE`)
+- [x] Chạy lại toàn bộ các bộ E2E test hiện có (`phase1.e2e.js`, `phase2.e2e.js`, `phase3.e2e.js`) cùng `darkmode.e2e.js` để đảm bảo 100% PASS không có bất kỳ hồi quy (regression) nào
 
 ### Test Cases
 

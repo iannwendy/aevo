@@ -50,7 +50,10 @@ export default function SiteHeader() {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border">
+    <header
+      data-testid="site-header"
+      className="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border"
+    >
       <div className="container-main h-[72px] flex items-center justify-between gap-4">
         <Link
           href="/"

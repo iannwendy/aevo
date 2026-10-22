@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { requestPasswordReset } from '../../../lib/account-client';
 import { useI18n } from '../../../lib/i18n';
 import LanguageSwitcher from '../../../components/LanguageSwitcher';
+import ThemeSwitcher from '../../../components/ThemeSwitcher';
 
 export default function ForgotPasswordPage() {
   const { t } = useI18n();
@@ -47,7 +48,10 @@ export default function ForgotPasswordPage() {
             >
               aevo.
             </Link>
-            <LanguageSwitcher />
+            <div className="flex items-center gap-2">
+              <ThemeSwitcher />
+              <LanguageSwitcher />
+            </div>
           </div>
 
           <span className="block text-caption font-mono text-secondary uppercase tracking-wider mt-8">
@@ -83,7 +87,7 @@ export default function ForgotPasswordPage() {
               {notice && (
                 <p
                   role="alert"
-                  className="mt-6 text-small rounded-lg px-4 py-3 border border-red-300 bg-red-50 text-red-700"
+                  className="mt-6 text-small rounded-lg px-4 py-3 border border-danger/30 bg-danger/10 text-danger"
                 >
                   {notice.message}
                 </p>

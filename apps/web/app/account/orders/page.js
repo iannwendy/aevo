@@ -21,16 +21,15 @@ import { useI18n } from '../../../lib/i18n';
 function getStatusBadgeClass(status) {
   switch (status) {
     case 'DELIVERED':
-      return 'bg-emerald-50 text-emerald-800 border-emerald-200';
+      return 'bg-success/10 text-success border-success/30';
     case 'SHIPPING':
-      return 'bg-blue-50 text-blue-800 border-blue-200';
     case 'CONFIRMED':
-      return 'bg-indigo-50 text-indigo-800 border-indigo-200';
+      return 'bg-accent/10 text-accent border-accent/30';
     case 'CANCELLED':
-      return 'bg-red-50 text-red-800 border-red-200';
+      return 'bg-danger/10 text-danger border-danger/30';
     case 'PENDING':
     default:
-      return 'bg-amber-50 text-amber-800 border-amber-200';
+      return 'bg-warning/10 text-warning border-warning/30';
   }
 }
 
@@ -117,7 +116,7 @@ export default function AccountOrdersPage() {
           </Link>
           <Link
             href="/account/orders"
-            className="px-4 py-2 rounded-xl bg-ink text-white text-small font-medium"
+            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-small font-medium"
           >
             {t('orders.tabOrderHistoryLoyalty')}
           </Link>
@@ -151,7 +150,7 @@ export default function AccountOrdersPage() {
             <button
               type="submit"
               data-testid="order-lookup-button"
-              className="h-11 px-5 rounded-xl bg-ink text-white text-small font-medium hover:bg-ink/90 transition-colors shrink-0"
+              className="h-11 px-5 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 transition-colors shrink-0"
             >
               {t('orders.trackBtn')}
             </button>
@@ -164,7 +163,7 @@ export default function AccountOrdersPage() {
             <p className="text-small text-secondary mb-6">{t('orders.signInDesc')}</p>
             <Link
               href="/login?next=%2Faccount%2Forders"
-              className="inline-flex items-center px-6 py-3 rounded-xl bg-ink text-white text-small font-medium"
+              className="inline-flex items-center px-6 py-3 rounded-xl bg-primary text-primary-foreground text-small font-medium"
             >
               {t('orders.signInBtn')}
             </Link>
@@ -221,7 +220,7 @@ export default function AccountOrdersPage() {
                           </div>
                           <span
                             className={`font-mono font-medium ${
-                              tx.amount > 0 ? 'text-emerald-700' : 'text-amber-700'
+                              tx.amount > 0 ? 'text-success' : 'text-warning'
                             }`}
                           >
                             {tx.amount > 0 ? `+${tx.amount}` : tx.amount} pts
@@ -261,7 +260,7 @@ export default function AccountOrdersPage() {
                   </p>
                   <Link
                     href="/products"
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-ink text-white text-small font-medium"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground text-small font-medium"
                   >
                     {t('orders.exploreHardwareBtn')}
                     <ArrowRight size={16} />

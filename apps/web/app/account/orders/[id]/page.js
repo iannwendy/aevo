@@ -19,16 +19,15 @@ import { useI18n } from '../../../../lib/i18n';
 function getStatusBadgeClass(status) {
   switch (status) {
     case 'DELIVERED':
-      return 'bg-emerald-50 text-emerald-800 border-emerald-200';
+      return 'bg-success/10 text-success border-success/30';
     case 'SHIPPING':
-      return 'bg-blue-50 text-blue-800 border-blue-200';
     case 'CONFIRMED':
-      return 'bg-indigo-50 text-indigo-800 border-indigo-200';
+      return 'bg-accent/10 text-accent border-accent/30';
     case 'CANCELLED':
-      return 'bg-red-50 text-red-800 border-red-200';
+      return 'bg-danger/10 text-danger border-danger/30';
     case 'PENDING':
     default:
-      return 'bg-amber-50 text-amber-800 border-amber-200';
+      return 'bg-warning/10 text-warning border-warning/30';
   }
 }
 
@@ -92,7 +91,7 @@ export default function OrderDetailPage({ params }) {
             <p className="text-small text-secondary mb-6">{error}</p>
             <Link
               href="/account/orders"
-              className="inline-flex items-center px-6 py-3 rounded-xl bg-ink text-white text-small font-medium"
+              className="inline-flex items-center px-6 py-3 rounded-xl bg-primary text-primary-foreground text-small font-medium"
             >
               {t('orders.returnToOrdersBtn')}
             </Link>
@@ -183,7 +182,7 @@ export default function OrderDetailPage({ params }) {
                       <dd className="font-mono text-ink">{formatPrice(order.subtotal)}</dd>
                     </div>
                     {order.discountAmount > 0 && (
-                      <div className="flex justify-between text-emerald-700">
+                      <div className="flex justify-between text-success">
                         <dt>
                           {t('orders.discount')}{' '}
                           {order.discountCode?.code ? `(${order.discountCode.code})` : ''}
@@ -192,7 +191,7 @@ export default function OrderDetailPage({ params }) {
                       </div>
                     )}
                     {order.usedLoyaltyPoints > 0 && (
-                      <div className="flex justify-between text-emerald-700">
+                      <div className="flex justify-between text-success">
                         <dt>
                           {t('orders.loyaltyRedeemed', { points: order.usedLoyaltyPoints })}
                         </dt>
@@ -332,7 +331,7 @@ export default function OrderDetailPage({ params }) {
                       </thead>
                       <tbody className="divide-y divide-border/60">
                         {statusHistory.map((entry, idx) => (
-                          <tr key={entry.id || idx}>
+                          <tr key={entry.id || idx} className="table-row-interactive">
                             <td className="py-2.5 pr-3 font-mono font-medium text-ink">
                               {entry.status}
                             </td>

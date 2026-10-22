@@ -175,7 +175,7 @@ export default function AddressesPage() {
           </Link>
           <Link
             href="/account/addresses"
-            className="px-4 py-2 rounded-xl bg-ink text-white text-small font-medium"
+            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-small font-medium"
           >
             {t('addresses.tabDeliveryAddresses')}
           </Link>
@@ -193,7 +193,7 @@ export default function AddressesPage() {
             <p className="text-small text-secondary mb-6">{t('addresses.signInDesc')}</p>
             <Link
               href="/login?next=%2Faccount%2Faddresses"
-              className="inline-flex items-center px-6 py-3 rounded-xl bg-ink text-white text-small font-medium"
+              className="inline-flex items-center px-6 py-3 rounded-xl bg-primary text-primary-foreground text-small font-medium"
             >
               {t('addresses.signInBtn')}
             </Link>
@@ -213,7 +213,7 @@ export default function AddressesPage() {
                 type="button"
                 onClick={handleOpenCreate}
                 data-testid="add-address-button"
-                className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-ink text-white text-small font-medium hover:bg-ink/90 transition-colors self-start sm:self-auto"
+                className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 transition-colors self-start sm:self-auto"
               >
                 <Plus size={16} />
                 <span>{t('addresses.addNewBtn')}</span>
@@ -225,8 +225,8 @@ export default function AddressesPage() {
                 data-testid="address-feedback"
                 className={`mb-6 p-4 rounded-xl border text-small ${
                   feedback.type === 'success'
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                    : 'bg-red-50 border-red-200 text-red-800'
+                    ? 'bg-success/10 border-success/30 text-success'
+                    : 'bg-danger/10 border-danger/30 text-danger'
                 }`}
               >
                 {feedback.message}
@@ -355,7 +355,7 @@ export default function AddressesPage() {
                     type="submit"
                     disabled={saving}
                     data-testid="address-save-button"
-                    className="px-6 h-11 rounded-xl bg-ink text-white text-small font-medium hover:bg-ink/90 disabled:opacity-50"
+                    className="px-6 h-11 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 disabled:opacity-50"
                   >
                     {saving
                       ? t('addresses.saving')
@@ -395,7 +395,7 @@ export default function AddressesPage() {
                 <button
                   type="button"
                   onClick={handleOpenCreate}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ink text-white text-small font-medium"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-small font-medium"
                 >
                   <Plus size={16} />
                   {t('addresses.addFirstBtn')}
@@ -425,7 +425,7 @@ export default function AddressesPage() {
                           </p>
                         </div>
                         {addr.isDefault && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-ink text-white text-[11px] font-mono uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-[11px] font-mono uppercase tracking-wider">
                             <Check size={11} />
                             {t('addresses.defaultBadge')}
                           </span>
@@ -454,7 +454,7 @@ export default function AddressesPage() {
                           type="button"
                           onClick={() => handleDelete(addr.id)}
                           data-testid={`delete-address-${addr.id}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-caption font-medium text-secondary hover:text-red-600 hover:bg-canvas"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-caption font-medium text-secondary hover:text-danger hover:bg-canvas"
                         >
                           <Trash2 size={12} />
                           {t('addresses.deleteBtn')}

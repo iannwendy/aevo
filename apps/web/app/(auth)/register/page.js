@@ -8,6 +8,7 @@ import { GOOGLE_AUTH_URL, fetchProfile } from '../../../lib/auth-client';
 import { register } from '../../../lib/account-client';
 import { useI18n } from '../../../lib/i18n';
 import LanguageSwitcher from '../../../components/LanguageSwitcher';
+import ThemeSwitcher from '../../../components/ThemeSwitcher';
 
 /**
  * /register
@@ -143,7 +144,8 @@ export default function RegisterPage() {
             >
               aevo.
             </Link>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <ThemeSwitcher />
               <LanguageSwitcher />
             </div>
           </div>
@@ -165,7 +167,7 @@ export default function RegisterPage() {
               aria-live="polite"
               className={`mt-6 text-small rounded-lg px-4 py-3 border ${
                 notice.kind === 'error'
-                  ? 'border-red-300 bg-red-50 text-red-700'
+                  ? 'border-danger/30 bg-danger/10 text-danger'
                   : 'border-sage/30 bg-sage/5 text-sage'
               }`}
             >
@@ -257,8 +259,8 @@ function Field({ id, label, error, hint, ...inputProps }) {
         name={id}
         aria-invalid={error ? 'true' : undefined}
         aria-describedby={describedBy || undefined}
-        className={`w-full h-12 rounded-lg border bg-surface px-4 text-base focus-ring ${
-          error ? 'border-red-400' : 'border-border'
+        className={`w-full h-12 rounded-lg border bg-surface px-4 text-base text-ink focus-ring ${
+          error ? 'border-danger' : 'border-border'
         }`}
         {...inputProps}
       />
@@ -268,7 +270,7 @@ function Field({ id, label, error, hint, ...inputProps }) {
         </p>
       )}
       {error && (
-        <p id={`${id}-error`} className="text-small text-red-600 mt-2">
+        <p id={`${id}-error`} className="text-small text-danger mt-2">
           {error}
         </p>
       )}

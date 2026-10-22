@@ -39,6 +39,8 @@
     --aevo-warning-rgb: 148 98 0;
 
     /* Backward-compatible token aliases */
+    --canvas: #F5F5F3;
+    --surface: #FFFFFF;
     --color-canvas: #F5F5F3;
     --color-surface: #FFFFFF;
     --color-ink: #171717;
@@ -138,6 +140,7 @@
   }
 
   .table-row-interactive {
+    font-variant-numeric: tabular-nums;
     @apply border-b border-border/60 hover:bg-surface-muted/60 transition-colors;
   }
 

@@ -178,7 +178,7 @@ function ProfileView() {
       {logoutError && (
         <p
           role="alert"
-          className="mb-8 text-small rounded-lg border border-red-300 bg-red-50 text-red-700 px-4 py-3"
+          className="mb-8 text-small rounded-lg border border-danger/30 bg-danger/10 text-danger px-4 py-3"
         >
           {logoutError}{' '}
           <button
@@ -194,7 +194,7 @@ function ProfileView() {
       <div className="flex flex-wrap items-center gap-2 pb-6 mb-8 border-b border-border">
         <Link
           href="/account/profile"
-          className="px-4 py-2 rounded-xl bg-ink text-white text-small font-medium"
+          className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-small font-medium"
         >
           {t('profile.tabProfileSecurity')}
         </Link>
@@ -524,13 +524,13 @@ function FormField({ id, label, hint, error, ...inputProps }) {
         id={id}
         name={id}
         aria-invalid={error ? 'true' : undefined}
-        className={`w-full h-12 rounded-lg border bg-surface px-4 text-base focus-ring ${
-          error ? 'border-red-400' : 'border-border'
+        className={`w-full h-12 rounded-lg border bg-surface px-4 text-base text-ink focus-ring ${
+          error ? 'border-danger' : 'border-border'
         }`}
         {...inputProps}
       />
       {hint && !error && <p className="text-small text-secondary mt-2">{hint}</p>}
-      {error && <p className="text-small text-red-600 mt-2">{error}</p>}
+      {error && <p className="text-small text-danger mt-2">{error}</p>}
     </div>
   );
 }
@@ -543,7 +543,7 @@ function FormNotice({ notice }) {
       aria-live="polite"
       className={`text-small rounded-lg px-4 py-3 border ${
         notice.kind === 'error'
-          ? 'border-red-300 bg-red-50 text-red-700'
+          ? 'border-danger/30 bg-danger/10 text-danger'
           : 'border-sage/30 bg-sage/5 text-sage'
       }`}
     >
