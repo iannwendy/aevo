@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { API_URL, productsApi, cartApi, reviewsApi } from '../../lib/api';
 import { fetchProfile } from '../../lib/auth-client';
-import { formatPrice } from '../../lib/utils';
+import { FALLBACK_PRODUCT_IMAGE, formatPrice, handleImageError } from '../../lib/utils';
 import { useI18n } from '../../lib/i18n';
 
 function computeReviewStatsClient(reviews = []) {
@@ -378,22 +378,24 @@ export default function ProductDetailClient({
         {/* Top Section: Gallery (Left) + Product Info (Right) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
           {/* Image Gallery (3+ images required by rubric) */}
-          <div className="lg:col-span-7" data-testid="product-gallery">
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-white p-6 border border-border mb-4 relative">
+          <div className="lg:col-span-7 animate-fade-in" data-testid="product-gallery">
+            <div className="group aspect-[4/3] rounded-2xl overflow-hidden bg-white p-6 border border-border mb-4 relative transition-shadow duration-300 hover:shadow-md">
               <img
-                src={activeImage?.url}
+                key={activeImageIndex}
+                src={activeImage?.url || FALLBACK_PRODUCT_IMAGE}
                 alt={`${product.name} — view ${activeImageIndex + 1}`}
+                onError={handleImageError}
                 data-testid="product-gallery-main-image"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain animate-fade-in transition-transform duration-500 ease-out group-hover:scale-[1.03]"
               />
               <div className="absolute top-4 left-4 flex flex-wrap gap-2">
                 {product.isNewArrival && (
-                  <span className="bg-primary text-primary-foreground text-caption font-mono uppercase tracking-wider px-3 py-1 rounded-full">
+                  <span className="bg-primary text-primary-foreground text-caption font-mono uppercase tracking-wider px-3 py-1 rounded-full shadow-xs animate-scale-in">
                     {t('productCard.newArrival')}
                   </span>
                 )}
                 {product.isBestSeller && (
-                  <span className="bg-sage text-primary-foreground text-caption font-mono uppercase tracking-wider px-3 py-1 rounded-full">
+                  <span className="bg-sage text-primary-foreground text-caption font-mono uppercase tracking-wider px-3 py-1 rounded-full shadow-xs animate-scale-in">
                     {t('productCard.bestSeller')}
                   </span>
                 )}
@@ -414,15 +416,16 @@ export default function ProductDetailClient({
                     onClick={() => setActiveImageIndex(idx)}
                     data-testid={`product-gallery-thumb-${idx}`}
                     aria-label={`View image ${idx + 1}`}
-                    className={`aspect-[4/3] rounded-xl overflow-hidden bg-white p-2 border-2 transition-all ${
+                    className={`aspect-[4/3] rounded-xl overflow-hidden bg-white p-2 border-2 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 ${
                       isSelected
-                        ? 'border-ink ring-2 ring-ink/20'
+                        ? 'border-ink ring-2 ring-ink/20 shadow-xs'
                         : 'border-border opacity-75 hover:opacity-100'
                     }`}
                   >
                     <img
-                      src={img.url}
+                      src={img.url || FALLBACK_PRODUCT_IMAGE}
                       alt={`${product.name} thumbnail ${idx + 1}`}
+                      onError={handleImageError}
                       className="w-full h-full object-contain"
                     />
                   </button>
@@ -540,10 +543,10 @@ export default function ProductDetailClient({
                         onClick={() => setSelectedVariantId(variant.id)}
                         data-testid={`variant-option-${idx}`}
                         aria-pressed={isSelected}
-                        className={`w-full p-4 rounded-xl border text-left transition-all flex items-center justify-between gap-4 ${
+                        className={`w-full p-4 rounded-xl border text-left transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] flex items-center justify-between gap-4 ${
                           isSelected
-                            ? 'border-ink bg-surface ring-1 ring-ink shadow-xs'
-                            : 'border-border bg-surface/60 hover:border-ink/50'
+                            ? 'border-ink bg-surface ring-1 ring-ink shadow-sm'
+                            : 'border-border bg-surface/60 hover:border-ink/50 hover:shadow-xs'
                         } ${outOfStock ? 'opacity-60' : ''}`}
                       >
                         <div>
@@ -587,13 +590,14 @@ export default function ProductDetailClient({
                       disabled={quantity <= 1 || currentStock <= 0}
                       data-testid="quantity-decrease"
                       aria-label="Decrease quantity"
-                      className="w-9 h-9 rounded-lg inline-flex items-center justify-center text-ink hover:bg-canvas disabled:opacity-40"
+                      className="w-9 h-9 rounded-lg inline-flex items-center justify-center text-ink hover:bg-canvas active:scale-90 transition-all duration-150 disabled:opacity-40 disabled:active:scale-100"
                     >
                       <Minus size={16} />
                     </button>
                     <span
+                      key={quantity}
                       data-testid="quantity-value"
-                      className="text-base font-mono font-medium text-ink"
+                      className="text-base font-mono font-medium text-ink animate-scale-in"
                     >
                       {quantity}
                     </span>
@@ -605,7 +609,7 @@ export default function ProductDetailClient({
                       disabled={quantity >= currentStock || currentStock <= 0}
                       data-testid="quantity-increase"
                       aria-label="Increase quantity"
-                      className="w-9 h-9 rounded-lg inline-flex items-center justify-center text-ink hover:bg-canvas disabled:opacity-40"
+                      className="w-9 h-9 rounded-lg inline-flex items-center justify-center text-ink hover:bg-canvas active:scale-90 transition-all duration-150 disabled:opacity-40 disabled:active:scale-100"
                     >
                       <Plus size={16} />
                     </button>
@@ -617,7 +621,7 @@ export default function ProductDetailClient({
                     onClick={handleAddToCart}
                     disabled={addingToCart || currentStock <= 0}
                     data-testid="add-to-cart-button"
-                    className="flex-1 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 transition-colors"
+                    className="flex-1 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 btn-interactive"
                   >
                     <ShoppingBag size={18} />
                     <span>
@@ -635,7 +639,7 @@ export default function ProductDetailClient({
                 {cartFeedback && (
                   <div
                     data-testid="add-to-cart-feedback"
-                    className={`mt-4 p-3.5 rounded-xl border text-small flex items-center justify-between gap-3 ${
+                    className={`mt-4 p-3.5 rounded-xl border text-small flex items-center justify-between gap-3 animate-slide-up ${
                       cartFeedback.type === 'success'
                         ? 'bg-success/10 border-success/30 text-success'
                         : 'bg-danger/10 border-danger/30 text-danger'
@@ -876,7 +880,7 @@ export default function ProductDetailClient({
                             onMouseLeave={() => setHoverRating(0)}
                             data-testid={`star-option-${star}`}
                             aria-label={`Rate ${star} stars`}
-                            className="p-1.5 rounded-lg hover:bg-canvas transition-colors"
+                            className="p-1.5 rounded-lg hover:bg-canvas transition-all duration-150 hover:scale-125 active:scale-95"
                           >
                             <Star
                               size={22}
@@ -944,7 +948,7 @@ export default function ProductDetailClient({
                 {reviewFeedback && (
                   <div
                     data-testid="review-feedback"
-                    className={`p-3 rounded-xl text-caption border ${
+                    className={`p-3 rounded-xl text-caption border animate-slide-up ${
                       reviewFeedback.type === 'success'
                         ? 'bg-success/10 border-success/30 text-success'
                         : 'bg-danger/10 border-danger/30 text-danger'
@@ -958,7 +962,7 @@ export default function ProductDetailClient({
                   type="submit"
                   disabled={submittingReview}
                   data-testid="review-submit-button"
-                  className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                  className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 disabled:opacity-50 btn-interactive"
                 >
                   {submittingReview
                     ? t('productDetail.submitting')
@@ -972,8 +976,8 @@ export default function ProductDetailClient({
             {/* Right Column: Live Review Feed */}
             <div className="lg:col-span-7" data-testid="reviews-list">
               {reviews.length === 0 ? (
-                <div className="bg-surface border border-border rounded-2xl p-10 text-center">
-                  <Sparkles size={24} className="mx-auto text-secondary mb-3" />
+                <div className="bg-surface border border-border rounded-2xl p-10 text-center animate-scale-in">
+                  <Sparkles size={24} className="mx-auto text-secondary mb-3 animate-float" />
                   <h3 className="text-h3 mb-1">{t('productDetail.noCommentsYet')}</h3>
                   <p className="text-small text-secondary">
                     {t('productDetail.beFirstToShare', { name: product.name })}
@@ -1001,7 +1005,7 @@ export default function ProductDetailClient({
                       <article
                         key={rev.id}
                         data-testid="review-item"
-                        className="bg-surface border border-border rounded-2xl p-5 md:p-6 transition-all"
+                        className="bg-surface border border-border rounded-2xl p-5 md:p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-ink/30 hover:shadow-sm animate-slide-up"
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div>

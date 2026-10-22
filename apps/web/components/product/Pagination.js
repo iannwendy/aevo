@@ -66,7 +66,7 @@ export default function Pagination({
           onClick={() => handleSelect(currentPage - 1)}
           disabled={currentPage <= 1}
           aria-label={t('pagination.prevAria')}
-          className="inline-flex items-center gap-1 px-2.5 sm:px-3 h-9 sm:h-10 rounded-lg border border-border bg-surface text-small font-medium text-ink disabled:opacity-40 disabled:cursor-not-allowed hover:bg-canvas transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 sm:px-3 h-9 sm:h-10 rounded-lg border border-border bg-surface text-small font-medium text-ink disabled:opacity-40 disabled:cursor-not-allowed hover:bg-canvas transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 disabled:hover:translate-y-0 disabled:active:scale-100"
         >
           <ChevronLeft size={16} />
           <span className="hidden sm:inline">{t('pagination.prev')}</span>
@@ -81,9 +81,9 @@ export default function Pagination({
               onClick={() => handleSelect(p)}
               aria-current={isCurrent ? 'page' : undefined}
               data-testid={`pagination-page-${p}`}
-              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-small font-medium transition-colors ${
+              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg text-small font-medium transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 ${
                 isCurrent
-                  ? 'bg-primary text-primary-foreground border border-primary'
+                  ? 'bg-primary text-primary-foreground border border-primary shadow-sm'
                   : 'bg-surface text-ink border border-border hover:bg-canvas'
               }`}
             >
@@ -97,7 +97,7 @@ export default function Pagination({
           onClick={() => handleSelect(currentPage + 1)}
           disabled={currentPage >= safeTotalPages}
           aria-label={t('pagination.nextAria')}
-          className="inline-flex items-center gap-1 px-2.5 sm:px-3 h-9 sm:h-10 rounded-lg border border-border bg-surface text-small font-medium text-ink disabled:opacity-40 disabled:cursor-not-allowed hover:bg-canvas transition-colors"
+          className="inline-flex items-center gap-1 px-2.5 sm:px-3 h-9 sm:h-10 rounded-lg border border-border bg-surface text-small font-medium text-ink disabled:opacity-40 disabled:cursor-not-allowed hover:bg-canvas transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 disabled:hover:translate-y-0 disabled:active:scale-100"
         >
           <span className="hidden sm:inline">{t('pagination.next')}</span>
           <ChevronRight size={16} />

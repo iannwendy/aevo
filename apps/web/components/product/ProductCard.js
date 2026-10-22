@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight, Star } from 'lucide-react';
-import { formatPrice } from '../../lib/utils';
+import { FALLBACK_PRODUCT_IMAGE, formatPrice, handleImageError } from '../../lib/utils';
 import { useI18n } from '../../lib/i18n';
 
 export default function ProductCard({ product, viewMode = 'grid' }) {
@@ -18,7 +18,7 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
     product.image ||
     product.images?.find((i) => i.isPrimary)?.url ||
     product.images?.[0]?.url ||
-    'https://images.unsplash.com/photo-1517336714731-489689fd1d8a?auto=format&fit=crop&w=1200&q=80';
+    FALLBACK_PRODUCT_IMAGE;
   const displayPrice = product.price ?? product.variants?.[0]?.price ?? product.minPrice ?? 0;
   const comparePrice = product.comparePrice ?? product.variants?.[0]?.comparePrice ?? null;
   const variantCount = product.variants?.length || 0;
@@ -30,7 +30,7 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
     return (
       <article
         data-testid="product-card"
-        className="group bg-surface border border-border rounded-2xl p-4 md:p-6 flex flex-col sm:flex-row gap-6 transition-all duration-200 hover:border-ink/40 hover:shadow-sm"
+        className="group bg-surface border border-border rounded-2xl p-4 md:p-6 flex flex-col sm:flex-row gap-6 transition-all duration-300 ease-out hover:-translate-y-1 hover:border-ink/40 hover:shadow-lg animate-fade-in"
       >
         <Link
           href={`/products/${product.slug}`}
@@ -40,16 +40,17 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
             src={primaryImage}
             alt={product.name}
             loading="lazy"
-            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+            onError={handleImageError}
+            className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.06]"
           />
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
             {product.isNewArrival && (
-              <span className="bg-primary text-primary-foreground text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
+              <span className="bg-primary text-primary-foreground text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full shadow-xs animate-scale-in">
                 {t('productCard.newArrival')}
               </span>
             )}
             {product.isBestSeller && (
-              <span className="bg-sage text-primary-foreground text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
+              <span className="bg-sage text-primary-foreground text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full shadow-xs animate-scale-in">
                 {t('productCard.bestSeller')}
               </span>
             )}
@@ -71,7 +72,7 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
             </div>
 
             <Link href={`/products/${product.slug}`} className="block mt-1.5">
-              <h3 className="text-lg font-display font-medium text-ink group-hover:text-secondary transition-colors">
+              <h3 className="text-lg font-display font-medium text-ink group-hover:text-secondary transition-colors duration-200">
                 {product.name}
               </h3>
             </Link>
@@ -105,10 +106,10 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
 
             <Link
               href={`/products/${product.slug}`}
-              className="inline-flex items-center gap-1.5 text-small font-medium text-ink hover:text-secondary transition-colors"
+              className="inline-flex items-center gap-1.5 text-small font-medium text-ink hover:text-secondary transition-all duration-200 group-hover:translate-x-1"
             >
               {t('productCard.viewProduct')}
-              <ArrowRight size={15} />
+              <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
           </div>
         </div>
@@ -119,7 +120,7 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
   return (
     <article
       data-testid="product-card"
-      className="group bg-surface border border-border rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-200 hover:border-ink/40 hover:shadow-sm"
+      className="group bg-surface border border-border rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 ease-out hover:-translate-y-1.5 hover:border-ink/40 hover:shadow-lg animate-fade-in"
     >
       <div>
         <Link
@@ -130,16 +131,17 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
             src={primaryImage}
             alt={product.name}
             loading="lazy"
-            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+            onError={handleImageError}
+            className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.06]"
           />
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
             {product.isNewArrival && (
-              <span className="bg-primary text-primary-foreground text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
+              <span className="bg-primary text-primary-foreground text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full shadow-xs animate-scale-in">
                 {t('productCard.newArrival')}
               </span>
             )}
             {product.isBestSeller && (
-              <span className="bg-sage text-primary-foreground text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
+              <span className="bg-sage text-primary-foreground text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full shadow-xs animate-scale-in">
                 {t('productCard.bestSeller')}
               </span>
             )}
@@ -160,7 +162,7 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
           </div>
 
           <Link href={`/products/${product.slug}`} className="block mt-1.5">
-            <h3 className="text-base font-display font-medium text-ink line-clamp-1 group-hover:text-secondary transition-colors">
+            <h3 className="text-base font-display font-medium text-ink line-clamp-1 group-hover:text-secondary transition-colors duration-200">
               {product.name}
             </h3>
           </Link>
@@ -197,10 +199,10 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
 
         <Link
           href={`/products/${product.slug}`}
-          className="inline-flex items-center gap-1 text-caption font-medium text-ink group-hover:translate-x-0.5 transition-transform shrink-0"
+          className="inline-flex items-center gap-1 text-caption font-medium text-ink group-hover:translate-x-1 transition-transform duration-200 shrink-0"
         >
           {t('productCard.view')}
-          <ArrowRight size={14} />
+          <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-0.5" />
         </Link>
       </div>
     </article>

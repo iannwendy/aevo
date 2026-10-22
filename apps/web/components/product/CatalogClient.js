@@ -288,7 +288,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
           <button
             type="submit"
             data-testid={`${idPrefix}-filter-search-submit`}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-primary text-primary-foreground text-caption font-medium hover:bg-primary/90 transition-colors"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-primary text-primary-foreground text-caption font-medium hover:bg-primary/90 active:scale-95 transition-all duration-200"
           >
             {t('catalog.go')}
           </button>
@@ -305,7 +305,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
             <button
               type="button"
               onClick={() => applyFilterUpdate({ category: '' })}
-              className="text-caption text-secondary hover:text-ink"
+              className="text-caption text-secondary hover:text-ink transition-colors"
             >
               {t('catalog.clear')}
             </button>
@@ -316,10 +316,10 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
             type="button"
             onClick={() => applyFilterUpdate({ category: '' })}
             data-testid={`${idPrefix}-category-all`}
-            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-small transition-colors ${
+            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-small transition-all duration-200 active:scale-[0.98] ${
               !currentFilters.category
-                ? 'bg-primary text-primary-foreground font-medium'
-                : 'text-ink hover:bg-canvas'
+                ? 'bg-primary text-primary-foreground font-medium shadow-xs'
+                : 'text-ink hover:bg-canvas hover:translate-x-0.5'
             }`}
           >
             <span>{t('catalog.allHardware')}</span>
@@ -335,10 +335,10 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                   applyFilterUpdate({ category: isSelected ? '' : cat.slug })
                 }
                 data-testid={`${idPrefix}-category-${cat.slug}`}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-small transition-colors ${
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-small transition-all duration-200 active:scale-[0.98] ${
                   isSelected
-                    ? 'bg-primary text-primary-foreground font-medium'
-                    : 'text-ink hover:bg-canvas'
+                    ? 'bg-primary text-primary-foreground font-medium shadow-xs'
+                    : 'text-ink hover:bg-canvas hover:translate-x-0.5'
                 }`}
               >
                 <span>{catName(cat.slug || cat.name)}</span>
@@ -453,7 +453,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
           <button
             type="submit"
             data-testid={`${idPrefix}-apply-price`}
-            className="w-full h-9 rounded-lg border border-border bg-canvas hover:bg-primary hover:text-primary-foreground text-caption font-medium text-ink transition-colors"
+            className="w-full h-9 rounded-lg border border-border bg-canvas hover:bg-primary hover:text-primary-foreground text-caption font-medium text-ink transition-all duration-200 active:scale-[0.98]"
           >
             {t('catalog.applyPriceRange')}
           </button>
@@ -473,9 +473,9 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                   setMaxPriceInput(range.max);
                   applyFilterUpdate({ minPrice: range.min, maxPrice: range.max });
                 }}
-                className={`px-2 py-1.5 rounded-lg border text-[11px] font-medium transition-colors ${
+                className={`px-2 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200 active:scale-95 ${
                   isSelected
-                    ? 'bg-primary text-primary-foreground border-primary'
+                    ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                     : 'bg-surface text-secondary border-border hover:border-ink hover:text-ink'
                 }`}
               >
@@ -496,7 +496,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
             <button
               type="button"
               onClick={() => applyFilterUpdate({ minRating: '' })}
-              className="text-caption text-secondary hover:text-ink"
+              className="text-caption text-secondary hover:text-ink transition-colors"
             >
               {t('catalog.clear')}
             </button>
@@ -513,8 +513,8 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                   applyFilterUpdate({ minRating: active ? '' : String(stars) })
                 }
                 data-testid={`${idPrefix}-rating-${stars}`}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-small transition-colors ${
-                  active ? 'bg-primary text-primary-foreground font-medium' : 'text-ink hover:bg-canvas'
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-small transition-all duration-200 active:scale-[0.98] ${
+                  active ? 'bg-primary text-primary-foreground font-medium shadow-xs' : 'text-ink hover:bg-canvas hover:translate-x-0.5'
                 }`}
               >
                 <span className="inline-flex items-center gap-1.5">
@@ -535,7 +535,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
         <h3 className="text-caption font-mono uppercase tracking-wider text-secondary mb-3">
           {t('catalog.availabilityAndTags')}
         </h3>
-        <label className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-canvas cursor-pointer text-small text-ink mb-3">
+        <label className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-canvas cursor-pointer text-small text-ink mb-3 transition-colors">
           <input
             type="checkbox"
             checked={currentFilters.inStock}
@@ -556,9 +556,9 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                   type="button"
                   onClick={() => applyFilterUpdate({ tag: active ? '' : tagObj.slug })}
                   data-testid={`${idPrefix}-tag-${tagObj.slug}`}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-caption transition-colors ${
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-caption transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 ${
                     active
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
                       : 'bg-canvas text-secondary hover:text-ink border border-border'
                   }`}
                 >
@@ -576,9 +576,9 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
           type="button"
           onClick={handleResetAll}
           data-testid={`${idPrefix}-reset-filters`}
-          className="w-full h-10 rounded-xl border border-border bg-surface hover:bg-canvas text-small font-medium text-ink inline-flex items-center justify-center gap-2 transition-colors"
+          className="group w-full h-10 rounded-xl border border-border bg-surface hover:bg-canvas text-small font-medium text-ink inline-flex items-center justify-center gap-2 btn-interactive"
         >
-          <RotateCcw size={15} />
+          <RotateCcw size={15} className="transition-transform duration-300 group-hover:-rotate-90" />
           {t('catalog.resetAllFilters')}
         </button>
       )}
@@ -619,12 +619,12 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
               type="button"
               onClick={() => setMobileDrawerOpen(true)}
               data-testid="mobile-filter-trigger"
-              className="inline-flex items-center gap-2 px-4 h-11 rounded-xl border border-border bg-surface text-small font-medium text-ink"
+              className="inline-flex items-center gap-2 px-4 h-11 rounded-xl border border-border bg-surface text-small font-medium text-ink btn-interactive"
             >
               <SlidersHorizontal size={16} />
               <span>{t('catalog.filtersBtn')}</span>
               {hasActiveFilters && (
-                <span className="w-2 h-2 rounded-full bg-ink" />
+                <span className="w-2 h-2 rounded-full bg-ink animate-badge-pop" />
               )}
             </button>
           </div>
@@ -668,7 +668,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                     data-testid="catalog-sort-select"
                     value={currentFilters.sort}
                     onChange={(e) => applyFilterUpdate({ sort: e.target.value })}
-                    className="h-10 px-3 rounded-xl border border-border bg-canvas text-small font-medium text-ink focus-ring"
+                    className="h-10 px-3 rounded-xl border border-border bg-canvas text-small font-medium text-ink focus-ring transition-colors"
                   >
                     {SORT_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -689,7 +689,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                     onClick={() => setViewMode('grid')}
                     data-testid="view-mode-grid"
                     aria-label="Grid view"
-                    className={`p-1.5 rounded-lg transition-colors ${
+                    className={`p-1.5 rounded-lg transition-all duration-200 active:scale-95 ${
                       viewMode === 'grid'
                         ? 'bg-surface text-ink shadow-sm'
                         : 'text-secondary hover:text-ink'
@@ -702,7 +702,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                     onClick={() => setViewMode('list')}
                     data-testid="view-mode-list"
                     aria-label="List view"
-                    className={`p-1.5 rounded-lg transition-colors ${
+                    className={`p-1.5 rounded-lg transition-all duration-200 active:scale-95 ${
                       viewMode === 'list'
                         ? 'bg-surface text-ink shadow-sm'
                         : 'text-secondary hover:text-ink'
@@ -721,12 +721,13 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 className="flex flex-wrap items-center gap-2 mb-6"
               >
                 {currentFilters.category && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink animate-scale-in">
                     {t('catalog.pillCategory', { value: catName(currentFilters.category) })}
                     <button
                       type="button"
                       onClick={() => applyFilterUpdate({ category: '' })}
                       aria-label="Remove category filter"
+                      className="hover:text-danger transition-colors"
                     >
                       <X size={12} />
                     </button>
@@ -735,20 +736,21 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 {currentFilters.brands.map((b) => (
                   <span
                     key={b}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink animate-scale-in"
                   >
                     {t('catalog.pillBrand', { value: b })}
                     <button
                       type="button"
                       onClick={() => handleToggleBrand(b)}
                       aria-label={`Remove ${b} filter`}
+                      className="hover:text-danger transition-colors"
                     >
                       <X size={12} />
                     </button>
                   </span>
                 ))}
                 {(currentFilters.minPrice !== '' || currentFilters.maxPrice !== '') && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink animate-scale-in">
                     {t('catalog.pillPrice')}{' '}
                     {currentFilters.minPrice
                       ? formatPrice(Number(currentFilters.minPrice))
@@ -761,42 +763,46 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                       type="button"
                       onClick={() => applyFilterUpdate({ minPrice: '', maxPrice: '' })}
                       aria-label="Remove price filter"
+                      className="hover:text-danger transition-colors"
                     >
                       <X size={12} />
                     </button>
                   </span>
                 )}
                 {currentFilters.minRating && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink animate-scale-in">
                     {t('catalog.pillRating', { value: currentFilters.minRating })}
                     <button
                       type="button"
                       onClick={() => applyFilterUpdate({ minRating: '' })}
                       aria-label="Remove rating filter"
+                      className="hover:text-danger transition-colors"
                     >
                       <X size={12} />
                     </button>
                   </span>
                 )}
                 {currentFilters.tag && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink animate-scale-in">
                     {t('catalog.pillTag', { value: currentFilters.tag })}
                     <button
                       type="button"
                       onClick={() => applyFilterUpdate({ tag: '' })}
                       aria-label="Remove tag filter"
+                      className="hover:text-danger transition-colors"
                     >
                       <X size={12} />
                     </button>
                   </span>
                 )}
                 {currentFilters.search && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink animate-scale-in">
                     {t('catalog.pillSearch')} &ldquo;{currentFilters.search}&rdquo;
                     <button
                       type="button"
                       onClick={() => applyFilterUpdate({ search: '' })}
                       aria-label="Remove search filter"
+                      className="hover:text-danger transition-colors"
                     >
                       <X size={12} />
                     </button>
@@ -806,7 +812,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
             )}
 
             {error && (
-              <div className="p-4 mb-6 rounded-xl border border-danger/40 bg-danger/10 text-danger text-small">
+              <div className="p-4 mb-6 rounded-xl border border-danger/40 bg-danger/10 text-danger text-small animate-fade-in">
                 {t('catalog.loadError')}
               </div>
             )}
@@ -824,7 +830,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
             ) : products.length === 0 ? (
               <div
                 data-testid="catalog-empty-state"
-                className="bg-surface border border-border rounded-2xl p-12 text-center"
+                className="bg-surface border border-border rounded-2xl p-12 text-center animate-scale-in"
               >
                 <h2 className="text-h3 text-ink mb-2">{t('catalog.emptyTitle')}</h2>
                 <p className="text-small text-secondary max-w-md mx-auto mb-6">
@@ -833,9 +839,9 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 <button
                   type="button"
                   onClick={handleResetAll}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 transition-colors"
+                  className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 btn-interactive"
                 >
-                  <RotateCcw size={15} />
+                  <RotateCcw size={15} className="transition-transform duration-300 group-hover:-rotate-90" />
                   {t('catalog.resetFiltersLower')}
                 </button>
               </div>
@@ -876,10 +882,10 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
       {/* Mobile Filter Drawer */}
       {mobileDrawerOpen && (
         <div
-          className="fixed inset-0 z-50 lg:hidden flex justify-end bg-obsidian/60 backdrop-blur-xs"
+          className="fixed inset-0 z-50 lg:hidden flex justify-end bg-obsidian/60 backdrop-blur-xs animate-fade-in"
           data-testid="mobile-filter-drawer"
         >
-          <div className="w-full max-w-sm bg-surface h-full overflow-y-auto p-6 flex flex-col justify-between shadow-xl">
+          <div className="w-full max-w-sm bg-surface h-full overflow-y-auto p-6 flex flex-col justify-between shadow-xl animate-slide-in">
             <div>
               <div className="flex items-center justify-between pb-4 mb-6 border-b border-border">
                 <h2 className="text-h3">{t('catalog.filterHardwareTitle')}</h2>
@@ -887,7 +893,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                   type="button"
                   onClick={() => setMobileDrawerOpen(false)}
                   aria-label={t('catalog.closeFiltersAria')}
-                  className="p-2 rounded-lg hover:bg-canvas"
+                  className="p-2 rounded-lg hover:bg-canvas transition-all duration-200 active:scale-90"
                 >
                   <X size={20} />
                 </button>
@@ -903,14 +909,14 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                   handleResetAll();
                   setMobileDrawerOpen(false);
                 }}
-                className="flex-1 h-11 rounded-xl border border-border bg-surface text-small font-medium text-ink"
+                className="flex-1 h-11 rounded-xl border border-border bg-surface text-small font-medium text-ink btn-interactive"
               >
                 {t('catalog.resetFiltersBtn')}
               </button>
               <button
                 type="button"
                 onClick={() => setMobileDrawerOpen(false)}
-                className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground text-small font-medium"
+                className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground text-small font-medium btn-interactive"
               >
                 {t('catalog.applyFiltersBtn')}
               </button>

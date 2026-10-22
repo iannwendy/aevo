@@ -6,6 +6,7 @@ import { ArrowRight, Sparkles, Award, Layers } from 'lucide-react';
 import ProductCard from '../product/ProductCard';
 import Pagination from '../product/Pagination';
 import { productsApi, categoriesApi } from '../../lib/api';
+import { handleImageError } from '../../lib/utils';
 import { useI18n } from '../../lib/i18n';
 
 const FEATURED_CATEGORY_SLUGS = [
@@ -192,39 +193,40 @@ export default function HomeClient({ initialData }) {
         <div className="container-main section-py">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7">
-              <span className="inline-block text-caption font-mono uppercase tracking-widest text-secondary mb-4">
+              <span className="inline-block text-caption font-mono uppercase tracking-widest text-secondary mb-4 animate-slide-up">
                 {t('home.heroSeries')}
               </span>
-              <h1 className="text-display mb-6">{t('home.heroTitle')}</h1>
-              <p className="text-xl text-secondary mb-8 max-w-xl">
+              <h1 className="text-display mb-6 animate-hero-reveal stagger-1">{t('home.heroTitle')}</h1>
+              <p className="text-xl text-secondary mb-8 max-w-xl animate-slide-up stagger-2">
                 {t('home.heroDescription')}
               </p>
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4 animate-slide-up stagger-3">
                 <Link
                   href="/products"
                   data-testid="hero-explore-cta"
-                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3.5 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                  className="group inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3.5 rounded-lg font-medium hover:bg-primary/90 btn-interactive"
                 >
                   {t('home.exploreCollection')}
-                  <ArrowRight size={20} />
+                  <ArrowRight size={20} className="transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
                 <Link
                   href="/products?sort=best-selling"
-                  className="inline-flex items-center gap-2 bg-surface border border-border text-ink px-6 py-3.5 rounded-lg font-medium hover:bg-canvas transition-colors"
+                  className="inline-flex items-center gap-2 bg-surface border border-border text-ink px-6 py-3.5 rounded-lg font-medium hover:bg-canvas btn-interactive"
                 >
                   {t('home.bestSellersBtn')}
                 </Link>
               </div>
             </div>
 
-            <div className="lg:col-span-5">
-              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-white p-6 shadow-sm">
+            <div className="lg:col-span-5 animate-scale-in stagger-2">
+              <div className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-white p-6 shadow-sm transition-all duration-500 hover:shadow-xl hover:border-ink/30">
                 <img
                   src="https://m.media-amazon.com/images/I/51Zuib0V6uL._AC_SL1200_.jpg"
                   alt="AEVO Flagship Computing Setup"
-                  className="w-full h-full object-contain pb-12"
+                  onError={handleImageError}
+                  className="w-full h-full object-contain pb-12 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                 />
-                <div className="absolute bottom-4 left-4 right-4 bg-surface/90 backdrop-blur-md border border-border rounded-xl p-4 flex items-center justify-between">
+                <div className="absolute bottom-4 left-4 right-4 bg-surface/90 backdrop-blur-md border border-border rounded-xl p-4 flex items-center justify-between shadow-sm animate-float">
                   <div>
                     <span className="text-[11px] font-mono uppercase tracking-wider text-secondary block">
                       {t('home.featuredSystem')}
@@ -235,10 +237,10 @@ export default function HomeClient({ initialData }) {
                   </div>
                   <Link
                     href="/products/macbook-pro-m3"
-                    className="text-caption font-medium text-ink hover:text-secondary inline-flex items-center gap-1"
+                    className="group/link text-caption font-medium text-ink hover:text-secondary inline-flex items-center gap-1 transition-colors"
                   >
                     {t('home.configure')}
-                    <ArrowRight size={14} />
+                    <ArrowRight size={14} className="transition-transform duration-200 group-hover/link:translate-x-1" />
                   </Link>
                 </div>
               </div>
@@ -272,10 +274,10 @@ export default function HomeClient({ initialData }) {
             </div>
             <Link
               href="/products?sort=newest"
-              className="text-small font-medium text-secondary hover:text-ink transition-colors inline-flex items-center gap-1"
+              className="group text-small font-medium text-secondary hover:text-ink transition-colors inline-flex items-center gap-1"
             >
               {t('home.viewAllNewArrivals')}
-              <ArrowRight size={16} />
+              <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
 
@@ -328,10 +330,10 @@ export default function HomeClient({ initialData }) {
             </div>
             <Link
               href="/products?sort=best-selling"
-              className="text-small font-medium text-secondary hover:text-ink transition-colors inline-flex items-center gap-1"
+              className="group text-small font-medium text-secondary hover:text-ink transition-colors inline-flex items-center gap-1"
             >
               {t('home.viewAllBestSellers')}
-              <ArrowRight size={16} />
+              <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
 
@@ -394,9 +396,9 @@ export default function HomeClient({ initialData }) {
                   key={cat.slug}
                   href={`/products?category=${cat.slug}`}
                   data-testid={`category-card-${cat.slug}`}
-                  className="group block"
+                  className="group block animate-fade-in"
                 >
-                  <div className="h-full bg-surface rounded-2xl border border-border p-6 md:p-8 flex flex-col justify-between transition-all duration-200 group-hover:border-ink group-hover:shadow-sm">
+                  <div className="h-full bg-surface rounded-2xl border border-border p-6 md:p-8 flex flex-col justify-between transition-all duration-300 ease-out group-hover:-translate-y-1.5 group-hover:border-ink group-hover:shadow-lg">
                     <div>
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-caption font-mono text-secondary uppercase tracking-wider">
@@ -411,7 +413,7 @@ export default function HomeClient({ initialData }) {
                           </span>
                         )}
                       </div>
-                      <h3 className="text-h3 mt-2 text-ink">{localizedCatName}</h3>
+                      <h3 className="text-h3 mt-2 text-ink transition-colors duration-200 group-hover:text-secondary">{localizedCatName}</h3>
                       {localizedCatDesc && (
                         <p className="text-small text-secondary mt-2 line-clamp-2">
                           {localizedCatDesc}
@@ -421,7 +423,7 @@ export default function HomeClient({ initialData }) {
 
                     <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between text-small font-medium text-ink">
                       <span>{t('home.exploreCategory', { name: localizedCatName })}</span>
-                      <ArrowRight className="w-5 h-5 text-secondary group-hover:text-ink group-hover:translate-x-0.5 transition-all" />
+                      <ArrowRight className="w-5 h-5 text-secondary group-hover:text-ink group-hover:translate-x-1.5 transition-all duration-200" />
                     </div>
                   </div>
                 </Link>
@@ -460,10 +462,10 @@ export default function HomeClient({ initialData }) {
                 </div>
                 <Link
                   href={`/products?category=${catMeta.slug}`}
-                  className="text-small font-medium text-secondary hover:text-ink transition-colors inline-flex items-center gap-1"
+                  className="group text-small font-medium text-secondary hover:text-ink transition-colors inline-flex items-center gap-1"
                 >
                   {t('home.shopAllCategory', { name: localizedTitle })}
-                  <ArrowRight size={16} />
+                  <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
               </div>
 
