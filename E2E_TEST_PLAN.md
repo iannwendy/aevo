@@ -182,7 +182,7 @@ curl -X POST http://localhost:3001/api/auth/login \
 | API server chạy ổn định                                    | ✅      |
 | Authentication (register/login/profile/password) hoạt động | ✅      |
 | Frontend basic setup hoàn chỉnh                            | ✅      |
-| Tất cả test cases pass                                     | ⬜      |
+| Tất cả test cases pass                                     | ✅      |
 
 ---
 
@@ -198,14 +198,14 @@ curl -X POST http://localhost:3001/api/auth/login \
 ## Task 2.1: Product API - List & Filter
 
 ### Checklist
-- [ ] GET `/api/products` - lấy danh sách sản phẩm
-- [ ] Filter theo category
-- [ ] Filter theo brand (multi-select)
-- [ ] Filter theo price (min/max)
-- [ ] Search theo tên/description
-- [ ] Sort: newest, price_asc, price_desc, name_asc, name_desc, best-selling
-- [ ] Pagination (page, limit)
-- [ ] Include: category, variants, primary image
+- [x] GET `/api/products` - lấy danh sách sản phẩm
+- [x] Filter theo category
+- [x] Filter theo brand (multi-select)
+- [x] Filter theo price (min/max)
+- [x] Search theo tên/description
+- [x] Sort: newest, price_asc, price_desc, name_asc, name_desc, best-selling
+- [x] Pagination (page, limit)
+- [x] Include: category, variants, primary image
 
 ### Test Cases
 
@@ -232,12 +232,12 @@ curl "http://localhost:3001/api/products?category=laptops&brand=asus&minPrice=10
 ## Task 2.2: Product API - Detail & Variants
 
 ### Checklist
-- [ ] GET `/api/products/:id` - chi tiết sản phẩm
-- [ ] GET `/api/products/slug/:slug` - chi tiết theo slug
-- [ ] Include all variants
-- [ ] Include all images (sắp xếp theo position)
-- [ ] Include reviews
-- [ ] Tính average rating
+- [x] GET `/api/products/:id` - chi tiết sản phẩm
+- [x] GET `/api/products/slug/:slug` - chi tiết theo slug
+- [x] Include all variants
+- [x] Include all images (sắp xếp theo position)
+- [x] Include reviews
+- [x] Tính average rating
 
 ### Test Cases
 
@@ -254,9 +254,9 @@ curl "http://localhost:3001/api/products?category=laptops&brand=asus&minPrice=10
 ## Task 2.3: Category API
 
 ### Checklist
-- [ ] GET `/api/categories` - danh sách categories
-- [ ] GET `/api/categories/:id` - category với products
-- [ ] Admin: POST, PUT, DELETE categories
+- [x] GET `/api/categories` - danh sách categories
+- [x] GET `/api/categories/:id` - category với products
+- [x] Admin: POST, PUT, DELETE categories
 
 ### Test Cases
 
@@ -270,12 +270,12 @@ curl "http://localhost:3001/api/products?category=laptops&brand=asus&minPrice=10
 ## Task 2.4: Homepage - Product Display
 
 ### Checklist
-- [ ] Homepage render với static elements
-- [ ] Gọi API New Arrivals
-- [ ] Gọi API Best Sellers
-- [ ] Gọi API Categories
-- [ ] Product cards hiển thị đúng (image, name, price)
-- [ ] Category cards hiển thị
+- [x] Homepage render với static elements
+- [x] Gọi API New Arrivals
+- [x] Gọi API Best Sellers
+- [x] Gọi API Categories
+- [x] Product cards hiển thị đúng (image, name, price)
+- [x] Category cards hiển thị
 
 ### Test Cases
 
@@ -291,13 +291,13 @@ curl "http://localhost:3001/api/products?category=laptops&brand=asus&minPrice=10
 ## Task 2.5: Product Catalog Page
 
 ### Checklist
-- [ ] Page `/products` hiển thị grid
-- [ ] Sidebar filters (category, brand, price)
-- [ ] Sort dropdown
-- [ ] Product grid 3-4 cột (desktop)
-- [ ] Pagination component
-- [ ] URL sync với filter/sort/page
-- [ ] Mobile: filter drawer thay sidebar
+- [x] Page `/products` hiển thị grid
+- [x] Sidebar filters (category, brand, price)
+- [x] Sort dropdown
+- [x] Product grid 3-4 cột (desktop)
+- [x] Pagination component
+- [x] URL sync với filter/sort/page
+- [x] Mobile: filter drawer thay sidebar
 
 ### Test Cases
 
@@ -314,15 +314,15 @@ curl "http://localhost:3001/api/products?category=laptops&brand=asus&minPrice=10
 ## Task 2.6: Product Detail Page
 
 ### Checklist
-- [ ] Page `/products/[slug]` render
-- [ ] Image gallery (3+ images)
-- [ ] Product info: name, brand, price
-- [ ] Variant selector
-- [ ] Stock availability theo variant
-- [ ] Quantity stepper
-- [ ] Add to cart button
-- [ ] Product specifications
-- [ ] Description >= 5 dòng
+- [x] Page `/products/[slug]` render
+- [x] Image gallery (3+ images)
+- [x] Product info: name, brand, price
+- [x] Variant selector
+- [x] Stock availability theo variant
+- [x] Quantity stepper
+- [x] Add to cart button
+- [x] Product specifications
+- [x] Description >= 5 dòng
 
 ### Test Cases
 
@@ -340,12 +340,12 @@ curl "http://localhost:3001/api/products?category=laptops&brand=asus&minPrice=10
 ## Task 2.7: Reviews - Comments & Ratings
 
 ### Checklist
-- [ ] GET `/api/reviews/product/:productId` - lấy reviews
-- [ ] POST `/api/reviews` - tạo review
-- [ ] Guest: chỉ comment (không rating)
-- [ ] Auth user: comment + rating (1-5 stars)
-- [ ] Socket.IO: realtime new review
-- [ ] Display rating distribution
+- [x] GET `/api/reviews/product/:productId` - lấy reviews
+- [x] POST `/api/reviews` - tạo review
+- [x] Guest: chỉ comment (không rating)
+- [x] Auth user: comment + rating (1-5 stars)
+- [x] Socket.IO: realtime new review
+- [x] Display rating distribution
 
 ### Test Cases
 
@@ -364,13 +364,13 @@ curl "http://localhost:3001/api/products?category=laptops&brand=asus&minPrice=10
 
 | Criteria | Status |
 |----------|--------|
-| Product API (list, filter, sort, pagination) hoạt động | ⬜ |
-| Product Detail với variants, images hoàn chỉnh | ⬜ |
-| Homepage hiển thị đúng | ⬜ |
-| Catalog page với filters/sort/pagination | ⬜ |
-| Reviews với realtime | ⬜ |
-| Tất cả test cases pass | ⬜ |
-| **PUSH TO REMOTE** | ⬜ |
+| Product API (list, filter, sort, pagination) hoạt động | ✅ |
+| Product Detail với variants, images hoàn chỉnh | ✅ |
+| Homepage hiển thị đúng | ✅ |
+| Catalog page với filters/sort/pagination | ✅ |
+| Reviews với realtime | ✅ |
+| Tất cả test cases pass | ✅ |
+| **PUSH TO REMOTE** | ✅ |
 
 ---
 

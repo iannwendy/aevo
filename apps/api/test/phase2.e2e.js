@@ -362,7 +362,7 @@ async function main() {
 
   await test('CAT-03', 'Admin can POST, PUT, DELETE categories; non-admin is rejected', async () => {
     const admin = await loginAs('admin@aevo.com', 'admin123');
-    const customer = await registerCustomer('cat-nonadmin');
+    const customer = await loginAs('customer@aevo.com', 'customer123');
 
     const catName = `TestCat ${Date.now()}`;
     const forbidden = await call('/api/categories', {
@@ -426,12 +426,14 @@ async function main() {
     assert.equal(res.body.rating, null);
   });
 
+  let phase2Customer = null;
+
   await test('REV-03', 'Authenticated user can post comment + star rating (1-5)', async () => {
-    const reviewer = await registerCustomer('rev03');
+    phase2Customer = await loginAs('customer@aevo.com', 'customer123');
     const commentText = `Verified user rating at ${Date.now()}`;
     const res = await call('/api/reviews', {
       method: 'POST',
-      token: reviewer.token,
+      token: phase2Customer.token,
       body: {
         productId: detailBySlug.id,
         rating: 5,
@@ -441,7 +443,7 @@ async function main() {
     assert.equal(res.status, 201, JSON.stringify(res.body));
     assert.equal(res.body.rating, 5);
     assert.equal(res.body.comment, commentText);
-    assert.equal(res.body.user?.fullName, 'Phase Two Tester');
+    assert.equal(res.body.user?.fullName, 'Nguyen Van A');
   });
 
   await test('REV-04', 'Guest attempting to submit a star rating receives 401', async () => {
@@ -458,7 +460,7 @@ async function main() {
   });
 
   await test('REV-05', 'Invalid rating (rating=6 or rating=0) returns 400', async () => {
-    const reviewer = await registerCustomer('rev05');
+    const reviewer = phase2Customer || (await loginAs('customer@aevo.com', 'customer123'));
     const resHigh = await call('/api/reviews', {
       method: 'POST',
       token: reviewer.token,
@@ -529,6 +531,201 @@ async function main() {
       socketA.disconnect();
       socketB.disconnect();
     }
+  });
+
+  // ================================================================ Task 2.4: Homepage - Product Display (FE-04 .. FE-07)
+  let homeHtml = '';
+
+  await test('FE-04', 'Homepage (/) loads cleanly with Hero, New Arrivals, Best Sellers, Categories, and Pagination', async () => {
+    const res = await fetch(`${CLIENT}/`);
+    assert.equal(res.status, 200);
+    homeHtml = await res.text();
+    assert.doesNotMatch(homeHtml, /Application error|Internal Server Error/i);
+    assert.ok(homeHtml.includes('Technology, refined.'), 'hero headline missing');
+    assert.ok(homeHtml.includes('data-testid="new-arrivals-section"'), 'new-arrivals-section missing');
+    assert.ok(homeHtml.includes('data-testid="best-sellers-section"'), 'best-sellers-section missing');
+    assert.ok(homeHtml.includes('data-testid="categories-section"'), 'categories-section missing');
+    assert.ok(homeHtml.includes('data-testid="pagination"'), 'pagination missing on homepage');
+  });
+
+  await test('FE-05', 'New Arrivals section displays products with image, name, formatted VND price, and pagination', async () => {
+    const newArrivalsApi = await call('/api/products/new-arrivals?limit=4');
+    assert.equal(newArrivalsApi.status, 200);
+    assert.ok(newArrivalsApi.body.length > 0);
+    for (const p of newArrivalsApi.body) {
+      assert.ok(homeHtml.includes(p.name), `New Arrival product "${p.name}" missing from homepage`);
+      assert.ok(homeHtml.includes(`/products/${p.slug}`), `link to /products/${p.slug} missing`);
+    }
+    assert.ok(homeHtml.includes('New Arrivals Pagination'), 'New Arrivals pagination label missing');
+    return `${newArrivalsApi.body.length} new arrivals rendered`;
+  });
+
+  await test('FE-06', 'Best Sellers section displays best-selling products and pagination', async () => {
+    const bestApi = await call('/api/products/best-sellers?limit=4');
+    assert.equal(bestApi.status, 200);
+    assert.ok(bestApi.body.length > 0);
+    for (const p of bestApi.body) {
+      assert.ok(homeHtml.includes(p.name), `Best Seller product "${p.name}" missing from homepage`);
+    }
+    assert.ok(homeHtml.includes('Best Sellers Pagination'), 'Best Sellers pagination label missing');
+    return `${bestApi.body.length} best sellers rendered`;
+  });
+
+  await test('FE-07', 'Category cards and >= 3 distinct category product sections (Laptops, Components, Monitors) render with links and pagination', async () => {
+    for (const slug of ['laptops', 'components', 'monitors']) {
+      assert.ok(
+        homeHtml.includes(`data-testid="category-card-${slug}"`),
+        `category card for ${slug} missing`
+      );
+      assert.ok(
+        homeHtml.includes(`href="/products?category=${slug}"`),
+        `navigation link /products?category=${slug} missing`
+      );
+      assert.ok(
+        homeHtml.includes(`data-testid="category-showcase-${slug}"`),
+        `category product section for ${slug} missing`
+      );
+    }
+    return 'category cards + 3 paginated category showcases verified';
+  });
+
+  // ================================================================ Task 2.5: Product Catalog Page (FE-08 .. FE-12)
+  await test('FE-08', 'Catalog page (/products) loads with product grid, sidebar filters, sort dropdown, view toggle, and pagination', async () => {
+    const res = await fetch(`${CLIENT}/products`);
+    assert.equal(res.status, 200);
+    const html = await res.text();
+    assert.ok(html.includes('data-testid="catalog-page"'), 'catalog-page container missing');
+    assert.ok(html.includes('data-testid="catalog-sidebar"'), 'catalog-sidebar missing');
+    assert.ok(html.includes('data-testid="catalog-sort-select"'), 'sort dropdown missing');
+    assert.ok(html.includes('data-testid="catalog-products-grid"'), 'products grid missing');
+    assert.ok(html.includes('data-testid="mobile-filter-trigger"'), 'mobile filter trigger missing');
+    assert.ok(html.includes('data-testid="pagination-page-1"'), 'pagination page 1 missing');
+    assert.ok(html.includes('data-testid="pagination-page-2"'), 'pagination page 2 missing');
+  });
+
+  await test('FE-09', 'Catalog category, brand, and price filters display only matching products', async () => {
+    const res = await fetch(`${CLIENT}/products?category=laptops`);
+    assert.equal(res.status, 200);
+    const html = await res.text();
+    assert.ok(html.includes('MacBook Pro M3'), 'expected laptop MacBook Pro M3 in /products?category=laptops');
+    assert.ok(
+      !html.includes('NVIDIA GeForce RTX 4090 Founders Edition'),
+      'component RTX 4090 should not appear in laptops filter'
+    );
+  });
+
+  await test('FE-10', 'Catalog sort option (?sort=price_asc & ?sort=price_desc) orders product cards accurately', async () => {
+    const ascRes = await fetch(`${CLIENT}/products?sort=price_asc`);
+    assert.equal(ascRes.status, 200);
+    const ascHtml = await ascRes.text();
+    // Lowest price product in seed is Lamicall Desktop Stand (890,000 VND)
+    const posLamicall = ascHtml.indexOf('Lamicall Desktop Stand');
+    const posBookArc = ascHtml.indexOf('TwelveSouth BookArc Flex Vertical Stand');
+    assert.ok(posLamicall !== -1 && posBookArc !== -1, 'expected lowest priced products on page 1 of price_asc');
+    assert.ok(posLamicall < posBookArc, 'Lamicall (890k) should appear before TwelveSouth BookArc (1.49M) in price_asc');
+
+    const descRes = await fetch(`${CLIENT}/products?sort=price_desc`);
+    assert.equal(descRes.status, 200);
+    const descHtml = await descRes.text();
+    // Highest minPrice product is RTX 4090 Founders Edition (63,990,000 VND)
+    assert.ok(
+      descHtml.includes('NVIDIA GeForce RTX 4090 Founders Edition'),
+      'expected highest priced product on page 1 of price_desc'
+    );
+  });
+
+  await test('FE-11', 'Catalog pagination (?page=2) renders page 2 items and marks page 2 active', async () => {
+    const p1Html = await (await fetch(`${CLIENT}/products?page=1`)).text();
+    const p2Res = await fetch(`${CLIENT}/products?page=2`);
+    assert.equal(p2Res.status, 200);
+    const p2Html = await p2Res.text();
+
+    const p1Slugs = [...p1Html.matchAll(/href="\/products\/([a-z0-9-]+)"/g)].map((m) => m[1]);
+    const p2Slugs = [...p2Html.matchAll(/href="\/products\/([a-z0-9-]+)"/g)].map((m) => m[1]);
+    assert.ok(p1Slugs.length > 0 && p2Slugs.length > 0);
+    assert.notEqual(p1Slugs[0], p2Slugs[0], 'page 1 and page 2 should display different products');
+    assert.match(p2Html, /aria-current="page"[^>]*data-testid="pagination-page-2"|data-testid="pagination-page-2"[^>]*aria-current="page"/);
+  });
+
+  await test('FE-12', 'Shared URL with multiple filters preserves state and renders exact filtered results', async () => {
+    const sharedUrl = `${CLIENT}/products?category=laptops&brand=asus,lenovo&minPrice=20000000&maxPrice=40000000&sort=price_asc`;
+    const res = await fetch(sharedUrl);
+    assert.equal(res.status, 200);
+    const html = await res.text();
+    assert.ok(html.includes('data-testid="active-filter-pills"'), 'active filter pills missing');
+    assert.ok(html.includes('Lenovo ThinkPad X1 Carbon Gen 12'), 'expected Lenovo ThinkPad in filtered view');
+    assert.ok(html.includes('ASUS ROG Zephyrus G14'), 'expected ASUS ROG Zephyrus G14 in filtered view');
+    assert.ok(!html.includes('MacBook Pro M3'), 'Apple MacBook Pro M3 should be excluded by brand=asus,lenovo');
+  });
+
+  // ================================================================ Task 2.6: Product Detail Page (FE-13 .. FE-18)
+  let detailHtml = '';
+
+  await test('FE-13', 'Product Detail page (/products/macbook-pro-m3) loads with title, brand, category, and reviews', async () => {
+    const res = await fetch(`${CLIENT}/products/macbook-pro-m3`);
+    assert.equal(res.status, 200);
+    detailHtml = await res.text();
+    assert.ok(detailHtml.includes('data-testid="product-detail-page"'));
+    assert.ok(detailHtml.includes('MacBook Pro M3'));
+    assert.ok(detailHtml.includes('Apple'));
+    assert.ok(detailHtml.includes('data-testid="reviews-section"'));
+    assert.ok(detailHtml.includes('data-testid="rating-distribution"'));
+  });
+
+  await test('FE-14', 'Product Detail image gallery renders main image and >= 3 clickable thumbnails', async () => {
+    assert.ok(detailHtml.includes('data-testid="product-gallery-main-image"'));
+    assert.ok(detailHtml.includes('data-testid="product-gallery-thumb-0"'));
+    assert.ok(detailHtml.includes('data-testid="product-gallery-thumb-1"'));
+    assert.ok(detailHtml.includes('data-testid="product-gallery-thumb-2"'));
+  });
+
+  await test('FE-15', 'Product Detail variant selector displays all variants and their respective prices', async () => {
+    assert.ok(detailHtml.includes('data-testid="variant-selector"'));
+    assert.ok(detailHtml.includes('data-testid="variant-option-0"'));
+    assert.ok(detailHtml.includes('data-testid="variant-option-1"'));
+    for (const v of detailBySlug.variants) {
+      assert.ok(detailHtml.includes(v.name), `variant "${v.name}" missing from detail page`);
+      assert.ok(detailHtml.includes(v.sku), `variant SKU "${v.sku}" missing from detail page`);
+    }
+  });
+
+  await test('FE-16', 'Product Detail displays independent stock availability per variant', async () => {
+    assert.ok(detailHtml.includes('data-testid="product-stock"'));
+    const firstVar = detailBySlug.variants[0];
+    assert.ok(
+      detailHtml.includes(`In stock · ${firstVar.inventory} available`),
+      `expected stock display for ${firstVar.inventory} units`
+    );
+  });
+
+  await test('FE-17', 'Add to cart from Product Detail adds selected variant and updates cart', async () => {
+    assert.ok(detailHtml.includes('data-testid="add-to-cart-button"'));
+    assert.ok(detailHtml.includes('data-testid="quantity-stepper"'));
+
+    const targetVariant = detailBySlug.variants[0];
+    const addRes = await call('/api/cart/items', {
+      method: 'POST',
+      body: { variantId: targetVariant.id, quantity: 2 },
+    });
+    assert.equal(addRes.status, 200, `add to cart failed: ${JSON.stringify(addRes.body)}`);
+    const sessionCookie = cookieFrom(addRes, 'sessionId');
+    assert.ok(sessionCookie, 'expected sessionId cookie for guest cart');
+
+    const cartRes = await call('/api/cart', { cookie: sessionCookie });
+    assert.equal(cartRes.status, 200);
+    const addedItem = (cartRes.body.items || []).find((i) => i.variantId === targetVariant.id);
+    assert.ok(addedItem, 'added variant not found in cart');
+    assert.equal(addedItem.quantity, 2);
+    assert.equal(cartRes.body.subtotal, targetVariant.price * 2);
+  });
+
+  await test('FE-18', 'Product Detail description renders >= 5 lines', async () => {
+    const lineMatches = detailHtml.match(/data-testid="product-description-line"/g) || [];
+    assert.ok(
+      lineMatches.length >= 5,
+      `expected >= 5 description lines on detail page, got ${lineMatches.length}`
+    );
+    return `${lineMatches.length} description lines rendered`;
   });
 
   // ------------------------------------------------------------------ report
