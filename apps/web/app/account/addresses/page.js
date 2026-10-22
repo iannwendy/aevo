@@ -246,10 +246,14 @@ export default function AddressesPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
+                    <label
+                      htmlFor="address-fullname-input"
+                      className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
+                    >
                       {t('addresses.recipientNameLabel')}
                     </label>
                     <input
+                      id="address-fullname-input"
                       type="text"
                       required
                       value={formData.fullName}
@@ -261,10 +265,14 @@ export default function AddressesPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
+                    <label
+                      htmlFor="address-phone-input"
+                      className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
+                    >
                       {t('addresses.phoneLabel')}
                     </label>
                     <input
+                      id="address-phone-input"
                       type="tel"
                       required
                       value={formData.phone}
@@ -278,10 +286,14 @@ export default function AddressesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
+                  <label
+                    htmlFor="address-street-input"
+                    className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
+                  >
                     {t('addresses.streetAddressLabel')}
                   </label>
                   <input
+                    id="address-street-input"
                     type="text"
                     required
                     value={formData.address}
@@ -296,10 +308,14 @@ export default function AddressesPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
+                    <label
+                      htmlFor="address-ward-input"
+                      className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
+                    >
                       {t('addresses.wardLabel')}
                     </label>
                     <input
+                      id="address-ward-input"
                       type="text"
                       value={formData.ward}
                       onChange={(e) =>
@@ -309,10 +325,14 @@ export default function AddressesPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
+                    <label
+                      htmlFor="address-district-input"
+                      className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
+                    >
                       {t('addresses.districtLabel')}
                     </label>
                     <input
+                      id="address-district-input"
                       type="text"
                       value={formData.district}
                       onChange={(e) =>
@@ -322,10 +342,14 @@ export default function AddressesPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
+                    <label
+                      htmlFor="address-city-input"
+                      className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
+                    >
                       {t('addresses.cityLabel')}
                     </label>
                     <input
+                      id="address-city-input"
                       type="text"
                       required
                       value={formData.city}

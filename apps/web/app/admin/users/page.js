@@ -371,10 +371,14 @@ export default function AdminUsersPage() {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end"
             >
               <div>
-                <label className="block text-caption font-mono uppercase text-secondary mb-1.5">
+                <label
+                  htmlFor="edit-user-fullname-input"
+                  className="block text-caption font-mono uppercase text-secondary mb-1.5"
+                >
                   {t('auth.fullNameLabel')}
                 </label>
                 <input
+                  id="edit-user-fullname-input"
                   type="text"
                   required
                   value={editFullName}
@@ -384,10 +388,14 @@ export default function AdminUsersPage() {
               </div>
 
               <div>
-                <label className="block text-caption font-mono uppercase text-secondary mb-1.5">
+                <label
+                  htmlFor="edit-user-phone-input"
+                  className="block text-caption font-mono uppercase text-secondary mb-1.5"
+                >
                   {t('profile.phoneLabel')}
                 </label>
                 <input
+                  id="edit-user-phone-input"
                   type="text"
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
@@ -397,10 +405,14 @@ export default function AdminUsersPage() {
               </div>
 
               <div>
-                <label className="block text-caption font-mono uppercase text-secondary mb-1.5">
+                <label
+                  htmlFor="edit-user-address-input"
+                  className="block text-caption font-mono uppercase text-secondary mb-1.5"
+                >
                   {t('auth.shippingAddressLabel')}
                 </label>
                 <input
+                  id="edit-user-address-input"
                   type="text"
                   value={editAddress}
                   onChange={(e) => setEditAddress(e.target.value)}
@@ -410,10 +422,14 @@ export default function AdminUsersPage() {
               </div>
 
               <div>
-                <label className="block text-caption font-mono uppercase text-secondary mb-1.5">
+                <label
+                  htmlFor="edit-user-points-input"
+                  className="block text-caption font-mono uppercase text-secondary mb-1.5"
+                >
                   {t('admin.thLoyaltyPoints')}
                 </label>
                 <input
+                  id="edit-user-points-input"
                   type="number"
                   min="0"
                   value={editLoyaltyPoints}
