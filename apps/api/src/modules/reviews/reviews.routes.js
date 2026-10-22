@@ -3,6 +3,7 @@ const router = express.Router();
 const prisma = require('../../utils/prisma');
 const { optionalAuth } = require('../../middleware/auth');
 const { rateLimit } = require('../../middleware/rateLimit');
+const { publishSocketEvent } = require('../../utils/redis');
 
 function buildReviewStats(reviews = []) {
   const ratings = reviews.filter((r) => typeof r.rating === 'number' && r.rating >= 1 && r.rating <= 5);
@@ -125,11 +126,12 @@ router.post(
       },
     });
 
-    // Emit realtime event via Socket.IO
+    // Emit realtime event via Socket.IO and broadcast across instances via Redis Pub/Sub
     const io = req.app.get('io');
     if (io) {
       io.to(`product-${productId}`).emit('new-review', review);
     }
+    publishSocketEvent('new-review', `product-${productId}`, review).catch(() => {});
 
     res.status(201).json(review);
   } catch (error) {

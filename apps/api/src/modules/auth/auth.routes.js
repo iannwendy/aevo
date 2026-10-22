@@ -11,6 +11,7 @@ const {
   RESET_TOKEN_SECRET,
 } = require('../../middleware/auth');
 const { rateLimit } = require('../../middleware/rateLimit');
+const { setSessionState, deleteSessionState } = require('../../utils/redis');
 const { asyncHandler } = require('../../middleware/asyncHandler');
 const { sendPasswordResetEmail } = require('../../services/mailer');
 const {
@@ -182,6 +183,12 @@ router.post(
 
       const token = signSessionToken(user);
       setAuthCookie(res, token);
+      setSessionState(`auth:${user.id}`, {
+        userId: user.id,
+        role: user.role,
+        active: true,
+        updatedAt: new Date().toISOString(),
+      }).catch(() => {});
 
       return res.json({
         user: { ...publicUser(user), addresses: user.addresses },
@@ -197,7 +204,10 @@ router.post(
 // ------------------------------------------------------------------ Logout
 // The cookie was set with httpOnly/secure/sameSite and no domain; clearCookie
 // only expires a cookie whose attributes match, so mirror them here.
-router.post('/logout', (req, res) => {
+router.post('/logout', optionalAuth, (req, res) => {
+  if (req.user?.id) {
+    deleteSessionState(`auth:${req.user.id}`).catch(() => {});
+  }
   res.clearCookie('token', {
     path: '/',
     httpOnly: true,

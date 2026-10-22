@@ -873,11 +873,11 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 5.5: Horizontal Scaling Preparation
 
 ### Checklist
-- [ ] Stateless API design
-- [ ] Session in Redis
-- [ ] JWT for auth
-- [ ] Load balancing ready
-- [ ] Documentation for scaling
+- [x] Stateless API design
+- [x] Session in Redis
+- [x] JWT for auth
+- [x] Load balancing ready
+- [x] Documentation for scaling
 
 ### Test Cases
 
@@ -895,9 +895,9 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 | Responsive design hoàn chỉnh | ✅ |
 | Security validation pass | ✅ |
 | Docker deployment hoạt động | ✅ |
-| Full E2E test pass | ✅ |
-| Horizontal scaling ready | ⬜ |
-| **PUSH TO REMOTE** | ✅ |
+| Full E2E test pass | ⬜ |
+| Horizontal scaling ready | ✅ |
+| **PUSH TO REMOTE** | ⬜ |
 
 ---
 

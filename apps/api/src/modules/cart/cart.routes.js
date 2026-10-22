@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const router = express.Router();
 const prisma = require('../../utils/prisma');
 const { optionalAuth } = require('../../middleware/auth');
+const { setSessionState } = require('../../utils/redis');
 
 const FREE_SHIPPING_THRESHOLD = 20000000;
 const SHIPPING_FEE = 30000;
@@ -175,7 +176,17 @@ async function resolveOrCreateCart(req, res) {
 router.get('/', optionalAuth, async (req, res) => {
   try {
     const cart = await resolveOrCreateCart(req, res);
-    res.json(formatCartResponse(cart));
+    const formatted = formatCartResponse(cart);
+    const sessionKey = cart.sessionId || (cart.userId ? `user_${cart.userId}` : null);
+    if (sessionKey) {
+      setSessionState(`cart:${sessionKey}`, {
+        cartId: formatted.id,
+        itemCount: formatted.itemCount,
+        total: formatted.total,
+        updatedAt: new Date().toISOString(),
+      }).catch(() => {});
+    }
+    res.json(formatted);
   } catch (error) {
     console.error('Get cart error:', error);
     res.status(500).json({ error: 'Failed to fetch cart' });

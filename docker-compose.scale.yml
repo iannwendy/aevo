@@ -1,0 +1,64 @@
+# Horizontal Scaling Override for AEVO E-Commerce
+# Launches 2 stateless API instances (api-1, api-2) behind an Nginx load balancer
+# sharing Redis (session state + Socket.IO pub/sub) and PostgreSQL.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.scale.yml up -d
+
+services:
+  api:
+    ports: !override []
+    environment:
+      - INSTANCE_ID=api-primary
+
+  api-1:
+    build:
+      context: ./apps/api
+      dockerfile: ../../docker/Dockerfile.api
+    environment:
+      - NODE_ENV=production
+      - INSTANCE_ID=api-replica-1
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/aevo
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-aevo-dev-secret-key-change-in-production}
+      - CLIENT_URL=http://localhost:3000
+      - PORT=3001
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - aevo-network
+
+  api-2:
+    build:
+      context: ./apps/api
+      dockerfile: ../../docker/Dockerfile.api
+    environment:
+      - NODE_ENV=production
+      - INSTANCE_ID=api-replica-2
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/aevo
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-aevo-dev-secret-key-change-in-production}
+      - CLIENT_URL=http://localhost:3000
+      - PORT=3001
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - aevo-network
+
+  nginx-lb:
+    image: nginx:1.27-alpine
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api-1
+      - api-2
+    networks:
+      - aevo-network

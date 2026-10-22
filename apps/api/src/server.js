@@ -8,6 +8,12 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 
 const routes = require('./routes');
+const prisma = require('./utils/prisma');
+const {
+  INSTANCE_ID,
+  getRedisStatus,
+  initSocketRedisBridge,
+} = require('./utils/redis');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { passport } = require('./config/passport');
 const { isAllowedOrigin } = require('./config/origins');
@@ -15,6 +21,7 @@ const { sanitizeRequest } = require('./utils/security');
 
 const app = express();
 app.disable('x-powered-by');
+app.set('trust proxy', 1);
 const httpServer = createServer(app);
 
 // Socket.IO setup for realtime reviews
@@ -26,8 +33,15 @@ const io = new Server(httpServer, {
   maxHttpBufferSize: 64 * 1024, // 64KB max socket payload
 });
 
-// Make io available globally
+// Make io available globally and bridge events across instances via Redis Pub/Sub
 app.set('io', io);
+initSocketRedisBridge(io);
+
+// Attach stateless instance identifier header for horizontal load-balancing visibility
+app.use((req, res, next) => {
+  res.setHeader('X-Instance-Id', INSTANCE_ID);
+  next();
+});
 
 // Middleware
 app.use(helmet({
@@ -54,9 +68,24 @@ app.use(passport.initialize());
 // Routes
 app.use('/api', routes);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Health check (stateless architecture, PostgreSQL & Redis readiness)
+app.get('/health', async (req, res) => {
+  let dbStatus = 'connected';
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch {
+    dbStatus = 'disconnected';
+  }
+  const redisInfo = getRedisStatus();
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    instanceId: INSTANCE_ID,
+    stateless: true,
+    authMode: 'jwt',
+    database: dbStatus,
+    redis: redisInfo,
+  });
 });
 
 // Unknown routes: JSON 404 in the same shape as every other error
@@ -120,8 +149,14 @@ httpServer.on('error', (error) => {
   process.exit(1);
 });
 
-httpServer.listen(PORT, () => {
-  console.log(`AEVO API server running on port ${PORT}`);
+httpServer.listen(PORT, async () => {
+  console.log(`AEVO API server running on port ${PORT} (instance: ${INSTANCE_ID})`);
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    console.log('[db] Connected to postgres database successfully');
+  } catch (err) {
+    console.error('[db] Failed to verify postgres connection:', err.message);
+  }
 });
 
 module.exports = { app, io };
