@@ -345,7 +345,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
               </Link>
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-pill bg-ink text-bg text-[14px] font-medium hover:bg-accent transition-colors"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-pill bg-primary text-primary-foreground text-[14px] font-medium hover:bg-primary/90 transition-colors"
               >
                 <span>{t('checkoutSuccess.continueShoppingBtn')}</span>
                 <ArrowRight className="w-4 h-4" />
