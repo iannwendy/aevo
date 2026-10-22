@@ -525,6 +525,106 @@ async function registerCustomer(tag = 'phase4') {
     return `userId=${targetUser.user.id}, isActive=${unbanRes.body.isActive}`;
   });
 
+  // =========================================================================
+  // Task 4.5: Admin - Order Management (ADMIN-11 -> ADMIN-15)
+  // =========================================================================
+  console.log('\n=== Task 4.5: Admin - Order Management ===');
+
+  let adminTestOrderId = null;
+
+  await test('ADMIN-11', 'GET /api/orders/admin/all returns paginated orders sorted newest first (default limit=20)', async () => {
+    const forbidden = await call('/api/orders/admin/all', { token: customer.token });
+    assert.equal(forbidden.status, 403);
+
+    const res = await call('/api/orders/admin/all', { token: admin.token });
+    assert.equal(res.status, 200);
+    assert.ok(Array.isArray(res.body.orders));
+    assert.equal(res.body.pagination.page, 1);
+    assert.equal(res.body.pagination.limit, 20);
+    assert.ok(res.body.orders.length >= 1);
+
+    // Verify descending order by createdAt
+    for (let i = 1; i < res.body.orders.length; i++) {
+      const prevTime = new Date(res.body.orders[i - 1].createdAt).getTime();
+      const currTime = new Date(res.body.orders[i].createdAt).getTime();
+      assert.ok(prevTime >= currTime, 'Expected orders sorted newest first');
+    }
+
+    adminTestOrderId = res.body.orders[0].id;
+    return `page=1, limit=${res.body.pagination.limit}, total=${res.body.pagination.total}`;
+  });
+
+  await test('ADMIN-12', 'GET /api/orders/admin/all?status=PENDING returns only PENDING orders', async () => {
+    const res = await call('/api/orders/admin/all?status=PENDING', { token: admin.token });
+    assert.equal(res.status, 200);
+    assert.ok(res.body.orders.length >= 1);
+    assert.ok(
+      res.body.orders.every((o) => o.status === 'PENDING'),
+      'Expected all filtered orders to have status PENDING'
+    );
+    return `PENDING orders=${res.body.orders.length}`;
+  });
+
+  await test('ADMIN-13', 'GET /api/orders/admin/all filters by date range (startDate/endDate & presets today/yesterday/week/month)', async () => {
+    // 1. Historical empty range
+    const emptyRes = await call(
+      '/api/orders/admin/all?startDate=2024-01-01&endDate=2024-01-31',
+      { token: admin.token }
+    );
+    assert.equal(emptyRes.status, 200);
+    assert.ok(Array.isArray(emptyRes.body.orders));
+
+    // 2. Today range
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayRangeRes = await call(
+      `/api/orders/admin/all?startDate=${todayStr}&endDate=${todayStr}`,
+      { token: admin.token }
+    );
+    assert.equal(todayRangeRes.status, 200);
+    assert.ok(todayRangeRes.body.orders.length >= 1);
+
+    // 3. Preset dateRange=today, week, month
+    const presetToday = await call('/api/orders/admin/all?dateRange=today', {
+      token: admin.token,
+    });
+    assert.equal(presetToday.status, 200);
+    assert.ok(presetToday.body.orders.length >= 1);
+
+    const presetMonth = await call('/api/orders/admin/all?dateRange=month', {
+      token: admin.token,
+    });
+    assert.equal(presetMonth.status, 200);
+    assert.ok(presetMonth.body.orders.length >= 1);
+    return `todayRange=${todayRangeRes.body.orders.length}, presetToday=${presetToday.body.orders.length}`;
+  });
+
+  await test('ADMIN-14', 'PUT /api/orders/:id/status updates order status to CONFIRMED', async () => {
+    assert.ok(adminTestOrderId, 'Expected adminTestOrderId');
+    const res = await call(`/api/orders/${adminTestOrderId}/status`, {
+      method: 'PUT',
+      token: admin.token,
+      body: {
+        status: 'CONFIRMED',
+        note: 'Verified payment and hardware allocation in AEVO Control',
+      },
+    });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.status, 'CONFIRMED');
+    return `orderId=${adminTestOrderId}, status=${res.body.status}`;
+  });
+
+  await test('ADMIN-15', 'GET /api/orders/:id includes updated status in statusHistory (reverse chronological)', async () => {
+    const res = await call(`/api/orders/${adminTestOrderId}`, { token: admin.token });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.status, 'CONFIRMED');
+    assert.ok(Array.isArray(res.body.statusHistory));
+    assert.ok(res.body.statusHistory.length >= 2);
+    // Most recent status must be at index 0
+    assert.equal(res.body.statusHistory[0].status, 'CONFIRMED');
+    assert.ok(res.body.statusHistory[0].note.includes('AEVO Control'));
+    return `historyCount=${res.body.statusHistory.length}, latest=${res.body.statusHistory[0].status}`;
+  });
+
   await prisma.$disconnect();
 
   const passed = results.filter((r) => r.ok).length;

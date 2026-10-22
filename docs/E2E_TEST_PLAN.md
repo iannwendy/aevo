@@ -686,13 +686,13 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 4.5: Admin - Order Management
 
 ### Checklist
-- [ ] GET `/api/orders/admin/all` - list orders
-- [ ] Filter by status
-- [ ] Filter by date range
-- [ ] Pagination (20 per page)
-- [ ] GET `/api/orders/:id` - order detail
-- [ ] PUT `/api/orders/:id/status` - update status
-- [ ] Status history update
+- [x] GET `/api/orders/admin/all` - list orders
+- [x] Filter by status
+- [x] Filter by date range
+- [x] Pagination (20 per page)
+- [x] GET `/api/orders/:id` - order detail
+- [x] PUT `/api/orders/:id/status` - update status
+- [x] Status history update
 
 ### Test Cases
 

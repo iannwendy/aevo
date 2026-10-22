@@ -469,19 +469,85 @@ router.get('/number/:orderNumber', optionalAuth, async (req, res) => {
 // Admin: Get all orders (must be declared before '/:id')
 router.get('/admin/all', authMiddleware, adminOnly, async (req, res) => {
   try {
-    const { page = 1, limit = 20, status, startDate, endDate } = req.query;
+    const {
+      page = 1,
+      limit = 20,
+      status,
+      startDate,
+      endDate,
+      dateRange,
+      timeRange,
+      search,
+    } = req.query;
 
     const where = {};
 
-    if (status) {
-      where.status = status;
+    if (status && VALID_ORDER_STATUSES.includes(String(status).toUpperCase())) {
+      where.status = String(status).toUpperCase();
     }
 
-    if (startDate || endDate) {
+    const rangePreset = String(dateRange || timeRange || '').toLowerCase();
+    const now = new Date();
+    let computedStart = null;
+    let computedEnd = null;
+
+    if (rangePreset === 'today') {
+      computedStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+      computedEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    } else if (rangePreset === 'yesterday') {
+      computedStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0, 0);
+      computedEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
+    } else if (rangePreset === 'week' || rangePreset === 'this_week') {
+      const day = now.getDay();
+      const diffToMonday = day === 0 ? 6 : day - 1;
+      computedStart = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - diffToMonday,
+        0,
+        0,
+        0,
+        0
+      );
+      computedEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    } else if (rangePreset === 'month' || rangePreset === 'this_month') {
+      computedStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      computedEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    }
+
+    if (startDate) {
+      const parsedStart = new Date(startDate);
+      if (!Number.isNaN(parsedStart.getTime())) {
+        computedStart = parsedStart;
+      }
+    }
+
+    if (endDate) {
+      const parsedEnd = new Date(endDate);
+      if (!Number.isNaN(parsedEnd.getTime())) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(String(endDate).trim())) {
+          parsedEnd.setUTCHours(23, 59, 59, 999);
+        }
+        computedEnd = parsedEnd;
+      }
+    }
+
+    if (computedStart || computedEnd) {
       where.createdAt = {
-        ...(startDate && { gte: new Date(startDate) }),
-        ...(endDate && { lte: new Date(endDate) }),
+        ...(computedStart && { gte: computedStart }),
+        ...(computedEnd && { lte: computedEnd }),
       };
+    }
+
+    if (search && String(search).trim()) {
+      const q = String(search).trim();
+      where.OR = [
+        { orderNumber: { contains: q, mode: 'insensitive' } },
+        { guestName: { contains: q, mode: 'insensitive' } },
+        { guestEmail: { contains: q, mode: 'insensitive' } },
+        { user: { fullName: { contains: q, mode: 'insensitive' } } },
+        { user: { email: { contains: q, mode: 'insensitive' } } },
+      ];
     }
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -500,7 +566,10 @@ router.get('/admin/all', authMiddleware, adminOnly, async (req, res) => {
     ]);
 
     res.json({
-      orders,
+      orders: orders.map((o) => ({
+        ...o,
+        loyaltyDiscount: (o.usedLoyaltyPoints || 0) * POINT_VALUE,
+      })),
       pagination: {
         page: pageNum,
         limit: limitNum,
@@ -509,6 +578,7 @@ router.get('/admin/all', authMiddleware, adminOnly, async (req, res) => {
       },
     });
   } catch (error) {
+    console.error('Admin get orders error:', error);
     res.status(500).json({ error: 'Failed to fetch orders' });
   }
 });
