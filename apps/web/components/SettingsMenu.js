@@ -47,23 +47,27 @@ export default function SettingsMenu({ className = '' }) {
         aria-label={t('header.settingsMenuAria')}
         title={t('header.settingsMenuAria')}
         data-testid="settings-menu-trigger"
-        className={`w-9 h-9 rounded-xl border transition-colors inline-flex items-center justify-center focus-ring ${
+        className={`w-9 h-9 rounded-xl border transition-all duration-200 hover:-translate-y-0.5 active:scale-95 inline-flex items-center justify-center focus-ring ${
           open
-            ? 'border-ink bg-surface-muted text-ink'
+            ? 'border-ink bg-surface-muted text-ink shadow-sm'
             : 'border-border bg-surface hover:bg-surface-muted text-secondary hover:text-ink'
         }`}
       >
-        <SlidersHorizontal size={16} aria-hidden="true" />
+        <SlidersHorizontal
+          size={16}
+          aria-hidden="true"
+          className={`transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
+        />
       </button>
 
       <div
         role="dialog"
         aria-label={t('header.settingsMenuAria')}
         data-testid="settings-menu-panel"
-        className={`absolute right-0 top-full mt-2 w-72 rounded-2xl border border-border bg-surface p-4 shadow-xl z-50 transition-all duration-150 origin-top-right ${
+        className={`absolute right-0 top-full mt-2 w-72 rounded-2xl border border-border bg-surface p-4 shadow-xl z-50 transition-all duration-200 ease-out origin-top-right ${
           open
-            ? 'opacity-100 scale-100 pointer-events-auto visible'
-            : 'opacity-0 scale-95 pointer-events-none invisible'
+            ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto visible'
+            : 'opacity-0 scale-95 -translate-y-1 pointer-events-none invisible'
         }`}
       >
         {/* Theme Section */}

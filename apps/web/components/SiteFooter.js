@@ -14,7 +14,10 @@ export default function SiteFooter() {
       <div className="container-main">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <Link href="/" className="text-2xl font-display font-medium focus-ring rounded-lg">
+            <Link
+              href="/"
+              className="text-2xl font-display font-medium hover:scale-[1.03] active:scale-[0.98] transition-transform duration-200 inline-block focus-ring rounded-lg"
+            >
               aevo.
             </Link>
             <p className="text-small text-secondary mt-2">
@@ -25,19 +28,19 @@ export default function SiteFooter() {
           <nav className="flex gap-8" aria-label="Footer">
             <Link
               href="/products"
-              className="text-small text-secondary hover:text-ink transition-colors focus-ring rounded"
+              className="nav-link-animated text-small text-secondary hover:text-ink focus-ring rounded"
             >
               {t('footer.shop')}
             </Link>
             <Link
               href="/account/profile"
-              className="text-small text-secondary hover:text-ink transition-colors focus-ring rounded"
+              className="nav-link-animated text-small text-secondary hover:text-ink focus-ring rounded"
             >
               {t('footer.account')}
             </Link>
             <Link
               href="/admin"
-              className="text-small text-secondary hover:text-ink transition-colors focus-ring rounded"
+              className="nav-link-animated text-small text-secondary hover:text-ink focus-ring rounded"
             >
               {t('footer.admin')}
             </Link>

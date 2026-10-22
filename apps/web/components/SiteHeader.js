@@ -62,7 +62,7 @@ export default function SiteHeader() {
   return (
     <header
       data-testid="site-header"
-      className="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border"
+      className="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border transition-colors duration-200"
     >
       <div className="container-main h-[72px] flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -73,13 +73,17 @@ export default function SiteHeader() {
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-navigation-drawer"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-surface text-ink hover:bg-surface-muted transition-colors focus-ring"
+            className="lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-surface text-ink hover:bg-surface-muted hover:-translate-y-0.5 active:scale-95 transition-all duration-200 focus-ring"
           >
-            {mobileMenuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
+            {mobileMenuOpen ? (
+              <X size={18} aria-hidden="true" className="animate-scale-in" />
+            ) : (
+              <Menu size={18} aria-hidden="true" className="animate-scale-in" />
+            )}
           </button>
           <Link
             href="/"
-            className="text-2xl font-display font-medium tracking-tight text-ink focus-ring rounded-lg shrink-0"
+            className="text-2xl font-display font-medium tracking-tight text-ink hover:scale-[1.03] active:scale-[0.98] transition-transform duration-200 focus-ring rounded-lg shrink-0 inline-block"
           >
             aevo.
           </Link>
@@ -90,7 +94,7 @@ export default function SiteHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-small font-medium text-ink hover:text-secondary transition-colors focus-ring rounded"
+              className="nav-link-animated text-small font-medium text-ink hover:text-secondary focus-ring rounded"
             >
               {t(link.key)}
             </Link>
@@ -100,25 +104,26 @@ export default function SiteHeader() {
         <div className="flex items-center gap-3 sm:gap-5">
           <Link
             href="/products"
-            className="hidden sm:inline-block text-small font-medium text-ink hover:text-secondary transition-colors focus-ring rounded"
+            className="hidden sm:inline-block nav-link-animated text-small font-medium text-ink hover:text-secondary focus-ring rounded"
           >
             {t('header.search')}
           </Link>
           <Link
             href="/account/profile"
-            className="text-small font-medium text-ink hover:text-secondary transition-colors focus-ring rounded"
+            className="nav-link-animated text-small font-medium text-ink hover:text-secondary focus-ring rounded"
           >
             {t('header.account')}
           </Link>
           <Link
             href="/cart"
             data-testid="header-cart-link"
-            className="text-small font-medium text-ink hover:text-secondary transition-colors focus-ring rounded inline-flex items-center gap-1.5"
+            className="group text-small font-medium text-ink hover:text-secondary transition-all duration-200 hover:-translate-y-0.5 active:scale-95 focus-ring rounded inline-flex items-center gap-1.5"
           >
             <span>{t('header.cart')}</span>
             <span
+              key={cartCount}
               data-testid="header-cart-count"
-              className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-mono"
+              className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[11px] font-mono animate-badge-pop group-hover:scale-110 transition-transform duration-200"
             >
               {cartCount}
             </span>
@@ -132,7 +137,7 @@ export default function SiteHeader() {
           id="mobile-navigation-drawer"
           data-testid="mobile-menu-drawer"
           aria-label={t('header.primaryNavAria')}
-          className="lg:hidden border-t border-border bg-surface shadow-lg"
+          className="lg:hidden border-t border-border bg-surface shadow-lg animate-slide-down"
         >
           <div className="container-main py-4 flex flex-col gap-1">
             {NAV_LINKS.map((link) => (
@@ -140,7 +145,7 @@ export default function SiteHeader() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 rounded-xl text-small font-medium text-ink hover:bg-surface-muted transition-colors focus-ring"
+                className="px-3 py-2.5 rounded-xl text-small font-medium text-ink hover:bg-surface-muted hover:translate-x-1 transition-all duration-200 focus-ring"
               >
                 {t(link.key)}
               </Link>

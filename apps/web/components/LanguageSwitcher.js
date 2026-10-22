@@ -19,10 +19,10 @@ export default function LanguageSwitcher({ className = '', fullWidth = false }) 
         onClick={() => setLocale('en')}
         aria-pressed={locale === 'en'}
         data-testid="lang-btn-en"
-        className={`inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-medium tracking-wider transition-colors focus-ring ${
+        className={`inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-medium tracking-wider transition-all duration-200 active:scale-95 focus-ring ${
           locale === 'en'
             ? 'bg-primary text-primary-foreground shadow-xs'
-            : 'text-secondary hover:text-ink'
+            : 'text-secondary hover:text-ink hover:bg-surface/60'
         }`}
       >
         ENG
@@ -32,10 +32,10 @@ export default function LanguageSwitcher({ className = '', fullWidth = false }) 
         onClick={() => setLocale('vi')}
         aria-pressed={locale === 'vi'}
         data-testid="lang-btn-vi"
-        className={`inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-medium tracking-wider transition-colors focus-ring ${
+        className={`inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-medium tracking-wider transition-all duration-200 active:scale-95 focus-ring ${
           locale === 'vi'
             ? 'bg-primary text-primary-foreground shadow-xs'
-            : 'text-secondary hover:text-ink'
+            : 'text-secondary hover:text-ink hover:bg-surface/60'
         }`}
       >
         VIE

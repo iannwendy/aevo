@@ -8,7 +8,7 @@ export default function PageFrame({ children, wide = false }) {
   return (
     <main className="min-h-screen bg-canvas">
       <SiteHeader />
-      <div className="container-main pt-[72px]">
+      <div className="container-main pt-[72px] animate-page-enter">
         <div className={wide ? 'section-py' : 'section-py max-w-5xl'}>{children}</div>
       </div>
     </main>

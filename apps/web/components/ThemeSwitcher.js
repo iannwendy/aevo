@@ -44,13 +44,17 @@ export function ThemeSwitcher({ className = '', compact = false, fullWidth = fal
             title={label}
             data-testid={`theme-btn-${value}`}
             onClick={() => setTheme(value)}
-            className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-medium tracking-wider transition-colors focus-ring ${
+            className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-medium tracking-wider transition-all duration-200 active:scale-95 focus-ring ${
               isSelected
                 ? 'bg-primary text-primary-foreground shadow-xs'
-                : 'text-secondary hover:text-ink'
+                : 'text-secondary hover:text-ink hover:bg-surface/60'
             }`}
           >
-            <Icon size={13} aria-hidden="true" />
+            <Icon
+              size={13}
+              aria-hidden="true"
+              className={`transition-transform duration-200 ${isSelected ? 'scale-110' : ''}`}
+            />
             <span className={compact ? 'sr-only' : fullWidth ? 'inline' : 'hidden sm:inline'}>
               {label}
             </span>

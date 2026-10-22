@@ -115,36 +115,90 @@
 }
 
 @layer components {
-  /* Button variants */
+  /* Button variants with tactile hover lift, active press & sheen */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-small bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply relative overflow-hidden inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-small bg-primary text-primary-foreground hover:bg-primary/90 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-[0.97] transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none;
+  }
+
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      115deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.16) 50%,
+      transparent 80%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+
+  .btn-primary:hover::after {
+    transform: translateX(120%);
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-small bg-surface border border-border text-ink hover:bg-surface-muted transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-small bg-surface border border-border text-ink hover:bg-surface-muted hover:border-ink/40 hover:-translate-y-0.5 hover:shadow-sm active:translate-y-0 active:scale-[0.97] transition-all duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl font-medium text-small text-ink hover:bg-surface-muted transition-colors duration-150;
+    @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl font-medium text-small text-ink hover:bg-surface-muted hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.97] transition-all duration-200 ease-out;
+  }
+
+  .btn-interactive {
+    @apply transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-[0.97] disabled:hover:translate-y-0 disabled:hover:shadow-none disabled:active:scale-100;
+  }
+
+  /* Animated navigation link underline */
+  .nav-link-animated {
+    @apply relative inline-block transition-colors duration-200;
+  }
+
+  .nav-link-animated::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 100%;
+    height: 1.5px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .nav-link-animated:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
   }
 
   /* Form controls */
   .input-field {
-    @apply w-full h-11 px-3.5 rounded-xl border border-border bg-canvas text-ink text-small placeholder:text-secondary focus-ring transition-colors;
+    @apply w-full h-11 px-3.5 rounded-xl border border-border bg-canvas text-ink text-small placeholder:text-secondary focus-ring transition-all duration-200 hover:border-ink/40 focus:border-ink focus:shadow-sm;
   }
 
   /* Surface & Admin Data Table helpers */
   .surface-card {
-    @apply bg-surface border border-border text-ink rounded-2xl;
+    @apply bg-surface border border-border text-ink rounded-2xl transition-all duration-300 ease-out;
+  }
+
+  .card-interactive {
+    @apply bg-surface border border-border text-ink rounded-2xl transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:border-ink/40;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-md;
   }
 
   .surface-muted-panel {
-    @apply bg-surface-muted border border-border text-ink rounded-xl;
+    @apply bg-surface-muted border border-border text-ink rounded-xl transition-all duration-200;
   }
 
   .table-row-interactive {
     font-variant-numeric: tabular-nums;
-    @apply border-b border-border/60 hover:bg-surface-muted/60 transition-colors;
+    @apply border-b border-border/60 hover:bg-surface-muted/70 transition-colors duration-150;
   }
 
   /* Container */
@@ -159,6 +213,26 @@
 }
 
 @layer utilities {
+  /* Stagger animation delays */
+  .stagger-1 {
+    animation-delay: 50ms;
+  }
+  .stagger-2 {
+    animation-delay: 100ms;
+  }
+  .stagger-3 {
+    animation-delay: 150ms;
+  }
+  .stagger-4 {
+    animation-delay: 200ms;
+  }
+  .stagger-5 {
+    animation-delay: 250ms;
+  }
+  .stagger-6 {
+    animation-delay: 300ms;
+  }
+
   /* Typography */
   .text-display {
     @apply text-4xl md:text-5xl lg:text-6xl font-display font-medium tracking-tight;
