@@ -11,7 +11,7 @@ const THEME_OPTIONS = [
   { value: 'system', labelKey: 'header.themeSystem', Icon: Monitor },
 ];
 
-export function ThemeSwitcher({ className = '', compact = false }) {
+export function ThemeSwitcher({ className = '', compact = false, fullWidth = false }) {
   const { theme, setTheme } = useTheme();
   const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
@@ -21,15 +21,16 @@ export function ThemeSwitcher({ className = '', compact = false }) {
   }, []);
 
   // AEVO default rule: Light Mode is the default when no prior selection exists.
-  // Keeping 'light' during SSR and initial hydration prevents layout shift (CLS)
-  // and avoids hydration mismatches while keeping controls accessible in SSR HTML.
   const activeTheme = mounted ? theme || 'light' : 'light';
 
   return (
     <fieldset
+      role="group"
       aria-label={t('header.themeSwitcherAria')}
       data-testid="theme-switcher"
-      className={`inline-flex items-center gap-0.5 rounded-lg border border-border bg-canvas p-0.5 m-0 min-w-0 ${className}`}
+      className={`${
+        fullWidth ? 'grid grid-cols-3 w-full' : 'inline-flex items-center'
+      } gap-1 rounded-xl border border-border bg-canvas p-1 m-0 min-w-0 ${className}`}
     >
       {THEME_OPTIONS.map(({ value, labelKey, Icon }) => {
         const isSelected = activeTheme === value;
@@ -43,14 +44,16 @@ export function ThemeSwitcher({ className = '', compact = false }) {
             title={label}
             data-testid={`theme-btn-${value}`}
             onClick={() => setTheme(value)}
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-mono font-medium tracking-wider transition-colors focus-ring ${
+            className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-medium tracking-wider transition-colors focus-ring ${
               isSelected
                 ? 'bg-primary text-primary-foreground shadow-xs'
                 : 'text-secondary hover:text-ink'
             }`}
           >
-            <Icon size={12} aria-hidden="true" />
-            <span className={compact ? 'sr-only' : 'hidden sm:inline'}>{label}</span>
+            <Icon size={13} aria-hidden="true" />
+            <span className={compact ? 'sr-only' : fullWidth ? 'inline' : 'hidden sm:inline'}>
+              {label}
+            </span>
           </button>
         );
       })}

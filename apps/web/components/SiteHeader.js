@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { cartApi } from '../lib/api';
 import { useI18n } from '../lib/i18n';
-import LanguageSwitcher from './LanguageSwitcher';
-import ThemeSwitcher from './ThemeSwitcher';
+import SettingsMenu from './SettingsMenu';
 
 const NAV_LINKS = [
   { href: '/products', key: 'header.shop' },
@@ -74,9 +73,7 @@ export default function SiteHeader() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2.5 sm:gap-3.5">
-          <ThemeSwitcher />
-          <LanguageSwitcher />
+        <div className="flex items-center gap-3 sm:gap-5">
           <Link
             href="/products"
             className="hidden sm:inline-block text-small font-medium text-ink hover:text-secondary transition-colors focus-ring rounded"
@@ -102,6 +99,7 @@ export default function SiteHeader() {
               {cartCount}
             </span>
           </Link>
+          <SettingsMenu />
         </div>
       </div>
     </header>

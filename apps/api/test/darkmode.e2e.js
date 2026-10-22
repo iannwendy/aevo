@@ -310,6 +310,7 @@ async function main() {
   await test('DM-14', 'Auth pages (/login, /register, /forgot-password, /reset-password) render ThemeSwitcher & semantic tokens', async () => {
     for (const authRoute of ['/login', '/register', '/forgot-password', '/reset-password']) {
       const { html } = await fetchHtmlAndCss(authRoute);
+      assert.match(html, /data-testid="settings-menu"/, `${authRoute} missing SettingsMenu`);
       assert.match(html, /data-testid="theme-switcher"/, `${authRoute} missing ThemeSwitcher`);
     }
     for (const file of [
@@ -319,7 +320,7 @@ async function main() {
       'app/(auth)/reset-password/page.js',
     ]) {
       const src = readWebFile(file);
-      assert.match(src, /ThemeSwitcher/);
+      assert.match(src, /SettingsMenu|ThemeSwitcher/);
       assert.match(src, /text-danger/);
     }
     return '4 Auth pages verified with ThemeSwitcher & danger tokens';

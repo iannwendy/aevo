@@ -10,8 +10,7 @@ import {
   startGoogleLogin,
 } from '@/lib/auth-client';
 import { useI18n } from '@/lib/i18n';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
-import ThemeSwitcher from '@/components/ThemeSwitcher';
+import SettingsMenu from '@/components/SettingsMenu';
 
 /**
  * /login - split layout: brand panel on canvas (left), form on surface (right).
@@ -244,9 +243,8 @@ function LoginView({ searchParams }) {
             >
               aevo.
             </Link>
-            <div className="ml-auto flex items-center gap-2">
-              <ThemeSwitcher />
-              <LanguageSwitcher />
+            <div className="ml-auto flex items-center">
+              <SettingsMenu />
             </div>
           </div>
 

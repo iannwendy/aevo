@@ -7,8 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { GOOGLE_AUTH_URL, fetchProfile } from '../../../lib/auth-client';
 import { register } from '../../../lib/account-client';
 import { useI18n } from '../../../lib/i18n';
-import LanguageSwitcher from '../../../components/LanguageSwitcher';
-import ThemeSwitcher from '../../../components/ThemeSwitcher';
+import SettingsMenu from '../../../components/SettingsMenu';
 
 /**
  * /register
@@ -144,9 +143,8 @@ export default function RegisterPage() {
             >
               aevo.
             </Link>
-            <div className="ml-auto flex items-center gap-2">
-              <ThemeSwitcher />
-              <LanguageSwitcher />
+            <div className="ml-auto flex items-center">
+              <SettingsMenu />
             </div>
           </div>
 

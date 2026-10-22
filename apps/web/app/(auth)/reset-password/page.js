@@ -6,8 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { resetPassword } from '../../../lib/account-client';
 import { useI18n } from '../../../lib/i18n';
-import LanguageSwitcher from '../../../components/LanguageSwitcher';
-import ThemeSwitcher from '../../../components/ThemeSwitcher';
+import SettingsMenu from '../../../components/SettingsMenu';
 
 const PASSWORD_MIN = 6;
 const PASSWORD_MAX = 72;
@@ -85,10 +84,7 @@ function ResetPasswordView({ searchParams }) {
             >
               aevo.
             </Link>
-            <div className="flex items-center gap-2">
-              <ThemeSwitcher />
-              <LanguageSwitcher />
-            </div>
+            <SettingsMenu />
           </div>
 
           <span className="block text-caption font-mono text-secondary uppercase tracking-wider mt-8">

@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { requestPasswordReset } from '../../../lib/account-client';
 import { useI18n } from '../../../lib/i18n';
-import LanguageSwitcher from '../../../components/LanguageSwitcher';
-import ThemeSwitcher from '../../../components/ThemeSwitcher';
+import SettingsMenu from '../../../components/SettingsMenu';
 
 export default function ForgotPasswordPage() {
   const { t } = useI18n();
@@ -48,10 +47,7 @@ export default function ForgotPasswordPage() {
             >
               aevo.
             </Link>
-            <div className="flex items-center gap-2">
-              <ThemeSwitcher />
-              <LanguageSwitcher />
-            </div>
+            <SettingsMenu />
           </div>
 
           <span className="block text-caption font-mono text-secondary uppercase tracking-wider mt-8">
