@@ -1,11 +1,9 @@
-import Link from 'next/link';
+'use client';
 
-/**
- * Shared site header. Fixed to the top, frosted surface - pages that use it
- * must start their content below the 72px bar (see `.pt-[72px]`).
- *
- * Server component: no interactivity needed for Phase 1.
- */
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { cartApi } from '../lib/api';
+
 const NAV_LINKS = [
   { href: '/products', label: 'Shop' },
   { href: '/products?category=laptops', label: 'Laptops' },
@@ -13,13 +11,40 @@ const NAV_LINKS = [
   { href: '/products?category=monitors', label: 'Monitors' },
 ];
 
-const ACTION_LINKS = [
-  { href: '/products', label: 'Search' },
-  { href: '/account/profile', label: 'Account' },
-  { href: '/cart', label: 'Cart' },
-];
-
 export default function SiteHeader() {
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadCartCount() {
+      try {
+        const res = await cartApi.getCart();
+        if (!active) return;
+        const count = (res.data?.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0);
+        setCartCount(count);
+      } catch {
+        // Ignore cart fetch errors on initial header load
+      }
+    }
+
+    loadCartCount();
+
+    const handleCartUpdated = (e) => {
+      if (typeof e?.detail?.count === 'number') {
+        setCartCount(e.detail.count);
+      } else {
+        loadCartCount();
+      }
+    };
+
+    window.addEventListener('aevo:cart-updated', handleCartUpdated);
+    return () => {
+      active = false;
+      window.removeEventListener('aevo:cart-updated', handleCartUpdated);
+    };
+  }, []);
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border">
       <div className="container-main h-[72px] flex items-center justify-between">
@@ -43,15 +68,31 @@ export default function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-4">
-          {ACTION_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-small font-medium hover:text-secondary transition-colors focus-ring rounded"
+          <Link
+            href="/products"
+            className="text-small font-medium hover:text-secondary transition-colors focus-ring rounded"
+          >
+            Search
+          </Link>
+          <Link
+            href="/account/profile"
+            className="text-small font-medium hover:text-secondary transition-colors focus-ring rounded"
+          >
+            Account
+          </Link>
+          <Link
+            href="/cart"
+            data-testid="header-cart-link"
+            className="text-small font-medium hover:text-secondary transition-colors focus-ring rounded inline-flex items-center gap-1.5"
+          >
+            <span>Cart</span>
+            <span
+              data-testid="header-cart-count"
+              className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-ink text-white text-[11px] font-mono"
             >
-              {link.label}
-            </Link>
-          ))}
+              {cartCount}
+            </span>
+          </Link>
         </div>
       </div>
     </header>

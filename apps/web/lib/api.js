@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 const apiClient = axios.create({
   baseURL: `${API_URL}/api`,
@@ -10,14 +10,6 @@ const apiClient = axios.create({
   },
 });
 
-// Requests carry the session through the httpOnly cookie the browser sends
-// automatically (withCredentials). No Authorization header is built here:
-// document.cookie can never see that token anyway.
-
-// Response interceptor
-// A 401 marks a request that needs a signed-in user. Callers handle it (and
-// choose where to send the visitor); redirecting the window here would bounce
-// public pages - and "wrong password" replies - to /login.
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => Promise.reject(error)
@@ -42,9 +34,12 @@ export const authApi = {
 // Products API
 export const productsApi = {
   getAll: (params) => apiClient.get('/products', { params }),
+  getNewArrivals: (params) => apiClient.get('/products/new-arrivals', { params }),
+  getBestSellers: (params) => apiClient.get('/products/best-sellers', { params }),
+  getFilters: () => apiClient.get('/products/filters'),
   getById: (id) => apiClient.get(`/products/${id}`),
   getBySlug: (slug) => apiClient.get(`/products/slug/${slug}`),
-  search: (q) => apiClient.get('/products/search', { params: { q } }),
+  search: (q, params = {}) => apiClient.get('/products/search', { params: { q, ...params } }),
 };
 
 // Categories API
