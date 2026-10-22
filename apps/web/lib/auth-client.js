@@ -30,7 +30,7 @@ export const GOOGLE_AUTH_URL = `${API_URL}/api/auth/google`;
  */
 export async function fetchProfile() {
   try {
-    const res = await fetch(`${API_URL}/api/auth/profile`, {
+    const res = await fetch(`${API_URL}/api/auth/profile?optional=1`, {
       method: 'GET',
       credentials: 'include',
       headers: { Accept: 'application/json' },
@@ -46,8 +46,8 @@ export async function fetchProfile() {
     }
 
     const user = await res.json();
-    if (!user || !user.id) {
-      return { status: 'error', error: 'Unexpected profile response' };
+    if (!user || user.authenticated === false || !user.id) {
+      return { status: 'unauthenticated', error: 'Not signed in' };
     }
 
     return { status: 'ok', user };

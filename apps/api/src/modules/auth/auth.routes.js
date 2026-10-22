@@ -5,6 +5,7 @@ const { body, validationResult } = require('express-validator');
 const prisma = require('../../utils/prisma');
 const {
   authMiddleware,
+  optionalAuth,
   signSessionToken,
   signResetToken,
   RESET_TOKEN_SECRET,
@@ -201,26 +202,42 @@ router.post('/logout', (req, res) => {
 });
 
 // ----------------------------------------------------------------- Profile
-router.get('/profile', authMiddleware, asyncHandler(async (req, res) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.user.id },
-    include: { addresses: true, oauthAccounts: true },
-  });
+router.get(
+  '/profile',
+  (req, res, next) => {
+    if (req.query.optional === '1') {
+      return optionalAuth(req, res, next);
+    }
+    return authMiddleware(req, res, next);
+  },
+  asyncHandler(async (req, res) => {
+    if (!req.user) {
+      return res.json({ authenticated: false, user: null });
+    }
 
-  if (!user) {
-    return res.status(404).json({ error: 'User not found' });
-  }
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { addresses: true, oauthAccounts: true },
+    });
 
-  return res.json({
-    id: user.id,
-    email: user.email,
-    fullName: user.fullName,
-    role: user.role,
-    loyaltyPoints: user.loyaltyPoints,
-    addresses: user.addresses,
-    oauthAccounts: user.oauthAccounts,
-  });
-}));
+    if (!user) {
+      if (req.query.optional === '1') {
+        return res.json({ authenticated: false, user: null });
+      }
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.json({
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      role: user.role,
+      loyaltyPoints: user.loyaltyPoints,
+      addresses: user.addresses,
+      oauthAccounts: user.oauthAccounts,
+    });
+  })
+);
 
 router.put(
   '/profile',
