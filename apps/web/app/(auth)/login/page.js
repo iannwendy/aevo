@@ -11,6 +11,7 @@ import {
 } from '@/lib/auth-client';
 import { useI18n } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import ThemeSwitcher from '@/components/ThemeSwitcher';
 
 /**
  * /login - split layout: brand panel on canvas (left), form on surface (right).
@@ -32,18 +33,22 @@ const OAUTH_ERROR_COPY = {
   oauth_failed: 'Google sign-in was cancelled or failed. Please try again.',
 };
 
-export default function LoginPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="min-h-screen bg-canvas flex items-center justify-center">
-          <Loader2 className="w-5 h-5 animate-spin text-secondary" />
-        </main>
-      }
-    >
-      <LoginView />
-    </Suspense>
-  );
+function getParam(searchParams, key) {
+  if (searchParams && typeof searchParams.get === 'function') {
+    return searchParams.get(key);
+  }
+  if (searchParams && typeof searchParams === 'object' && key in searchParams) {
+    const val = searchParams[key];
+    return Array.isArray(val) ? val[0] : val;
+  }
+  if (typeof window !== 'undefined') {
+    return new URLSearchParams(window.location.search).get(key);
+  }
+  return null;
+}
+
+export default function LoginPage({ searchParams }) {
+  return <LoginView searchParams={searchParams} />;
 }
 
 // Hard navigation: replaces the current history entry so Back does not land
@@ -52,9 +57,8 @@ function goTo(target) {
   window.location.replace(target);
 }
 
-function LoginView() {
+function LoginView({ searchParams }) {
   const { t } = useI18n();
-  const searchParams = useSearchParams();
 
   // ------------- state -------------
   const [email, setEmail] = useState('');
@@ -69,10 +73,10 @@ function LoginView() {
 
   // ------------- on mount: OAuth error, then session check -------------
   useEffect(() => {
-    const oauthError = searchParams.get('error');
+    const oauthError = getParam(searchParams, 'error');
     // Arrived right after a sign-out: never bounce a (possibly still valid)
     // session forward or the user would be stuck in sign-out -> sign-in.
-    const justLoggedOut = searchParams.get('loggedout') === '1';
+    const justLoggedOut = getParam(searchParams, 'loggedout') === '1';
 
     if (justLoggedOut) {
       setNotice({ kind: 'info', message: t('auth.login.signedOutNotice') });
@@ -93,8 +97,8 @@ function LoginView() {
     if (justLoggedOut) return;
 
     // Arriving here right after a password reset: don't bounce to the profile.
-    const justReset = searchParams.get('reset') === 'success';
-    if (searchParams.get('registered') === '1') {
+    const justReset = getParam(searchParams, 'reset') === 'success';
+    if (getParam(searchParams, 'registered') === '1') {
       setNotice({ kind: 'success', message: t('auth.login.registeredNotice') });
     }
     if (justReset) {
@@ -112,7 +116,7 @@ function LoginView() {
       .then((result) => {
         if (cancelled) return;
         if (result.status === 'ok') {
-          goTo(safeNext(searchParams.get('next')));
+          goTo(safeNext(getParam(searchParams, 'next')));
           return;
         }
         setPhase('idle');
@@ -138,7 +142,7 @@ function LoginView() {
       setGoogleLoading(false);
       const result = await fetchProfile();
       if (result.status === 'ok') {
-        goTo(safeNext(searchParams.get('next')));
+        goTo(safeNext(getParam(searchParams, 'next')));
         return;
       }
       setNotice({
@@ -169,7 +173,7 @@ function LoginView() {
 
     if (result.ok) {
       setNotice({ kind: 'success', message: t('auth.login.signedInRedirecting') });
-      goTo(safeNext(searchParams.get('next')));
+      goTo(safeNext(getParam(searchParams, 'next')));
       return;
     }
 
@@ -240,7 +244,8 @@ function LoginView() {
             >
               aevo.
             </Link>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-2">
+              <ThemeSwitcher />
               <LanguageSwitcher />
             </div>
           </div>
@@ -256,7 +261,7 @@ function LoginView() {
               aria-live="polite"
               className={`mt-6 text-small rounded-lg border px-4 py-3 ${
                 notice.kind === 'error'
-                  ? 'border-ink/20 bg-canvas text-ink'
+                  ? 'border-danger/30 bg-danger/10 text-danger'
                   : notice.kind === 'success'
                     ? 'border-sage/30 bg-sage/5 text-sage'
                     : 'border-border bg-canvas text-secondary'

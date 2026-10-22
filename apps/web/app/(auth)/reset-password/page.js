@@ -7,29 +7,33 @@ import { Loader2 } from 'lucide-react';
 import { resetPassword } from '../../../lib/account-client';
 import { useI18n } from '../../../lib/i18n';
 import LanguageSwitcher from '../../../components/LanguageSwitcher';
+import ThemeSwitcher from '../../../components/ThemeSwitcher';
 
 const PASSWORD_MIN = 6;
 const PASSWORD_MAX = 72;
 
-export default function ResetPasswordPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="min-h-screen bg-canvas flex items-center justify-center">
-          <Loader2 className="w-5 h-5 animate-spin text-secondary" />
-        </main>
-      }
-    >
-      <ResetPasswordView />
-    </Suspense>
-  );
+function getParam(searchParams, key) {
+  if (searchParams && typeof searchParams.get === 'function') {
+    return searchParams.get(key);
+  }
+  if (searchParams && typeof searchParams === 'object' && key in searchParams) {
+    const val = searchParams[key];
+    return Array.isArray(val) ? val[0] : val;
+  }
+  if (typeof window !== 'undefined') {
+    return new URLSearchParams(window.location.search).get(key);
+  }
+  return '';
 }
 
-function ResetPasswordView() {
+export default function ResetPasswordPage({ searchParams }) {
+  return <ResetPasswordView searchParams={searchParams} />;
+}
+
+function ResetPasswordView({ searchParams }) {
   const { t } = useI18n();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get('token') || '';
+  const token = getParam(searchParams, 'token') || '';
 
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -81,7 +85,10 @@ function ResetPasswordView() {
             >
               aevo.
             </Link>
-            <LanguageSwitcher />
+            <div className="flex items-center gap-2">
+              <ThemeSwitcher />
+              <LanguageSwitcher />
+            </div>
           </div>
 
           <span className="block text-caption font-mono text-secondary uppercase tracking-wider mt-8">
@@ -110,7 +117,7 @@ function ResetPasswordView() {
               {notice && (
                 <p
                   role="alert"
-                  className="mt-6 text-small rounded-lg px-4 py-3 border border-red-300 bg-red-50 text-red-700"
+                  className="mt-6 text-small rounded-lg px-4 py-3 border border-danger/30 bg-danger/10 text-danger"
                 >
                   {notice.message}{' '}
                   <Link
@@ -160,7 +167,7 @@ function ResetPasswordView() {
                 </div>
 
                 {fieldError && (
-                  <p role="alert" className="text-small text-red-600">
+                  <p role="alert" className="text-small text-danger">
                     {fieldError}
                   </p>
                 )}

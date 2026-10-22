@@ -136,8 +136,8 @@ curl -s -H "Cookie: aevo_locale=vi" http://localhost:3000/products/macbook-pro-m
 - [x] Đa ngôn ngữ hóa `CartClient.js`: Tiêu đề giỏ hàng, danh sách sản phẩm, trạng thái giỏ hàng trống, bảng `Order Summary` / `Tóm tắt đơn hàng` (Tạm tính, Phí vận chuyển, Thuế VAT, Tổng cộng, thông báo miễn phí vận chuyển, nút Thanh toán)
 - [x] Đa ngôn ngữ hóa các trang Auth: `/login`, `/register`, `/forgot-password`, `/reset-password`, `/logout` và tích hợp `LanguageSwitcher` trên các trang Auth
 - [x] Đa ngôn ngữ hóa trang `/account/profile`: Thông tin tài khoản, điểm thưởng (`Loyalty points` / `Điểm thưởng`), vai trò, phương thức đăng nhập, form cập nhật thông tin cá nhân, form đổi mật khẩu và sổ địa chỉ
-- [ ] Đa ngôn ngữ hóa các trang Checkout (`/checkout`, `/checkout/success`), Lịch sử đơn hàng (`/account/orders`, `/account/orders/[id]`), Sổ địa chỉ (`/account/addresses`) và Admin Dashboard (sau khi hoàn tất các phase còn lại)
-- [ ] Viết và chạy bộ kiểm thử E2E `apps/api/test/i18n.e2e.js` (sau khi hoàn tất các phase còn lại)
+- [x] Đa ngôn ngữ hóa các trang Checkout (`/checkout`, `/checkout/success`), Lịch sử đơn hàng (`/account/orders`, `/account/orders/[id]`), Sổ địa chỉ (`/account/addresses`)
+- [x] Viết và chạy bộ kiểm thử E2E `apps/api/test/i18n.e2e.js` (22/22 PASS)
 
 ### Test Cases
 
@@ -167,8 +167,8 @@ node apps/api/test/i18n.e2e.js
 | Storefront (Homepage, Catalog, Product Card, Pagination) song ngữ hoàn chỉnh | ✅ |
 | Product Detail, Specs & Realtime Reviews song ngữ hoàn chỉnh | ✅ |
 | Cart, Login, Register, Forgot/Reset Password & Profile song ngữ hoàn chỉnh | ✅ |
-| Checkout, Orders, Addresses & Admin Dashboard (Phase 3–4) song ngữ hoàn chỉnh | ⬜ |
-| Tất cả test cases (`phase1.e2e.js`, `phase2.e2e.js`, `i18n.e2e.js`) pass | ⬜ |
+| Checkout, Orders, Addresses (Phase 3) song ngữ hoàn chỉnh | ✅ |
+| Tất cả test cases (`phase1.e2e.js`, `phase2.e2e.js`, `phase3.e2e.js`, `i18n.e2e.js`) pass | ✅ |
 
 ---
 
