@@ -6,6 +6,7 @@ import { ArrowRight, Sparkles, Award, Layers } from 'lucide-react';
 import ProductCard from '../product/ProductCard';
 import Pagination from '../product/Pagination';
 import { productsApi, categoriesApi } from '../../lib/api';
+import { useI18n } from '../../lib/i18n';
 
 const FEATURED_CATEGORY_SLUGS = [
   {
@@ -44,6 +45,7 @@ function paginateSlice(items = [], page = 1, limit = HOME_SECTION_LIMIT) {
 }
 
 export default function HomeClient({ initialData }) {
+  const { t, catName, catDesc, catSubtitle } = useI18n();
   const [newArrivalsAll, setNewArrivalsAll] = useState(initialData?.newArrivals || []);
   const [newArrivalsPage, setNewArrivalsPage] = useState(1);
 
@@ -191,12 +193,11 @@ export default function HomeClient({ initialData }) {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7">
               <span className="inline-block text-caption font-mono uppercase tracking-widest text-secondary mb-4">
-                SERIES 01 — PERFORMANCE COMPUTING
+                {t('home.heroSeries')}
               </span>
-              <h1 className="text-display mb-6">Technology, refined.</h1>
+              <h1 className="text-display mb-6">{t('home.heroTitle')}</h1>
               <p className="text-xl text-secondary mb-8 max-w-xl">
-                Discover exceptional hardware for everything you create. Curated workstations,
-                components, and studio displays built for demanding workflows.
+                {t('home.heroDescription')}
               </p>
               <div className="flex flex-wrap items-center gap-4">
                 <Link
@@ -204,14 +205,14 @@ export default function HomeClient({ initialData }) {
                   data-testid="hero-explore-cta"
                   className="inline-flex items-center gap-2 bg-ink text-white px-6 py-3.5 rounded-lg font-medium hover:bg-ink/90 transition-colors"
                 >
-                  Explore collection
+                  {t('home.exploreCollection')}
                   <ArrowRight size={20} />
                 </Link>
                 <Link
                   href="/products?sort=best-selling"
                   className="inline-flex items-center gap-2 bg-surface border border-border text-ink px-6 py-3.5 rounded-lg font-medium hover:bg-canvas transition-colors"
                 >
-                  Best sellers
+                  {t('home.bestSellersBtn')}
                 </Link>
               </div>
             </div>
@@ -226,17 +227,17 @@ export default function HomeClient({ initialData }) {
                 <div className="absolute bottom-4 left-4 right-4 bg-surface/90 backdrop-blur-md border border-border rounded-xl p-4 flex items-center justify-between">
                   <div>
                     <span className="text-[11px] font-mono uppercase tracking-wider text-secondary block">
-                      Featured System
+                      {t('home.featuredSystem')}
                     </span>
                     <span className="text-small font-medium text-ink">
-                      MacBook Pro M3 & Studio Hardware
+                      {t('home.featuredSystemName')}
                     </span>
                   </div>
                   <Link
                     href="/products/macbook-pro-m3"
                     className="text-caption font-medium text-ink hover:text-secondary inline-flex items-center gap-1"
                   >
-                    Configure
+                    {t('home.configure')}
                     <ArrowRight size={14} />
                   </Link>
                 </div>
@@ -249,7 +250,7 @@ export default function HomeClient({ initialData }) {
       {error && (
         <div className="container-main mb-8">
           <div className="p-4 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-small">
-            {error}
+            {t('home.loadError')}
           </div>
         </div>
       )}
@@ -265,15 +266,15 @@ export default function HomeClient({ initialData }) {
             <div>
               <div className="inline-flex items-center gap-1.5 text-caption font-mono uppercase tracking-wider text-secondary mb-2">
                 <Sparkles size={13} />
-                <span>New Products</span>
+                <span>{t('home.newProductsBadge')}</span>
               </div>
-              <h2 className="text-h2">Discover what&apos;s next.</h2>
+              <h2 className="text-h2">{t('home.newArrivalsTitle')}</h2>
             </div>
             <Link
               href="/products?sort=newest"
               className="text-small font-medium text-secondary hover:text-ink transition-colors inline-flex items-center gap-1"
             >
-              View all new arrivals
+              {t('home.viewAllNewArrivals')}
               <ArrowRight size={16} />
             </Link>
           </div>
@@ -298,7 +299,7 @@ export default function HomeClient({ initialData }) {
                 ))}
               </div>
               <Pagination
-                label="New Arrivals Pagination"
+                label={t('home.newArrivalsPagination')}
                 page={newArrivalsPaged.pagination.page}
                 totalPages={newArrivalsPaged.pagination.totalPages}
                 total={newArrivalsPaged.pagination.total}
@@ -321,15 +322,15 @@ export default function HomeClient({ initialData }) {
             <div>
               <div className="inline-flex items-center gap-1.5 text-caption font-mono uppercase tracking-wider text-secondary mb-2">
                 <Award size={13} />
-                <span>Best Sellers</span>
+                <span>{t('home.bestSellersBadge')}</span>
               </div>
-              <h2 className="text-h2">Chosen for performance.</h2>
+              <h2 className="text-h2">{t('home.bestSellersTitle')}</h2>
             </div>
             <Link
               href="/products?sort=best-selling"
               className="text-small font-medium text-secondary hover:text-ink transition-colors inline-flex items-center gap-1"
             >
-              View all best sellers
+              {t('home.viewAllBestSellers')}
               <ArrowRight size={16} />
             </Link>
           </div>
@@ -354,7 +355,7 @@ export default function HomeClient({ initialData }) {
                 ))}
               </div>
               <Pagination
-                label="Best Sellers Pagination"
+                label={t('home.bestSellersPagination')}
                 page={bestSellersPaged.pagination.page}
                 totalPages={bestSellersPaged.pagination.totalPages}
                 total={bestSellersPaged.pagination.total}
@@ -376,49 +377,56 @@ export default function HomeClient({ initialData }) {
           <div className="mb-8">
             <div className="inline-flex items-center gap-1.5 text-caption font-mono uppercase tracking-wider text-secondary mb-2">
               <Layers size={13} />
-              <span>Hardware Categories</span>
+              <span>{t('home.hardwareCategoriesBadge')}</span>
             </div>
-            <h2 className="text-h2">Find your next essential.</h2>
+            <h2 className="text-h2">{t('home.categoriesTitle')}</h2>
           </div>
 
           <div
             data-testid="categories-grid"
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {displayedCategories.map((cat) => (
-              <Link
-                key={cat.slug}
-                href={`/products?category=${cat.slug}`}
-                data-testid={`category-card-${cat.slug}`}
-                className="group block"
-              >
-                <div className="h-full bg-surface rounded-2xl border border-border p-6 md:p-8 flex flex-col justify-between transition-all duration-200 group-hover:border-ink group-hover:shadow-sm">
-                  <div>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-caption font-mono text-secondary uppercase tracking-wider">
-                        Category
-                      </span>
-                      {typeof cat.productCount === 'number' && (
-                        <span className="text-caption font-mono text-secondary">
-                          {cat.productCount} {cat.productCount === 1 ? 'item' : 'items'}
+            {displayedCategories.map((cat) => {
+              const localizedCatName = catName(cat.slug || cat.name);
+              const localizedCatDesc = catDesc(cat.slug, cat.description);
+              return (
+                <Link
+                  key={cat.slug}
+                  href={`/products?category=${cat.slug}`}
+                  data-testid={`category-card-${cat.slug}`}
+                  className="group block"
+                >
+                  <div className="h-full bg-surface rounded-2xl border border-border p-6 md:p-8 flex flex-col justify-between transition-all duration-200 group-hover:border-ink group-hover:shadow-sm">
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-caption font-mono text-secondary uppercase tracking-wider">
+                          {t('home.categoryLabel')}
                         </span>
+                        {typeof cat.productCount === 'number' && (
+                          <span className="text-caption font-mono text-secondary">
+                            {cat.productCount}{' '}
+                            {cat.productCount === 1
+                              ? t('home.itemSingular')
+                              : t('home.itemPlural')}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-h3 mt-2 text-ink">{localizedCatName}</h3>
+                      {localizedCatDesc && (
+                        <p className="text-small text-secondary mt-2 line-clamp-2">
+                          {localizedCatDesc}
+                        </p>
                       )}
                     </div>
-                    <h3 className="text-h3 mt-2 text-ink">{cat.name}</h3>
-                    {cat.description && (
-                      <p className="text-small text-secondary mt-2 line-clamp-2">
-                        {cat.description}
-                      </p>
-                    )}
-                  </div>
 
-                  <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between text-small font-medium text-ink">
-                    <span>Explore {cat.name}</span>
-                    <ArrowRight className="w-5 h-5 text-secondary group-hover:text-ink group-hover:translate-x-0.5 transition-all" />
+                    <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between text-small font-medium text-ink">
+                      <span>{t('home.exploreCategory', { name: localizedCatName })}</span>
+                      <ArrowRight className="w-5 h-5 text-secondary group-hover:text-ink group-hover:translate-x-0.5 transition-all" />
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -430,6 +438,8 @@ export default function HomeClient({ initialData }) {
           pagination: { page: 1, limit: HOME_SECTION_LIMIT, total: 0, totalPages: 1 },
           loading: false,
         };
+        const localizedTitle = catName(catMeta.slug) || catMeta.title;
+        const localizedSubtitle = catSubtitle(catMeta.slug, catMeta.subtitle);
 
         return (
           <section
@@ -443,16 +453,16 @@ export default function HomeClient({ initialData }) {
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
                 <div>
                   <span className="text-caption font-mono uppercase tracking-wider text-secondary block mb-1.5">
-                    Category · 0{idx + 1}
+                    {t('home.categoryLabel')} · 0{idx + 1}
                   </span>
-                  <h2 className="text-h2">{catMeta.title}</h2>
-                  <p className="text-small text-secondary mt-1">{catMeta.subtitle}</p>
+                  <h2 className="text-h2">{localizedTitle}</h2>
+                  <p className="text-small text-secondary mt-1">{localizedSubtitle}</p>
                 </div>
                 <Link
                   href={`/products?category=${catMeta.slug}`}
                   className="text-small font-medium text-secondary hover:text-ink transition-colors inline-flex items-center gap-1"
                 >
-                  Shop all {catMeta.title}
+                  {t('home.shopAllCategory', { name: localizedTitle })}
                   <ArrowRight size={16} />
                 </Link>
               </div>
@@ -474,7 +484,7 @@ export default function HomeClient({ initialData }) {
                     ))}
                   </div>
                   <Pagination
-                    label={`${catMeta.title} Pagination`}
+                    label={t('home.categoryPagination', { name: localizedTitle })}
                     page={sectionState.pagination.page}
                     totalPages={sectionState.pagination.totalPages}
                     total={sectionState.pagination.total}

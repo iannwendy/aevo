@@ -1,11 +1,16 @@
+'use client';
+
 import Link from 'next/link';
+import { useI18n } from '../lib/i18n';
 
 /**
- * Shared site footer. Server component: no interactivity needed for Phase 1.
+ * Shared site footer with ENG/VIE localization.
  */
 export default function SiteFooter() {
+  const { t } = useI18n();
+
   return (
-    <footer className="border-t border-border py-12">
+    <footer className="border-t border-border py-12" data-testid="site-footer">
       <div className="container-main">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
@@ -13,7 +18,7 @@ export default function SiteFooter() {
               aevo.
             </Link>
             <p className="text-small text-secondary mt-2">
-              Premium Computing, Refined.
+              {t('footer.tagline')}
             </p>
           </div>
 
@@ -22,25 +27,25 @@ export default function SiteFooter() {
               href="/products"
               className="text-small text-secondary hover:text-ink transition-colors focus-ring rounded"
             >
-              Shop
+              {t('footer.shop')}
             </Link>
             <Link
               href="/account/profile"
               className="text-small text-secondary hover:text-ink transition-colors focus-ring rounded"
             >
-              Account
+              {t('footer.account')}
             </Link>
             <Link
               href="/admin"
               className="text-small text-secondary hover:text-ink transition-colors focus-ring rounded"
             >
-              Admin
+              {t('footer.admin')}
             </Link>
           </nav>
         </div>
 
         <div className="mt-12 pt-8 border-t border-border text-small text-secondary">
-          © {new Date().getFullYear()} AEVO. All rights reserved.
+          {t('footer.rights', { year: new Date().getFullYear() })}
         </div>
       </div>
     </footer>

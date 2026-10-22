@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useI18n } from '../../lib/i18n';
 
 /**
  * Reusable Pagination component.
@@ -17,6 +18,7 @@ export default function Pagination({
   onPageChange,
   label = 'Pagination',
 }) {
+  const { t } = useI18n();
   const safeTotalPages = Math.max(1, Number(totalPages) || 1);
   const currentPage = Math.min(Math.max(1, Number(page) || 1), safeTotalPages);
 
@@ -39,7 +41,7 @@ export default function Pagination({
       <div className="text-small text-secondary">
         {typeof total === 'number' ? (
           <span>
-            Showing{' '}
+            {t('pagination.showing')}{' '}
             <strong className="font-medium text-ink">
               {total === 0 ? 0 : (currentPage - 1) * limit + 1}
             </strong>
@@ -47,12 +49,13 @@ export default function Pagination({
             <strong className="font-medium text-ink">
               {Math.min(currentPage * limit, total)}
             </strong>{' '}
-            of <strong className="font-medium text-ink">{total}</strong> products
+            {t('pagination.of')} <strong className="font-medium text-ink">{total}</strong>{' '}
+            {t('pagination.products')}
           </span>
         ) : (
           <span>
-            Page <strong className="font-medium text-ink">{currentPage}</strong> of{' '}
-            <strong className="font-medium text-ink">{safeTotalPages}</strong>
+            {t('pagination.page')} <strong className="font-medium text-ink">{currentPage}</strong>{' '}
+            {t('pagination.of')} <strong className="font-medium text-ink">{safeTotalPages}</strong>
           </span>
         )}
       </div>
@@ -62,11 +65,11 @@ export default function Pagination({
           type="button"
           onClick={() => handleSelect(currentPage - 1)}
           disabled={currentPage <= 1}
-          aria-label="Previous page"
+          aria-label={t('pagination.prevAria')}
           className="inline-flex items-center gap-1 px-3 h-10 rounded-lg border border-border bg-surface text-small font-medium text-ink disabled:opacity-40 disabled:cursor-not-allowed hover:bg-canvas transition-colors"
         >
           <ChevronLeft size={16} />
-          <span className="hidden sm:inline">Prev</span>
+          <span className="hidden sm:inline">{t('pagination.prev')}</span>
         </button>
 
         {pages.map((p) => {
@@ -93,10 +96,10 @@ export default function Pagination({
           type="button"
           onClick={() => handleSelect(currentPage + 1)}
           disabled={currentPage >= safeTotalPages}
-          aria-label="Next page"
+          aria-label={t('pagination.nextAria')}
           className="inline-flex items-center gap-1 px-3 h-10 rounded-lg border border-border bg-surface text-small font-medium text-ink disabled:opacity-40 disabled:cursor-not-allowed hover:bg-canvas transition-colors"
         >
-          <span className="hidden sm:inline">Next</span>
+          <span className="hidden sm:inline">{t('pagination.next')}</span>
           <ChevronRight size={16} />
         </button>
       </div>

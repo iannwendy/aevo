@@ -3,14 +3,17 @@
 import Link from 'next/link';
 import { ArrowRight, Star } from 'lucide-react';
 import { formatPrice } from '../../lib/utils';
+import { useI18n } from '../../lib/i18n';
 
 export default function ProductCard({ product, viewMode = 'grid' }) {
+  const { t, catName } = useI18n();
   if (!product) return null;
 
-  const categoryName =
+  const rawCategoryName =
     typeof product.category === 'string'
       ? product.category
       : product.category?.name || 'Hardware';
+  const categoryName = catName(product.category?.slug || rawCategoryName);
   const primaryImage =
     product.image ||
     product.images?.find((i) => i.isPrimary)?.url ||
@@ -42,12 +45,12 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
             {product.isNewArrival && (
               <span className="bg-ink text-white text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
-                New Arrival
+                {t('productCard.newArrival')}
               </span>
             )}
             {product.isBestSeller && (
               <span className="bg-sage text-white text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
-                Best Seller
+                {t('productCard.bestSeller')}
               </span>
             )}
           </div>
@@ -92,7 +95,10 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
               )}
               {variantCount > 0 && (
                 <span className="block text-caption text-secondary mt-0.5">
-                  {variantCount} {variantCount === 1 ? 'configuration' : 'configurations'}
+                  {variantCount}{' '}
+                  {variantCount === 1
+                    ? t('productCard.configurationSingular')
+                    : t('productCard.configurationPlural')}
                 </span>
               )}
             </div>
@@ -101,7 +107,7 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
               href={`/products/${product.slug}`}
               className="inline-flex items-center gap-1.5 text-small font-medium text-ink hover:text-secondary transition-colors"
             >
-              View product
+              {t('productCard.viewProduct')}
               <ArrowRight size={15} />
             </Link>
           </div>
@@ -129,12 +135,12 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
           <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
             {product.isNewArrival && (
               <span className="bg-ink text-white text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
-                New Arrival
+                {t('productCard.newArrival')}
               </span>
             )}
             {product.isBestSeller && (
               <span className="bg-sage text-white text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full">
-                Best Seller
+                {t('productCard.bestSeller')}
               </span>
             )}
           </div>
@@ -181,7 +187,10 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
           </div>
           {variantCount > 0 && (
             <span className="block text-[11px] text-secondary mt-0.5">
-              {variantCount} {variantCount === 1 ? 'variant' : 'variants'}
+              {variantCount}{' '}
+              {variantCount === 1
+                ? t('productCard.variantSingular')
+                : t('productCard.variantPlural')}
             </span>
           )}
         </div>
@@ -190,7 +199,7 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
           href={`/products/${product.slug}`}
           className="inline-flex items-center gap-1 text-caption font-medium text-ink group-hover:translate-x-0.5 transition-transform shrink-0"
         >
-          View
+          {t('productCard.view')}
           <ArrowRight size={14} />
         </Link>
       </div>

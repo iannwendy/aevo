@@ -13,10 +13,12 @@ import {
 } from 'lucide-react';
 import { cartApi } from '../../lib/api';
 import { formatPrice } from '../../lib/utils';
+import { useI18n } from '../../lib/i18n';
 
 const FREE_SHIPPING_THRESHOLD = 20000000;
 
 export default function CartClient({ initialCart }) {
+  const { t } = useI18n();
   const [cart, setCart] = useState(
     initialCart || {
       items: [],
@@ -53,7 +55,7 @@ export default function CartClient({ initialCart }) {
       } catch (err) {
         if (!active) return;
         console.error('Failed to load cart:', err);
-        setError('Unable to load your shopping cart.');
+        setError(t('cart.loadError'));
       } finally {
         if (active) setLoading(false);
       }
@@ -62,13 +64,18 @@ export default function CartClient({ initialCart }) {
     return () => {
       active = false;
     };
-  }, [initialCart]);
+  }, [initialCart, t]);
 
   const handleUpdateQuantity = async (item, nextQty) => {
     if (!item || updatingItemId) return;
     const maxStock = item.variant?.inventory ?? 99;
     if (nextQty > maxStock) {
-      setError(`Only ${maxStock} units of ${item.variant?.product?.name || 'this item'} are available in stock.`);
+      setError(
+        t('cart.maxStockError', {
+          max: maxStock,
+          name: item.variant?.product?.name || 'this item',
+        })
+      );
       return;
     }
 
@@ -85,7 +92,7 @@ export default function CartClient({ initialCart }) {
         broadcastCartCount(res.data);
       }
     } catch (err) {
-      const msg = err?.response?.data?.error || 'Could not update item quantity.';
+      const msg = err?.response?.data?.error || t('cart.updateError');
       setError(msg);
     } finally {
       setUpdatingItemId(null);
@@ -101,7 +108,7 @@ export default function CartClient({ initialCart }) {
       setCart(res.data);
       broadcastCartCount(res.data);
     } catch (err) {
-      const msg = err?.response?.data?.error || 'Could not remove item from cart.';
+      const msg = err?.response?.data?.error || t('cart.removeError');
       setError(msg);
     } finally {
       setUpdatingItemId(null);
@@ -116,7 +123,7 @@ export default function CartClient({ initialCart }) {
       setCart(res.data);
       broadcastCartCount(res.data);
     } catch {
-      setError('Could not clear cart.');
+      setError(t('cart.clearError'));
     } finally {
       setUpdatingItemId(null);
     }
@@ -141,17 +148,17 @@ export default function CartClient({ initialCart }) {
           className="text-caption font-mono uppercase tracking-wider text-secondary mb-4"
         >
           <Link href="/" className="hover:text-ink transition-colors">
-            HOME
+            {t('cart.breadcrumbHome')}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-ink">CART</span>
+          <span className="text-ink">{t('cart.breadcrumbCart')}</span>
         </nav>
 
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-8 border-b border-border">
           <div>
-            <h1 className="text-h1">Your selection.</h1>
+            <h1 className="text-h1">{t('cart.title')}</h1>
             <p className="text-body text-secondary mt-2">
-              Review your configured hardware before checkout.
+              {t('cart.subtitle')}
             </p>
           </div>
 
@@ -164,7 +171,7 @@ export default function CartClient({ initialCart }) {
               className="text-small text-secondary hover:text-red-600 transition-colors inline-flex items-center gap-1.5 self-start sm:self-auto"
             >
               <Trash2 size={15} />
-              <span>Clear selection</span>
+              <span>{t('cart.clearSelection')}</span>
             </button>
           )}
         </div>
@@ -198,17 +205,16 @@ export default function CartClient({ initialCart }) {
             <div className="w-14 h-14 rounded-2xl bg-canvas border border-border flex items-center justify-center mx-auto mb-5">
               <ShoppingBag size={24} className="text-secondary" />
             </div>
-            <h2 className="text-h2 mb-2">Your cart is empty</h2>
+            <h2 className="text-h2 mb-2">{t('cart.emptyTitle')}</h2>
             <p className="text-small text-secondary mb-8 max-w-md mx-auto">
-              Explore our curated collection of workstations, studio displays, and precision
-              components.
+              {t('cart.emptyDesc')}
             </p>
             <Link
               href="/products"
               data-testid="cart-empty-explore-cta"
               className="inline-flex items-center gap-2 bg-ink text-white px-6 py-3.5 rounded-xl font-medium text-small hover:bg-ink/90 transition-colors"
             >
-              Explore collection
+              {t('cart.exploreCollection')}
               <ArrowRight size={18} />
             </Link>
           </div>
@@ -266,7 +272,7 @@ export default function CartClient({ initialCart }) {
                             data-testid="cart-item-variant"
                             className="text-small text-secondary mt-0.5"
                           >
-                            Configuration: {item.variant?.name}
+                            {t('cart.configurationPrefix', { name: item.variant?.name || '' })}
                           </p>
                         </div>
 
@@ -318,7 +324,7 @@ export default function CartClient({ initialCart }) {
                             </button>
                           </div>
                           <span className="text-caption font-mono text-secondary">
-                            {maxStock} in stock
+                            {t('cart.inStockCount', { count: maxStock })}
                           </span>
                         </div>
 
@@ -332,7 +338,7 @@ export default function CartClient({ initialCart }) {
                           </div>
                           {item.quantity > 1 && (
                             <div className="text-caption text-secondary">
-                              {formatPrice(unitPrice)} each
+                              {t('cart.eachPrice', { price: formatPrice(unitPrice) })}
                             </div>
                           )}
                         </div>
@@ -346,11 +352,11 @@ export default function CartClient({ initialCart }) {
             {/* Order Summary Panel */}
             <aside className="lg:col-span-4" data-testid="cart-summary">
               <div className="bg-surface border border-border rounded-2xl p-6 sticky top-24 space-y-6">
-                <h2 className="text-h3">Order Summary</h2>
+                <h2 className="text-h3">{t('cart.orderSummary')}</h2>
 
                 <dl className="space-y-3 text-small border-b border-border pb-5">
                   <div className="flex items-center justify-between">
-                    <dt className="text-secondary">Subtotal</dt>
+                    <dt className="text-secondary">{t('cart.subtotal')}</dt>
                     <dd
                       data-testid="cart-subtotal"
                       className="font-medium text-ink"
@@ -360,17 +366,17 @@ export default function CartClient({ initialCart }) {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <dt className="text-secondary">Shipping Fee</dt>
+                    <dt className="text-secondary">{t('cart.shippingFee')}</dt>
                     <dd
                       data-testid="cart-shipping"
                       className="font-medium text-ink"
                     >
-                      {shippingFee === 0 ? 'Free' : formatPrice(shippingFee)}
+                      {shippingFee === 0 ? t('cart.free') : formatPrice(shippingFee)}
                     </dd>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <dt className="text-secondary">Estimated Tax (10% VAT)</dt>
+                    <dt className="text-secondary">{t('cart.estimatedTax')}</dt>
                     <dd data-testid="cart-tax" className="font-medium text-ink">
                       {formatPrice(taxAmount)}
                     </dd>
@@ -378,7 +384,9 @@ export default function CartClient({ initialCart }) {
                 </dl>
 
                 <div className="flex items-baseline justify-between">
-                  <span className="text-base font-medium text-ink">Estimated Total</span>
+                  <span className="text-base font-medium text-ink">
+                    {t('cart.estimatedTotal')}
+                  </span>
                   <span
                     data-testid="cart-total"
                     className="text-2xl font-display font-medium text-ink"
@@ -389,11 +397,11 @@ export default function CartClient({ initialCart }) {
 
                 {subtotal < FREE_SHIPPING_THRESHOLD && (
                   <p className="text-caption text-secondary bg-canvas border border-border rounded-xl p-3">
-                    Add{' '}
+                    {t('cart.freeShippingHintPrefix')}{' '}
                     <strong className="text-ink font-medium">
                       {formatPrice(FREE_SHIPPING_THRESHOLD - subtotal)}
                     </strong>{' '}
-                    more to unlock complimentary insured express shipping.
+                    {t('cart.freeShippingHintSuffix')}
                   </p>
                 )}
 
@@ -403,7 +411,7 @@ export default function CartClient({ initialCart }) {
                     data-testid="cart-checkout-cta"
                     className="w-full h-12 rounded-xl bg-ink text-white font-medium text-small hover:bg-ink/90 transition-colors inline-flex items-center justify-center gap-2"
                   >
-                    <span>Checkout</span>
+                    <span>{t('cart.checkout')}</span>
                     <ArrowRight size={18} />
                   </Link>
 
@@ -411,18 +419,18 @@ export default function CartClient({ initialCart }) {
                     href="/products"
                     className="w-full h-11 rounded-xl border border-border bg-surface hover:bg-canvas text-ink font-medium text-small transition-colors inline-flex items-center justify-center"
                   >
-                    Continue shopping
+                    {t('cart.continueShopping')}
                   </Link>
                 </div>
 
                 <div className="pt-4 border-t border-border space-y-2 text-caption text-secondary">
                   <div className="flex items-center gap-2">
                     <ShieldCheck size={14} className="text-ink shrink-0" />
-                    <span>Earn 10% loyalty points on every order</span>
+                    <span>{t('cart.loyaltyHighlight')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Truck size={14} className="text-ink shrink-0" />
-                    <span>Discount codes &amp; points applied at checkout</span>
+                    <span>{t('cart.discountHighlight')}</span>
                   </div>
                 </div>
               </div>

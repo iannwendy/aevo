@@ -18,6 +18,7 @@ import {
 import { API_URL, productsApi, cartApi, reviewsApi } from '../../lib/api';
 import { fetchProfile } from '../../lib/auth-client';
 import { formatPrice } from '../../lib/utils';
+import { useI18n } from '../../lib/i18n';
 
 function computeReviewStatsClient(reviews = []) {
   const rated = reviews.filter(
@@ -42,6 +43,7 @@ function computeReviewStatsClient(reviews = []) {
 }
 
 export default function ProductDetailClient({ slug, initialProduct }) {
+  const { locale, t, catName } = useI18n();
   const [product, setProduct] = useState(initialProduct || null);
   const [loading, setLoading] = useState(!initialProduct);
   const [notFoundError, setNotFoundError] = useState(false);
@@ -227,11 +229,15 @@ export default function ProductDetailClient({ slug, initialProduct }) {
 
       setCartFeedback({
         type: 'success',
-        message: `Added ${quantity} × ${product.name} (${selectedVariant.name}) to your cart.`,
+        message: t('productDetail.addedFeedback', {
+          quantity,
+          name: product.name,
+          variant: selectedVariant.name,
+        }),
       });
     } catch (err) {
       const msg =
-        err?.response?.data?.error || 'Could not add item to cart. Please try again.';
+        err?.response?.data?.error || t('productDetail.addErrorFeedback');
       setCartFeedback({ type: 'error', message: msg });
     } finally {
       setAddingToCart(false);
@@ -244,7 +250,7 @@ export default function ProductDetailClient({ slug, initialProduct }) {
 
     const trimmedComment = commentInput.trim();
     if (!trimmedComment) {
-      setReviewFeedback({ type: 'error', message: 'Please enter a comment before submitting.' });
+      setReviewFeedback({ type: 'error', message: t('productDetail.commentRequiredError') });
       return;
     }
 
@@ -260,7 +266,7 @@ export default function ProductDetailClient({ slug, initialProduct }) {
       if (currentUser) {
         payload.rating = ratingInput;
       } else {
-        payload.guestName = guestName.trim() || 'Guest';
+        payload.guestName = guestName.trim() || t('productDetail.guestBadge');
       }
 
       const res = await reviewsApi.create(payload);
@@ -276,12 +282,12 @@ export default function ProductDetailClient({ slug, initialProduct }) {
       setReviewFeedback({
         type: 'success',
         message: currentUser
-          ? 'Your review and star rating have been published.'
-          : 'Your guest comment has been posted.',
+          ? t('productDetail.reviewPublishedSuccess')
+          : t('productDetail.guestCommentPostedSuccess'),
       });
     } catch (err) {
       const msg =
-        err?.response?.data?.error || 'Failed to submit review. Please try again.';
+        err?.response?.data?.error || t('productDetail.reviewSubmitError');
       setReviewFeedback({ type: 'error', message: msg });
     } finally {
       setSubmittingReview(false);
@@ -302,26 +308,27 @@ export default function ProductDetailClient({ slug, initialProduct }) {
   if (notFoundError || !product) {
     return (
       <div className="pt-[72px] container-main py-20 text-center" data-testid="product-not-found">
-        <h1 className="text-h1 mb-4">Product not found</h1>
+        <h1 className="text-h1 mb-4">{t('productDetail.notFoundTitle')}</h1>
         <p className="text-body text-secondary mb-8">
-          The hardware item you are looking for is no longer available.
+          {t('productDetail.notFoundDesc')}
         </p>
         <Link
           href="/products"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-ink text-white font-medium"
         >
-          Back to Catalog
+          {t('productDetail.backToCatalog')}
         </Link>
       </div>
     );
   }
 
-  const categoryName =
+  const rawCategoryName =
     typeof product.category === 'string'
       ? product.category
       : product.category?.name || 'Hardware';
   const categorySlug =
-    product.category?.slug || product.categorySlug || categoryName.toLowerCase();
+    product.category?.slug || product.categorySlug || rawCategoryName.toLowerCase();
+  const categoryName = catName(categorySlug || rawCategoryName);
 
   const currentPrice = selectedVariant?.price ?? product.price ?? product.minPrice ?? 0;
   const currentComparePrice =
@@ -337,11 +344,11 @@ export default function ProductDetailClient({ slug, initialProduct }) {
           className="text-caption font-mono uppercase tracking-wider text-secondary mb-8 flex flex-wrap items-center gap-2"
         >
           <Link href="/" className="hover:text-ink transition-colors">
-            HOME
+            {t('productDetail.breadcrumbHome')}
           </Link>
           <span>/</span>
           <Link href="/products" className="hover:text-ink transition-colors">
-            SHOP
+            {t('productDetail.breadcrumbShop')}
           </Link>
           <span>/</span>
           <Link
@@ -368,12 +375,12 @@ export default function ProductDetailClient({ slug, initialProduct }) {
               <div className="absolute top-4 left-4 flex flex-wrap gap-2">
                 {product.isNewArrival && (
                   <span className="bg-ink text-white text-caption font-mono uppercase tracking-wider px-3 py-1 rounded-full">
-                    New Arrival
+                    {t('productCard.newArrival')}
                   </span>
                 )}
                 {product.isBestSeller && (
                   <span className="bg-sage text-white text-caption font-mono uppercase tracking-wider px-3 py-1 rounded-full">
-                    Best Seller
+                    {t('productCard.bestSeller')}
                   </span>
                 )}
               </div>
@@ -444,14 +451,17 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                 <span className="text-small font-medium text-ink" data-testid="product-rating-avg">
                   {reviewStats.averageRating > 0
                     ? `${reviewStats.averageRating} / 5.0`
-                    : 'No ratings yet'}
+                    : t('productDetail.noRatingsYet')}
                 </span>
                 <a
                   href="#reviews"
                   className="text-small text-secondary hover:text-ink underline underline-offset-4"
                 >
                   ({reviewStats.reviewCount}{' '}
-                  {reviewStats.reviewCount === 1 ? 'review' : 'reviews'})
+                  {reviewStats.reviewCount === 1
+                    ? t('productDetail.reviewSingular')
+                    : t('productDetail.reviewPlural')}
+                  )
                 </a>
               </div>
 
@@ -476,7 +486,7 @@ export default function ProductDetailClient({ slug, initialProduct }) {
               {/* Short Description (>= 5 lines per rubric) */}
               <div className="mt-6" data-testid="product-description">
                 <h2 className="text-caption font-mono uppercase tracking-wider text-secondary mb-3">
-                  Overview — Built for your workflow
+                  {t('productDetail.overviewHeading')}
                 </h2>
                 <div className="space-y-2 text-small text-ink/90 leading-relaxed">
                   {descriptionLines.map((line, idx) => (
@@ -491,7 +501,7 @@ export default function ProductDetailClient({ slug, initialProduct }) {
               <div className="mt-8" data-testid="variant-selector">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-caption font-mono uppercase tracking-wider text-secondary">
-                    Select Configuration ({variants.length} options)
+                    {t('productDetail.selectConfig', { count: variants.length })}
                   </span>
                   <span
                     data-testid="product-stock"
@@ -500,8 +510,8 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                     }`}
                   >
                     {currentStock > 0
-                      ? `In stock · ${currentStock} available`
-                      : 'Out of stock'}
+                      ? t('productDetail.inStockAvailable', { count: currentStock })
+                      : t('productDetail.outOfStock')}
                   </span>
                 </div>
 
@@ -529,8 +539,8 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                           <div className="text-caption font-mono text-secondary mt-0.5">
                             SKU: {variant.sku} ·{' '}
                             {variant.inventory > 0
-                              ? `${variant.inventory} in stock`
-                              : 'Out of stock'}
+                              ? t('productDetail.inStockShort', { count: variant.inventory })
+                              : t('productDetail.outOfStock')}
                           </div>
                         </div>
                         <div className="text-right shrink-0">
@@ -598,10 +608,12 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                     <ShoppingBag size={18} />
                     <span>
                       {currentStock <= 0
-                        ? 'Out of stock'
+                        ? t('productDetail.outOfStock')
                         : addingToCart
-                        ? 'Adding to selection...'
-                        : `Add to cart — ${formatPrice(currentPrice * quantity)}`}
+                        ? t('productDetail.addingToSelection')
+                        : t('productDetail.addToCartPrice', {
+                            price: formatPrice(currentPrice * quantity),
+                          })}
                     </span>
                   </button>
                 </div>
@@ -624,7 +636,7 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                         href="/cart"
                         className="font-medium underline underline-offset-4 shrink-0"
                       >
-                        View Cart →
+                        {t('productDetail.viewCart')}
                       </Link>
                     )}
                   </div>
@@ -635,11 +647,11 @@ export default function ProductDetailClient({ slug, initialProduct }) {
               <div className="mt-6 grid grid-cols-2 gap-3 text-caption text-secondary">
                 <div className="p-3 rounded-xl bg-surface border border-border flex items-center gap-2.5">
                   <ShieldCheck size={16} className="text-ink shrink-0" />
-                  <span>Official 24-month hardware warranty</span>
+                  <span>{t('productDetail.warrantyHighlight')}</span>
                 </div>
                 <div className="p-3 rounded-xl bg-surface border border-border flex items-center gap-2.5">
                   <Truck size={16} className="text-ink shrink-0" />
-                  <span>Insured nationwide express delivery</span>
+                  <span>{t('productDetail.deliveryHighlight')}</span>
                 </div>
               </div>
             </div>
@@ -651,20 +663,24 @@ export default function ProductDetailClient({ slug, initialProduct }) {
           data-testid="product-specifications"
           className="mt-16 pt-12 border-t border-border"
         >
-          <h2 className="text-h2 mb-6">Technical Specifications</h2>
+          <h2 className="text-h2 mb-6">{t('productDetail.techSpecsTitle')}</h2>
           <div className="bg-surface border border-border rounded-2xl overflow-hidden">
             <dl className="divide-y divide-border text-small">
               <div className="grid grid-cols-1 sm:grid-cols-3 p-4 sm:px-6">
-                <dt className="font-mono uppercase text-caption text-secondary">Brand</dt>
+                <dt className="font-mono uppercase text-caption text-secondary">
+                  {t('productDetail.specBrand')}
+                </dt>
                 <dd className="sm:col-span-2 font-medium text-ink">{product.brand}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 p-4 sm:px-6">
-                <dt className="font-mono uppercase text-caption text-secondary">Category</dt>
+                <dt className="font-mono uppercase text-caption text-secondary">
+                  {t('productDetail.specCategory')}
+                </dt>
                 <dd className="sm:col-span-2 font-medium text-ink">{categoryName}</dd>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 p-4 sm:px-6">
                 <dt className="font-mono uppercase text-caption text-secondary">
-                  Selected Configuration
+                  {t('productDetail.specSelectedConfig')}
                 </dt>
                 <dd className="sm:col-span-2 font-medium text-ink">
                   {selectedVariant?.name} (SKU: {selectedVariant?.sku})
@@ -672,18 +688,25 @@ export default function ProductDetailClient({ slug, initialProduct }) {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 p-4 sm:px-6">
                 <dt className="font-mono uppercase text-caption text-secondary">
-                  Available Variants
+                  {t('productDetail.specAvailableVariants')}
                 </dt>
                 <dd className="sm:col-span-2 text-ink">
-                  {variants.map((v) => `${v.name} (${v.inventory} units)`).join(' · ')}
+                  {variants
+                    .map(
+                      (v) =>
+                        `${v.name} (${t('productDetail.specUnits', { count: v.inventory })})`
+                    )
+                    .join(' · ')}
                 </dd>
               </div>
               {(product.tagList?.length > 0 || product.tags?.length > 0) && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 p-4 sm:px-6">
-                  <dt className="font-mono uppercase text-caption text-secondary">Tags</dt>
+                  <dt className="font-mono uppercase text-caption text-secondary">
+                    {t('productDetail.specTags')}
+                  </dt>
                   <dd className="sm:col-span-2 flex flex-wrap gap-1.5">
-                    {(product.tagList || product.tags || []).map((t) => {
-                      const tagObj = t.tag || t;
+                    {(product.tagList || product.tags || []).map((tagItem) => {
+                      const tagObj = tagItem.tag || tagItem;
                       return (
                         <Link
                           key={tagObj.slug || tagObj.name}
@@ -711,9 +734,9 @@ export default function ProductDetailClient({ slug, initialProduct }) {
             <div>
               <div className="inline-flex items-center gap-2 text-caption font-mono uppercase tracking-wider text-secondary mb-2">
                 <MessageSquare size={13} />
-                <span>Customer Reviews &amp; Ratings</span>
+                <span>{t('productDetail.reviewsBadge')}</span>
               </div>
-              <h2 className="text-h2">Community feedback.</h2>
+              <h2 className="text-h2">{t('productDetail.reviewsTitle')}</h2>
             </div>
 
             <div
@@ -725,7 +748,9 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                 className={socketConnected ? 'text-emerald-600 animate-pulse' : 'text-secondary'}
               />
               <span>
-                {socketConnected ? 'Live updates active (WebSocket)' : 'Realtime ready'}
+                {socketConnected
+                  ? t('productDetail.liveUpdatesActive')
+                  : t('productDetail.realtimeReady')}
               </span>
             </div>
           </div>
@@ -765,11 +790,13 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                       <strong className="text-ink font-medium">
                         {reviewStats.reviewCount}
                       </strong>{' '}
-                      total comments &amp; reviews
+                      {t('productDetail.totalCommentsReviews')}
                     </div>
                     <div className="text-caption mt-0.5">
-                      {reviewStats.ratingCount} verified star{' '}
-                      {reviewStats.ratingCount === 1 ? 'rating' : 'ratings'}
+                      {reviewStats.ratingCount}{' '}
+                      {reviewStats.ratingCount === 1
+                        ? t('productDetail.verifiedStarRatingSingular')
+                        : t('productDetail.verifiedStarRatingPlural')}
                     </div>
                   </div>
                 </div>
@@ -809,19 +836,19 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                 data-testid="review-form"
                 className="bg-surface border border-border rounded-2xl p-6 space-y-4"
               >
-                <h3 className="text-h3">Leave a review</h3>
+                <h3 className="text-h3">{t('productDetail.leaveReviewTitle')}</h3>
 
                 {currentUser ? (
                   <div>
                     <div className="text-caption text-secondary mb-2">
-                      Posting as{' '}
+                      {t('productDetail.postingAs')}{' '}
                       <strong className="text-ink font-medium">
                         {currentUser.fullName || currentUser.email}
                       </strong>
                     </div>
 
                     <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-2">
-                      Your Star Rating (1 – 5)
+                      {t('productDetail.yourStarRating')}
                     </label>
                     <div className="flex items-center gap-1.5" data-testid="star-rating-picker">
                       {[1, 2, 3, 4, 5].map((star) => {
@@ -852,13 +879,12 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                 ) : (
                   <div className="space-y-3">
                     <div className="p-3 rounded-xl bg-canvas border border-border text-caption text-secondary">
-                      Guests can post comments directly. To rate this product with stars (1–5★),
-                      please{' '}
+                      {t('productDetail.guestNoticePrefix')}{' '}
                       <Link
                         href="/login"
                         className="text-ink font-medium underline underline-offset-4"
                       >
-                        sign in
+                        {t('productDetail.signInLink')}
                       </Link>
                       .
                     </div>
@@ -867,14 +893,14 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                         htmlFor="review-guest-name"
                         className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
                       >
-                        Your Name (Optional)
+                        {t('productDetail.yourNameOptional')}
                       </label>
                       <input
                         id="review-guest-name"
                         type="text"
                         value={guestName}
                         onChange={(e) => setGuestName(e.target.value)}
-                        placeholder="e.g., Minh Nguyen"
+                        placeholder={t('productDetail.yourNamePlaceholder')}
                         data-testid="review-guest-name-input"
                         className="w-full h-11 px-3.5 rounded-xl border border-border bg-canvas text-small text-ink placeholder:text-secondary focus-ring"
                       />
@@ -887,7 +913,7 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                     htmlFor="review-comment"
                     className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
                   >
-                    Your Comment *
+                    {t('productDetail.yourCommentLabel')}
                   </label>
                   <textarea
                     id="review-comment"
@@ -895,7 +921,7 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                     required
                     value={commentInput}
                     onChange={(e) => setCommentInput(e.target.value)}
-                    placeholder="Share your experience with build quality, thermals, or display accuracy..."
+                    placeholder={t('productDetail.yourCommentPlaceholder')}
                     data-testid="review-comment-input"
                     className="w-full p-3.5 rounded-xl border border-border bg-canvas text-small text-ink placeholder:text-secondary focus-ring"
                   />
@@ -921,10 +947,10 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                   className="w-full h-11 rounded-xl bg-ink text-white text-small font-medium hover:bg-ink/90 disabled:opacity-50 transition-colors"
                 >
                   {submittingReview
-                    ? 'Submitting...'
+                    ? t('productDetail.submitting')
                     : currentUser
-                    ? 'Submit Review & Rating'
-                    : 'Post Guest Comment'}
+                    ? t('productDetail.submitReviewAndRating')
+                    : t('productDetail.postGuestComment')}
                 </button>
               </form>
             </div>
@@ -934,23 +960,28 @@ export default function ProductDetailClient({ slug, initialProduct }) {
               {reviews.length === 0 ? (
                 <div className="bg-surface border border-border rounded-2xl p-10 text-center">
                   <Sparkles size={24} className="mx-auto text-secondary mb-3" />
-                  <h3 className="text-h3 mb-1">No comments yet</h3>
+                  <h3 className="text-h3 mb-1">{t('productDetail.noCommentsYet')}</h3>
                   <p className="text-small text-secondary">
-                    Be the first to share your thoughts on {product.name}.
+                    {t('productDetail.beFirstToShare', { name: product.name })}
                   </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {reviews.map((rev) => {
                     const author =
-                      rev.user?.fullName || rev.guestName || 'Guest Customer';
+                      rev.user?.fullName ||
+                      rev.guestName ||
+                      t('productDetail.guestCustomer');
                     const isMember = Boolean(rev.user?.fullName || rev.userId);
                     const dateStr = rev.createdAt
-                      ? new Date(rev.createdAt).toLocaleDateString('vi-VN', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })
+                      ? new Date(rev.createdAt).toLocaleDateString(
+                          locale === 'vi' ? 'vi-VN' : 'en-US',
+                          {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          }
+                        )
                       : '';
                     return (
                       <article
@@ -972,10 +1003,10 @@ export default function ProductDetailClient({ slug, initialProduct }) {
                                 }`}
                               >
                                 {rev.isVerified
-                                  ? 'Verified Buyer'
+                                  ? t('productDetail.verifiedBuyer')
                                   : isMember
-                                  ? 'Member'
-                                  : 'Guest'}
+                                  ? t('productDetail.memberBadge')
+                                  : t('productDetail.guestBadge')}
                               </span>
                             </div>
 

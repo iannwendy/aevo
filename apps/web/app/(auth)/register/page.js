@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { GOOGLE_AUTH_URL, fetchProfile } from '../../../lib/auth-client';
 import { register } from '../../../lib/account-client';
+import { useI18n } from '../../../lib/i18n';
+import LanguageSwitcher from '../../../components/LanguageSwitcher';
 
 /**
  * /register
@@ -18,6 +20,7 @@ const PASSWORD_MIN = 6;
 const PASSWORD_MAX = 72;
 
 export default function RegisterPage() {
+  const { t } = useI18n();
   const router = useRouter();
 
   // null | 'checking' (resolving existing session) | 'submitting'
@@ -60,15 +63,15 @@ export default function RegisterPage() {
     const fullName = form.fullName.trim();
     const email = form.email.trim();
 
-    if (!fullName) errors.fullName = 'Enter your full name.';
-    if (!email) errors.email = 'Enter your email address.';
+    if (!fullName) errors.fullName = t('auth.register.enterFullNameError');
+    if (!email) errors.email = t('auth.register.enterEmailError');
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Enter a valid email address.';
+      errors.email = t('auth.register.validEmailError');
     }
     if (form.password.length < PASSWORD_MIN) {
-      errors.password = `Password must be at least ${PASSWORD_MIN} characters.`;
+      errors.password = t('auth.register.passwordMinError', { min: PASSWORD_MIN });
     } else if (form.password.length > PASSWORD_MAX) {
-      errors.password = `Password must be at most ${PASSWORD_MAX} characters.`;
+      errors.password = t('auth.register.passwordMaxError', { max: PASSWORD_MAX });
     }
 
     setFieldErrors(errors);
@@ -89,13 +92,13 @@ export default function RegisterPage() {
     const result = await register(payload);
 
     if (result.ok) {
-      setNotice({ kind: 'success', message: 'Account created. Opening your account…' });
+      setNotice({ kind: 'success', message: t('auth.register.accountCreatedOpening') });
       router.replace('/account/profile');
       return;
     }
 
     if (result.status === 400 && /already registered/i.test(result.message)) {
-      setFieldErrors({ email: 'This email is already registered. Sign in instead.' });
+      setFieldErrors({ email: t('auth.register.alreadyRegisteredError') });
     }
     setNotice({ kind: 'error', message: result.message });
     setPhase('idle');
@@ -117,37 +120,42 @@ export default function RegisterPage() {
 
         <div className="max-w-md">
           <span className="text-caption font-mono text-secondary uppercase tracking-wider">
-            Account
+            {t('auth.accountEyebrow')}
           </span>
-          <h1 className="text-display mt-4">Join AEVO.</h1>
+          <h1 className="text-display mt-4">{t('auth.register.joinAevo')}</h1>
           <p className="text-xl text-secondary mt-6">
-            Order tracking, saved addresses and loyalty points on every purchase.
+            {t('auth.register.sideDesc')}
           </p>
         </div>
 
         <p className="text-caption font-mono text-secondary uppercase tracking-wider">
-          Premium Computing, Refined.
+          {t('auth.tagline')}
         </p>
       </aside>
 
       {/* ---- Right: form panel ---- */}
       <section className="flex flex-col justify-center px-6 py-12 md:px-16 lg:px-24">
         <div className="w-full max-w-md mx-auto">
-          <Link
-            href="/"
-            className="lg:hidden text-2xl font-display font-medium tracking-tight focus-ring rounded-lg"
-          >
-            aevo.
-          </Link>
+          <div className="flex items-center justify-between mb-6">
+            <Link
+              href="/"
+              className="lg:hidden text-2xl font-display font-medium tracking-tight focus-ring rounded-lg"
+            >
+              aevo.
+            </Link>
+            <div className="ml-auto">
+              <LanguageSwitcher />
+            </div>
+          </div>
 
-          <h2 className="text-h1 mt-8 lg:mt-0">Create an account</h2>
+          <h2 className="text-h1">{t('auth.register.heading')}</h2>
           <p className="text-secondary mt-2">
-            Already have one?{' '}
+            {t('auth.register.alreadyHaveOne')}{' '}
             <Link
               href="/login"
               className="text-ink font-medium hover:underline underline-offset-4 focus-ring rounded"
             >
-              Sign in
+              {t('auth.register.signInLink')}
             </Link>
           </p>
 
@@ -168,7 +176,7 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
             <Field
               id="fullName"
-              label="Full name"
+              label={t('auth.fullNameLabel')}
               type="text"
               autoComplete="name"
               value={form.fullName}
@@ -178,7 +186,7 @@ export default function RegisterPage() {
             />
             <Field
               id="email"
-              label="Email"
+              label={t('auth.emailLabel')}
               type="email"
               autoComplete="email"
               value={form.email}
@@ -188,14 +196,14 @@ export default function RegisterPage() {
             />
             <Field
               id="password"
-              label="Password"
+              label={t('auth.passwordLabel')}
               type="password"
               autoComplete="new-password"
               value={form.password}
               onChange={update('password')}
               error={fieldErrors.password}
               disabled={isBusy}
-              hint={`At least ${PASSWORD_MIN} characters.`}
+              hint={t('auth.register.passwordHint', { min: PASSWORD_MIN })}
             />
 
             <button
@@ -204,14 +212,16 @@ export default function RegisterPage() {
               className="btn-primary focus-ring w-full h-12 rounded-lg font-medium inline-flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />}
-              {isSubmitting ? 'Creating account…' : 'Create account'}
+              {isSubmitting
+                ? t('auth.register.creatingAccount')
+                : t('auth.register.createAccountBtn')}
             </button>
           </form>
 
           <div className="my-8 flex items-center gap-4" aria-hidden="true">
             <span className="h-px flex-1 bg-border" />
             <span className="text-caption font-mono text-secondary uppercase tracking-wider">
-              or
+              {t('auth.or')}
             </span>
             <span className="h-px flex-1 bg-border" />
           </div>
@@ -220,11 +230,11 @@ export default function RegisterPage() {
             href={GOOGLE_AUTH_URL}
             className="btn-secondary focus-ring w-full h-12 rounded-lg font-medium inline-flex items-center justify-center"
           >
-            Continue with Google
+            {t('auth.continueWithGoogle')}
           </a>
 
           <p className="text-small text-secondary mt-6">
-            By creating an account you agree to AEVO’s terms of use.
+            {t('auth.register.termsNotice')}
           </p>
         </div>
       </section>

@@ -5,14 +5,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { resetPassword } from '../../../lib/account-client';
-
-/**
- * /reset-password?token=…
- *
- * The API's forgot-password mail links here. POST /api/auth/reset-password
- * { token, newPassword } -> 200 { message } | 400 { error } when the token is
- * invalid, expired or already used. Tokens are single-use.
- */
+import { useI18n } from '../../../lib/i18n';
+import LanguageSwitcher from '../../../components/LanguageSwitcher';
 
 const PASSWORD_MIN = 6;
 const PASSWORD_MAX = 72;
@@ -32,6 +26,7 @@ export default function ResetPasswordPage() {
 }
 
 function ResetPasswordView() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
@@ -47,15 +42,15 @@ function ResetPasswordView() {
     if (phase !== 'idle') return;
 
     if (password.length < PASSWORD_MIN) {
-      setFieldError(`Password must be at least ${PASSWORD_MIN} characters.`);
+      setFieldError(t('auth.register.passwordMinError', { min: PASSWORD_MIN }));
       return;
     }
     if (password.length > PASSWORD_MAX) {
-      setFieldError(`Password must be at most ${PASSWORD_MAX} characters.`);
+      setFieldError(t('auth.register.passwordMaxError', { max: PASSWORD_MAX }));
       return;
     }
     if (password !== confirm) {
-      setFieldError('The passwords don’t match.');
+      setFieldError(t('auth.reset.passwordsDontMatch'));
       return;
     }
 
@@ -79,35 +74,37 @@ function ResetPasswordView() {
     <main className="min-h-screen bg-canvas">
       <div className="container-main min-h-screen flex flex-col justify-center py-12">
         <div className="w-full max-w-md mx-auto bg-surface border border-border rounded-2xl p-8 md:p-10">
-          <Link
-            href="/"
-            className="text-2xl font-display font-medium tracking-tight focus-ring rounded-lg"
-          >
-            aevo.
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link
+              href="/"
+              className="text-2xl font-display font-medium tracking-tight focus-ring rounded-lg"
+            >
+              aevo.
+            </Link>
+            <LanguageSwitcher />
+          </div>
 
           <span className="block text-caption font-mono text-secondary uppercase tracking-wider mt-8">
-            Account
+            {t('auth.accountEyebrow')}
           </span>
-          <h1 className="text-h1 mt-2">Choose a new password</h1>
+          <h1 className="text-h1 mt-2">{t('auth.reset.heading')}</h1>
 
           {!token ? (
             <>
               <p role="alert" className="text-secondary mt-4">
-                This reset link is incomplete. Open the link from your email, or
-                request a new one.
+                {t('auth.reset.incompleteLink')}
               </p>
               <Link
                 href="/forgot-password"
                 className="btn-primary focus-ring inline-flex items-center h-12 px-6 rounded-lg font-medium mt-8"
               >
-                Request a new link
+                {t('auth.reset.requestNewLink')}
               </Link>
             </>
           ) : (
             <>
               <p className="text-secondary mt-2">
-                Pick a password you haven’t used before, then sign in with it.
+                {t('auth.reset.desc')}
               </p>
 
               {notice && (
@@ -120,7 +117,7 @@ function ResetPasswordView() {
                     href="/forgot-password"
                     className="font-medium underline underline-offset-4 focus-ring rounded"
                   >
-                    Request a new link
+                    {t('auth.reset.requestNewLink')}
                   </Link>
                 </p>
               )}
@@ -128,7 +125,7 @@ function ResetPasswordView() {
               <form onSubmit={handleSubmit} className="mt-8 space-y-5" noValidate>
                 <div>
                   <label htmlFor="password" className="block text-small font-medium mb-2">
-                    New password
+                    {t('auth.reset.newPasswordLabel')}
                   </label>
                   <input
                     id="password"
@@ -141,13 +138,13 @@ function ResetPasswordView() {
                     className="w-full h-12 rounded-lg border border-border bg-surface px-4 text-base focus-ring"
                   />
                   <p className="text-small text-secondary mt-2">
-                    At least {PASSWORD_MIN} characters.
+                    {t('auth.reset.passwordHint', { min: PASSWORD_MIN })}
                   </p>
                 </div>
 
                 <div>
                   <label htmlFor="confirm" className="block text-small font-medium mb-2">
-                    Confirm new password
+                    {t('auth.reset.confirmNewPasswordLabel')}
                   </label>
                   <input
                     id="confirm"
@@ -176,7 +173,9 @@ function ResetPasswordView() {
                   {phase === 'submitting' && (
                     <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                   )}
-                  {phase === 'submitting' ? 'Saving…' : 'Set new password'}
+                  {phase === 'submitting'
+                    ? t('auth.reset.saving')
+                    : t('auth.reset.setNewPasswordBtn')}
                 </button>
               </form>
             </>
@@ -187,7 +186,7 @@ function ResetPasswordView() {
               href="/login"
               className="text-ink font-medium hover:underline underline-offset-4 focus-ring rounded"
             >
-              Back to sign in
+              {t('auth.backToSignIn')}
             </Link>
           </p>
         </div>

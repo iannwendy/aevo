@@ -7,6 +7,7 @@ import { LogOut, Loader2, RefreshCw } from 'lucide-react';
 import { fetchProfile, postLogout } from '@/lib/auth-client';
 import { updateProfile, changePassword } from '@/lib/account-client';
 import SiteHeader from '@/components/SiteHeader';
+import { useI18n } from '@/lib/i18n';
 
 /**
  * /profile
@@ -28,6 +29,7 @@ export default function ProfilePage() {
 }
 
 function ProfileView() {
+  const { locale, t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -134,9 +136,9 @@ function ProfileView() {
     return (
       <PageFrame>
         <EmptyState
-          title="You’re not signed in."
-          body="Sign in with Google or your email to view your account."
-          actionLabel="Sign in"
+          title={t('profile.notSignedInTitle')}
+          body={t('profile.notSignedInBody')}
+          actionLabel={t('profile.signInBtn')}
           actionHref="/login?next=%2Faccount%2Fprofile"
         />
       </PageFrame>
@@ -147,7 +149,7 @@ function ProfileView() {
     return (
       <PageFrame>
         <EmptyState
-          title="We couldn’t load your account."
+          title={t('profile.loadErrorTitle')}
           body={error}
           onRetry={load}
         />
@@ -168,8 +170,8 @@ function ProfileView() {
           className="mb-8 text-small rounded-lg border border-sage/30 bg-sage/5 text-sage px-4 py-3"
         >
           {loginVia === 'password'
-            ? 'Signed in. Welcome back.'
-            : 'Signed in with Google. Welcome back.'}
+            ? t('profile.signedInPasswordBanner')
+            : t('profile.signedInGoogleBanner')}
         </p>
       )}
 
@@ -184,7 +186,7 @@ function ProfileView() {
             onClick={handleLogout}
             className="font-medium underline underline-offset-4 focus-ring rounded"
           >
-            Try again
+            {t('profile.tryAgainBtn')}
           </button>
         </p>
       )}
@@ -194,26 +196,26 @@ function ProfileView() {
           href="/account/profile"
           className="px-4 py-2 rounded-xl bg-ink text-white text-small font-medium"
         >
-          Profile &amp; Security
+          {t('profile.tabProfileSecurity')}
         </Link>
         <Link
           href="/account/addresses"
           className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
         >
-          Delivery Addresses
+          {t('profile.tabDeliveryAddresses')}
         </Link>
         <Link
           href="/account/orders"
           className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
         >
-          Order History
+          {t('profile.tabOrderHistory')}
         </Link>
       </div>
 
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
         <div>
           <span className="text-caption font-mono text-secondary uppercase tracking-wider">
-            Account
+            {t('profile.accountEyebrow')}
           </span>
           <h1 className="text-display mt-3">{user.fullName}</h1>
           <p className="text-secondary mt-2">{user.email}</p>
@@ -231,72 +233,72 @@ function ProfileView() {
             ) : (
               <LogOut size={16} aria-hidden="true" />
             )}
-            {loggingOut ? 'Signing out…' : 'Sign out'}
+            {loggingOut ? t('profile.signingOut') : t('profile.signOutBtn')}
           </button>
         </div>
       </div>
 
       <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard label="Loyalty points" value={formatPoints(user.loyaltyPoints)} />
-        <StatCard label="Role" value={titleCase(user.role)} />
+        <StatCard label={t('profile.loyaltyPointsLabel')} value={formatPoints(user.loyaltyPoints)} />
+        <StatCard label={t('profile.roleLabel')} value={titleCase(user.role)} />
         <StatCard
-          label="Sign-in method"
-          value={googleAccount ? 'Google' : 'Email & password'}
+          label={t('profile.signInMethodLabel')}
+          value={googleAccount ? 'Google' : t('profile.emailAndPassword')}
         />
       </div>
 
-      <Section title="Sign-in methods">
+      <Section title={t('profile.signInMethodsSection')}>
         {googleAccount ? (
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="font-medium">Google</p>
               <p className="text-small text-secondary mt-1 break-all">
-                Linked {formatDate(googleAccount.createdAt)}
+                {t('profile.linkedOn', { date: formatDate(googleAccount.createdAt, locale) })}
               </p>
             </div>
             <span className="text-caption font-mono text-sage uppercase tracking-wider">
-              Connected
+              {t('profile.connectedBadge')}
             </span>
           </div>
         ) : (
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="font-medium">Email & password</p>
+              <p className="font-medium">{t('profile.emailAndPassword')}</p>
               <p className="text-small text-secondary mt-1">
-                Google isn’t linked to this account yet.
+                {t('profile.googleNotLinked')}
               </p>
             </div>
             <Link
               href="/login?next=%2Faccount%2Fprofile"
               className="text-small font-medium hover:underline underline-offset-4 focus-ring rounded"
             >
-              Link Google
+              {t('profile.linkGoogle')}
             </Link>
           </div>
         )}
       </Section>
 
-      <Section title="Personal details">
+      <Section title={t('profile.personalDetailsSection')}>
         <ProfileDetailsForm
           user={user}
           onSaved={(updated) => setUser((prev) => ({ ...prev, ...updated }))}
         />
       </Section>
 
-      <Section title="Password">
+      <Section title={t('profile.passwordSection')}>
         <ChangePasswordForm hasPassword={!googleAccount} />
       </Section>
 
-      <Section title="Addresses">
+      <Section title={t('profile.addressesSection')}>
         <div className="flex items-center justify-between mb-4">
           <p className="text-small text-secondary">
-            Manage multiple delivery addresses for checkout pre-fill.
+            {t('profile.manageAddressesHint')}
           </p>
           <Link
             href="/account/addresses"
             className="text-small font-medium text-ink hover:underline underline-offset-4"
           >
-            Manage addresses →
+            {t('profile.manageAddressesLink')}
           </Link>
         </div>
         {user.addresses && user.addresses.length > 0 ? (
@@ -314,7 +316,7 @@ function ProfileView() {
                   </div>
                   {address.isDefault && (
                     <span className="text-caption font-mono text-secondary uppercase tracking-wider">
-                      Default
+                      {t('profile.defaultBadge')}
                     </span>
                   )}
                 </div>
@@ -323,7 +325,7 @@ function ProfileView() {
           </ul>
         ) : (
           <p className="text-secondary">
-            No saved addresses yet. They’ll appear after your first order.
+            {t('profile.noSavedAddresses')}
           </p>
         )}
       </Section>
@@ -334,6 +336,7 @@ function ProfileView() {
 // ------------------------------------------------------------- edit profile
 
 function ProfileDetailsForm({ user, onSaved }) {
+  const { t } = useI18n();
   const defaultPhone = (user.addresses || []).find((a) => a.isDefault)?.phone || '';
 
   const [fullName, setFullName] = useState(user.fullName || '');
@@ -348,7 +351,7 @@ function ProfileDetailsForm({ user, onSaved }) {
 
     const trimmed = fullName.trim();
     if (!trimmed) {
-      setFieldError('Full name is required.');
+      setFieldError(t('profile.fullNameRequired'));
       return;
     }
 
@@ -364,14 +367,14 @@ function ProfileDetailsForm({ user, onSaved }) {
     }
 
     onSaved({ fullName: result.data.fullName });
-    setNotice({ kind: 'success', message: 'Your details were saved.' });
+    setNotice({ kind: 'success', message: t('profile.detailsSaved') });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       <FormField
         id="fullName"
-        label="Full name"
+        label={t('profile.fullNameLabel')}
         value={fullName}
         onChange={(e) => setFullName(e.target.value)}
         autoComplete="name"
@@ -380,8 +383,8 @@ function ProfileDetailsForm({ user, onSaved }) {
       />
       <FormField
         id="phone"
-        label="Phone"
-        hint="Updates the phone on your default address."
+        label={t('profile.phoneLabel')}
+        hint={t('profile.phoneHint')}
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
         autoComplete="tel"
@@ -394,7 +397,7 @@ function ProfileDetailsForm({ user, onSaved }) {
         className="btn-primary focus-ring inline-flex items-center gap-2 h-11 px-6 rounded-lg font-medium disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {saving && <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />}
-        {saving ? 'Saving…' : 'Save changes'}
+        {saving ? t('profile.saving') : t('profile.saveChangesBtn')}
       </button>
     </form>
   );
@@ -403,6 +406,7 @@ function ProfileDetailsForm({ user, onSaved }) {
 // ---------------------------------------------------------- change password
 
 function ChangePasswordForm({ hasPassword }) {
+  const { t } = useI18n();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -413,7 +417,7 @@ function ChangePasswordForm({ hasPassword }) {
   if (!hasPassword) {
     return (
       <p className="text-secondary">
-        This account signs in with Google, so it has no password to change.
+        {t('profile.googleNoPasswordMsg')}
       </p>
     );
   }
@@ -423,15 +427,15 @@ function ChangePasswordForm({ hasPassword }) {
     if (saving) return;
 
     if (!currentPassword) {
-      setFieldError('Enter your current password.');
+      setFieldError(t('profile.enterCurrentPasswordError'));
       return;
     }
     if (newPassword.length < 6) {
-      setFieldError('New password must be at least 6 characters.');
+      setFieldError(t('profile.newPasswordMinError'));
       return;
     }
     if (newPassword !== confirm) {
-      setFieldError('The new passwords don’t match.');
+      setFieldError(t('profile.newPasswordsDontMatchError'));
       return;
     }
 
@@ -452,7 +456,7 @@ function ChangePasswordForm({ hasPassword }) {
     setConfirm('');
     setNotice({
       kind: 'success',
-      message: 'Password changed. Any outstanding reset links have been cancelled.',
+      message: t('profile.passwordChangedSuccess'),
     });
   }
 
@@ -460,7 +464,7 @@ function ChangePasswordForm({ hasPassword }) {
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       <FormField
         id="currentPassword"
-        label="Current password"
+        label={t('profile.currentPasswordLabel')}
         type="password"
         autoComplete="current-password"
         value={currentPassword}
@@ -469,17 +473,17 @@ function ChangePasswordForm({ hasPassword }) {
       />
       <FormField
         id="newPassword"
-        label="New password"
+        label={t('profile.newPasswordLabel')}
         type="password"
         autoComplete="new-password"
-        hint="At least 6 characters."
+        hint={t('profile.newPasswordHint')}
         value={newPassword}
         onChange={(e) => setNewPassword(e.target.value)}
         disabled={saving}
       />
       <FormField
         id="confirmPassword"
-        label="Confirm new password"
+        label={t('profile.confirmNewPasswordLabel')}
         type="password"
         autoComplete="new-password"
         value={confirm}
@@ -494,15 +498,15 @@ function ChangePasswordForm({ hasPassword }) {
         className="btn-primary focus-ring inline-flex items-center gap-2 h-11 px-6 rounded-lg font-medium disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {saving && <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />}
-        {saving ? 'Updating…' : 'Change password'}
+        {saving ? t('profile.updating') : t('profile.changePasswordBtn')}
       </button>
       <p className="text-small text-secondary">
-        Forgot it instead?{' '}
+        {t('profile.forgotItInstead')}{' '}
         <Link
           href="/forgot-password"
           className="text-ink font-medium hover:underline underline-offset-4 focus-ring rounded"
         >
-          Reset by email
+          {t('profile.resetByEmail')}
         </Link>
         .
       </p>
@@ -560,6 +564,7 @@ function PageFrame({ children }) {
 }
 
 function LoadingState() {
+  const { t } = useI18n();
   return (
     <div
       className="flex items-center gap-3 text-secondary py-24"
@@ -567,16 +572,17 @@ function LoadingState() {
       aria-live="polite"
     >
       <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
-      <span className="text-small">Loading your account…</span>
+      <span className="text-small">{t('profile.loadingAccount')}</span>
     </div>
   );
 }
 
 function EmptyState({ title, body, actionLabel, actionHref, onRetry }) {
+  const { t } = useI18n();
   return (
     <div className="max-w-xl">
       <span className="text-caption font-mono text-secondary uppercase tracking-wider">
-        Account
+        {t('profile.accountEyebrow')}
       </span>
       <h1 className="text-h1 mt-3">{title}</h1>
       {body && <p className="text-secondary mt-4">{body}</p>}
@@ -588,7 +594,7 @@ function EmptyState({ title, body, actionLabel, actionHref, onRetry }) {
             className="btn-primary focus-ring inline-flex items-center gap-2 h-12 px-6 rounded-lg font-medium"
           >
             <RefreshCw size={18} aria-hidden="true" />
-            Try again
+            {t('profile.tryAgainBtn')}
           </button>
         ) : (
           <Link
@@ -637,11 +643,11 @@ function titleCase(value) {
   return value.charAt(0) + value.slice(1).toLowerCase();
 }
 
-function formatDate(value) {
+function formatDate(value, locale = 'en') {
   if (!value) return 'recently';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return 'recently';
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(locale === 'vi' ? 'vi-VN' : 'en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

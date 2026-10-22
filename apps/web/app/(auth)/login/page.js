@@ -9,6 +9,8 @@ import {
   postLogin,
   startGoogleLogin,
 } from '@/lib/auth-client';
+import { useI18n } from '@/lib/i18n';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 /**
  * /login - split layout: brand panel on canvas (left), form on surface (right).
@@ -51,6 +53,7 @@ function goTo(target) {
 }
 
 function LoginView() {
+  const { t } = useI18n();
   const searchParams = useSearchParams();
 
   // ------------- state -------------
@@ -72,14 +75,14 @@ function LoginView() {
     const justLoggedOut = searchParams.get('loggedout') === '1';
 
     if (justLoggedOut) {
-      setNotice({ kind: 'info', message: 'You’ve been signed out.' });
+      setNotice({ kind: 'info', message: t('auth.login.signedOutNotice') });
       setPhase('idle');
     }
 
     if (oauthError) {
       setNotice({
         kind: 'error',
-        message: OAUTH_ERROR_COPY[oauthError] || 'Sign in with Google failed.',
+        message: t('auth.login.oauthFailedNotice'),
       });
       // The user is explicit here. Asking the API would bounce forward when an
       // older, still-valid cookie exists even though the Google attempt failed.
@@ -92,10 +95,10 @@ function LoginView() {
     // Arriving here right after a password reset: don't bounce to the profile.
     const justReset = searchParams.get('reset') === 'success';
     if (searchParams.get('registered') === '1') {
-      setNotice({ kind: 'success', message: 'Account created. Sign in to continue.' });
+      setNotice({ kind: 'success', message: t('auth.login.registeredNotice') });
     }
     if (justReset) {
-      setNotice({ kind: 'success', message: 'Password updated. Sign in with your new password.' });
+      setNotice({ kind: 'success', message: t('auth.login.resetSuccessNotice') });
       setPhase('idle');
       return;
     }
@@ -140,8 +143,7 @@ function LoginView() {
       }
       setNotice({
         kind: 'error',
-        message:
-          'Google sign-in was not completed. If this keeps happening, the server may not have Google configured - you can use your email and password below.',
+        message: t('auth.login.oauthIncompleteNotice'),
       });
     }
     window.addEventListener('pageshow', onPageShow);
@@ -156,7 +158,7 @@ function LoginView() {
 
     const trimmedEmail = email.trim();
     if (!trimmedEmail || !password) {
-      setNotice({ kind: 'error', message: 'Enter your email and password.' });
+      setNotice({ kind: 'error', message: t('auth.login.enterCredentialsError') });
       return;
     }
 
@@ -166,7 +168,7 @@ function LoginView() {
     const result = await postLogin(trimmedEmail, password);
 
     if (result.ok) {
-      setNotice({ kind: 'success', message: 'Signed in. Redirecting…' });
+      setNotice({ kind: 'success', message: t('auth.login.signedInRedirecting') });
       goTo(safeNext(searchParams.get('next')));
       return;
     }
@@ -203,44 +205,50 @@ function LoginView() {
     <main className="min-h-screen grid lg:grid-cols-2 bg-surface">
       {/* ---- Left: brand panel ---- */}
       <aside className="hidden lg:flex flex-col justify-between bg-canvas border-r border-border p-16">
-        <Link
-          href="/"
-          className="text-2xl font-display font-medium tracking-tight text-ink focus-ring rounded-lg"
-        >
-          aevo.
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link
+            href="/"
+            className="text-2xl font-display font-medium tracking-tight text-ink focus-ring rounded-lg"
+          >
+            aevo.
+          </Link>
+        </div>
 
         <div className="max-w-md">
           <span className="text-caption font-mono text-secondary uppercase tracking-wider">
-            Account
+            {t('auth.accountEyebrow')}
           </span>
-          <h1 className="text-display mt-4">Welcome back.</h1>
+          <h1 className="text-display mt-4">{t('auth.login.welcomeBack')}</h1>
           <p className="text-xl text-secondary mt-6">
-            Technology, refined. Sign in to track orders, manage addresses and
-            spend your loyalty points.
+            {t('auth.login.sideDesc')}
           </p>
         </div>
 
         <p className="text-caption font-mono text-secondary uppercase tracking-wider">
-          Premium Computing, Refined.
+          {t('auth.tagline')}
         </p>
       </aside>
 
       {/* ---- Right: form panel ---- */}
       <section className="flex flex-col justify-center px-4 py-12 md:px-8 lg:px-16">
         <div className="w-full max-w-md mx-auto">
-          {/* Mobile brand */}
-          <Link
-            href="/"
-            className="lg:hidden inline-block text-2xl font-display font-medium tracking-tight mb-10 focus-ring rounded-lg"
-          >
-            aevo.
-          </Link>
+          <div className="flex items-center justify-between mb-6">
+            {/* Mobile brand */}
+            <Link
+              href="/"
+              className="lg:hidden inline-block text-2xl font-display font-medium tracking-tight focus-ring rounded-lg"
+            >
+              aevo.
+            </Link>
+            <div className="ml-auto">
+              <LanguageSwitcher />
+            </div>
+          </div>
 
           <span className="text-caption font-mono text-secondary uppercase tracking-wider">
-            Sign in
+            {t('auth.login.signInEyebrow')}
           </span>
-          <h2 className="text-h1 mt-3">Continue to your account.</h2>
+          <h2 className="text-h1 mt-3">{t('auth.login.heading')}</h2>
 
           {notice && (
             <p
@@ -270,14 +278,16 @@ function LoginView() {
             ) : (
               <GoogleMark />
             )}
-            {googleLoading ? 'Redirecting to Google…' : 'Continue with Google'}
+            {googleLoading
+              ? t('auth.redirectingToGoogle')
+              : t('auth.continueWithGoogle')}
           </button>
 
           {/* Divider */}
           <div className="flex items-center gap-4 my-8" aria-hidden="true">
             <div className="h-px flex-1 bg-border" />
             <span className="text-caption font-mono text-secondary uppercase tracking-wider">
-              or
+              {t('auth.or')}
             </span>
             <div className="h-px flex-1 bg-border" />
           </div>
@@ -288,7 +298,7 @@ function LoginView() {
                 htmlFor="email"
                 className="block text-small font-medium text-ink mb-2"
               >
-                Email
+                {t('auth.emailLabel')}
               </label>
               <input
                 id="email"
@@ -310,13 +320,13 @@ function LoginView() {
                   htmlFor="password"
                   className="block text-small font-medium text-ink"
                 >
-                  Password
+                  {t('auth.passwordLabel')}
                 </label>
                 <Link
                   href="/forgot-password"
                   className="text-caption text-secondary hover:text-ink transition-colors focus-ring rounded"
                 >
-                  Forgot password?
+                  {t('auth.login.forgotPassword')}
                 </Link>
               </div>
               <input
@@ -341,11 +351,11 @@ function LoginView() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
-                  Signing in…
+                  {t('auth.login.signingIn')}
                 </>
               ) : (
                 <>
-                  Sign in
+                  {t('auth.login.signInBtn')}
                   <ArrowRight size={18} aria-hidden="true" />
                 </>
               )}
@@ -356,17 +366,17 @@ function LoginView() {
               className={`text-small text-center text-secondary ${isChecking ? '' : 'sr-only'}`}
               aria-live="polite"
             >
-              Checking your session…
+              {t('auth.login.checkingSession')}
             </p>
           </form>
 
           <p className="mt-8 text-small text-secondary text-center">
-            New to AEVO?{' '}
+            {t('auth.login.newToAevo')}{' '}
             <Link
               href="/register"
               className="text-ink font-medium hover:underline underline-offset-4 focus-ring rounded"
             >
-              Create an account
+              {t('auth.login.createAnAccount')}
             </Link>
           </p>
 
@@ -375,7 +385,7 @@ function LoginView() {
               href="/"
               className="text-small text-secondary hover:text-ink transition-colors focus-ring rounded"
             >
-              ← Back to shop
+              {t('auth.backToShop')}
             </Link>
           </div>
         </div>

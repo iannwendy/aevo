@@ -17,21 +17,22 @@ import ProductCard from './ProductCard';
 import Pagination from './Pagination';
 import { productsApi, categoriesApi } from '../../lib/api';
 import { formatPrice } from '../../lib/utils';
+import { useI18n } from '../../lib/i18n';
 
 const SORT_OPTIONS = [
-  { value: 'newest', label: 'Newest Arrivals' },
-  { value: 'best-selling', label: 'Best Selling' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'name_asc', label: 'Name: A to Z' },
-  { value: 'name_desc', label: 'Name: Z to A' },
+  { value: 'newest', key: 'catalog.sortNewest' },
+  { value: 'best-selling', key: 'catalog.sortBestSelling' },
+  { value: 'price_asc', key: 'catalog.sortPriceAsc' },
+  { value: 'price_desc', key: 'catalog.sortPriceDesc' },
+  { value: 'name_asc', key: 'catalog.sortNameAsc' },
+  { value: 'name_desc', key: 'catalog.sortNameDesc' },
 ];
 
 const QUICK_PRICE_RANGES = [
-  { label: 'Under 5M ₫', min: '', max: '5000000' },
-  { label: '5M – 15M ₫', min: '5000000', max: '15000000' },
-  { label: '15M – 35M ₫', min: '15000000', max: '35000000' },
-  { label: 'Over 35M ₫', min: '35000000', max: '' },
+  { key: 'catalog.priceUnder5M', min: '', max: '5000000' },
+  { key: 'catalog.price5MTo15M', min: '5000000', max: '15000000' },
+  { key: 'catalog.price15MTo35M', min: '15000000', max: '35000000' },
+  { key: 'catalog.priceOver35M', min: '35000000', max: '' },
 ];
 
 function parseQueryToState(searchParams, fallback = {}) {
@@ -85,6 +86,7 @@ function buildQueryString(filters) {
 }
 
 export default function CatalogClient({ initialData, initialQuery = {} }) {
+  const { t, catName } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -268,14 +270,14 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
       {/* Search Keyword */}
       <div>
         <h3 className="text-caption font-mono uppercase tracking-wider text-secondary mb-3">
-          Keyword Search
+          {t('catalog.keywordSearch')}
         </h3>
         <form onSubmit={handleSearchSubmit} className="relative">
           <input
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search laptop, RTX, OLED..."
+            placeholder={t('catalog.searchPlaceholder')}
             data-testid={`${idPrefix}-filter-search`}
             className="w-full h-11 pl-9 pr-16 rounded-xl border border-border bg-surface text-small text-ink placeholder:text-secondary focus-ring"
           />
@@ -288,7 +290,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
             data-testid={`${idPrefix}-filter-search-submit`}
             className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-ink text-white text-caption font-medium hover:bg-ink/90 transition-colors"
           >
-            Go
+            {t('catalog.go')}
           </button>
         </form>
       </div>
@@ -297,7 +299,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-caption font-mono uppercase tracking-wider text-secondary">
-            Category
+            {t('catalog.category')}
           </h3>
           {currentFilters.category && (
             <button
@@ -305,7 +307,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
               onClick={() => applyFilterUpdate({ category: '' })}
               className="text-caption text-secondary hover:text-ink"
             >
-              Clear
+              {t('catalog.clear')}
             </button>
           )}
         </div>
@@ -320,7 +322,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 : 'text-ink hover:bg-canvas'
             }`}
           >
-            <span>All Hardware</span>
+            <span>{t('catalog.allHardware')}</span>
           </button>
           {categories.map((cat) => {
             const isSelected =
@@ -339,7 +341,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                     : 'text-ink hover:bg-canvas'
                 }`}
               >
-                <span>{cat.name}</span>
+                <span>{catName(cat.slug || cat.name)}</span>
                 {typeof cat.productCount === 'number' && (
                   <span
                     className={`text-caption font-mono ${
@@ -359,7 +361,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-caption font-mono uppercase tracking-wider text-secondary">
-            Brand (Multi-select)
+            {t('catalog.brandMultiSelect')}
           </h3>
           {currentFilters.brands.length > 0 && (
             <button
@@ -367,7 +369,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
               onClick={() => applyFilterUpdate({ brands: [] })}
               className="text-caption text-secondary hover:text-ink"
             >
-              Clear ({currentFilters.brands.length})
+              {t('catalog.clear')} ({currentFilters.brands.length})
             </button>
           )}
         </div>
@@ -402,7 +404,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-caption font-mono uppercase tracking-wider text-secondary">
-            Price Range (VND)
+            {t('catalog.priceRangeVnd')}
           </h3>
           {(currentFilters.minPrice !== '' || currentFilters.maxPrice !== '') && (
             <button
@@ -414,7 +416,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
               }}
               className="text-caption text-secondary hover:text-ink"
             >
-              Clear
+              {t('catalog.clear')}
             </button>
           )}
         </div>
@@ -427,7 +429,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 type="number"
                 min="0"
                 step="100000"
-                placeholder="Min (₫)"
+                placeholder={t('catalog.minPricePlaceholder')}
                 value={minPriceInput}
                 onChange={(e) => setMinPriceInput(e.target.value)}
                 data-testid={`${idPrefix}-min-price`}
@@ -440,7 +442,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 type="number"
                 min="0"
                 step="100000"
-                placeholder="Max (₫)"
+                placeholder={t('catalog.maxPricePlaceholder')}
                 value={maxPriceInput}
                 onChange={(e) => setMaxPriceInput(e.target.value)}
                 data-testid={`${idPrefix}-max-price`}
@@ -453,7 +455,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
             data-testid={`${idPrefix}-apply-price`}
             className="w-full h-9 rounded-lg border border-border bg-canvas hover:bg-ink hover:text-white text-caption font-medium text-ink transition-colors"
           >
-            Apply Price Range
+            {t('catalog.applyPriceRange')}
           </button>
         </form>
 
@@ -464,7 +466,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
               currentFilters.maxPrice === range.max;
             return (
               <button
-                key={range.label}
+                key={range.key}
                 type="button"
                 onClick={() => {
                   setMinPriceInput(range.min);
@@ -477,7 +479,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                     : 'bg-surface text-secondary border-border hover:border-ink hover:text-ink'
                 }`}
               >
-                {range.label}
+                {t(range.key)}
               </button>
             );
           })}
@@ -488,7 +490,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-caption font-mono uppercase tracking-wider text-secondary">
-            Customer Rating
+            {t('catalog.customerRating')}
           </h3>
           {currentFilters.minRating && (
             <button
@@ -496,7 +498,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
               onClick={() => applyFilterUpdate({ minRating: '' })}
               className="text-caption text-secondary hover:text-ink"
             >
-              Clear
+              {t('catalog.clear')}
             </button>
           )}
         </div>
@@ -520,7 +522,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                     size={14}
                     className={active ? 'fill-white text-white' : 'fill-ink text-ink'}
                   />
-                  <span>{stars}★ &amp; above</span>
+                  <span>{t('catalog.starsAndAbove', { stars })}</span>
                 </span>
               </button>
             );
@@ -531,7 +533,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
       {/* Additional Filtering Criterion: Tags & Stock Availability */}
       <div>
         <h3 className="text-caption font-mono uppercase tracking-wider text-secondary mb-3">
-          Availability &amp; Tags
+          {t('catalog.availabilityAndTags')}
         </h3>
         <label className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-canvas cursor-pointer text-small text-ink mb-3">
           <input
@@ -541,19 +543,19 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
             data-testid={`${idPrefix}-filter-instock`}
             className="h-4 w-4 rounded border-border text-ink focus:ring-ink"
           />
-          <span>In stock only</span>
+          <span>{t('catalog.inStockOnly')}</span>
         </label>
 
         {filterMeta.tags?.length > 0 && (
           <div className="flex flex-wrap gap-1.5" data-testid={`${idPrefix}-filter-tags`}>
-            {filterMeta.tags.slice(0, 14).map((t) => {
-              const active = currentFilters.tag === t.slug;
+            {filterMeta.tags.slice(0, 14).map((tagObj) => {
+              const active = currentFilters.tag === tagObj.slug;
               return (
                 <button
-                  key={t.slug}
+                  key={tagObj.slug}
                   type="button"
-                  onClick={() => applyFilterUpdate({ tag: active ? '' : t.slug })}
-                  data-testid={`${idPrefix}-tag-${t.slug}`}
+                  onClick={() => applyFilterUpdate({ tag: active ? '' : tagObj.slug })}
+                  data-testid={`${idPrefix}-tag-${tagObj.slug}`}
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-caption transition-colors ${
                     active
                       ? 'bg-ink text-white'
@@ -561,7 +563,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                   }`}
                 >
                   <Tag size={10} />
-                  <span>{t.name}</span>
+                  <span>{tagObj.name}</span>
                 </button>
               );
             })}
@@ -577,7 +579,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
           className="w-full h-10 rounded-xl border border-border bg-surface hover:bg-canvas text-small font-medium text-ink inline-flex items-center justify-center gap-2 transition-colors"
         >
           <RotateCcw size={15} />
-          Reset all filters
+          {t('catalog.resetAllFilters')}
         </button>
       )}
     </div>
@@ -589,23 +591,25 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
         {/* Breadcrumb & Heading */}
         <nav aria-label="Breadcrumb" className="text-caption font-mono uppercase tracking-wider text-secondary mb-4">
           <Link href="/" className="hover:text-ink transition-colors">
-            HOME
+            {t('catalog.breadcrumbHome')}
           </Link>
           <span className="mx-2">/</span>
-          <span className="text-ink">SHOP</span>
+          <span className="text-ink">{t('catalog.breadcrumbShop')}</span>
           {currentFilters.category && (
             <>
               <span className="mx-2">/</span>
-              <span className="text-ink">{currentFilters.category.toUpperCase()}</span>
+              <span className="text-ink">
+                {catName(currentFilters.category).toUpperCase()}
+              </span>
             </>
           )}
         </nav>
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-8 border-b border-border">
           <div>
-            <h1 className="text-h1">Explore hardware.</h1>
+            <h1 className="text-h1">{t('catalog.title')}</h1>
             <p className="text-body text-secondary mt-2">
-              Find the right tools for your workflow.
+              {t('catalog.subtitle')}
             </p>
           </div>
 
@@ -618,7 +622,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
               className="inline-flex items-center gap-2 px-4 h-11 rounded-xl border border-border bg-surface text-small font-medium text-ink"
             >
               <SlidersHorizontal size={16} />
-              <span>Filters</span>
+              <span>{t('catalog.filtersBtn')}</span>
               {hasActiveFilters && (
                 <span className="w-2 h-2 rounded-full bg-ink" />
               )}
@@ -644,10 +648,11 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
             {/* Toolbar: Product Count, Active Filter Pills, Sort Dropdown, View Toggle */}
             <div className="bg-surface border border-border rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="text-small text-secondary" data-testid="catalog-count">
-                Showing{' '}
-                <strong className="font-medium text-ink">{products.length}</strong> of{' '}
+                {t('catalog.showing')}{' '}
+                <strong className="font-medium text-ink">{products.length}</strong>{' '}
+                {t('catalog.of')}{' '}
                 <strong className="font-medium text-ink">{pagination.total}</strong>{' '}
-                products
+                {t('catalog.products')}
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
@@ -656,7 +661,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                     htmlFor="catalog-sort-select"
                     className="text-caption font-mono uppercase tracking-wider text-secondary"
                   >
-                    Sort by
+                    {t('catalog.sortBy')}
                   </label>
                   <select
                     id="catalog-sort-select"
@@ -667,7 +672,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                   >
                     {SORT_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
-                        {opt.label}
+                        {t(opt.key)}
                       </option>
                     ))}
                   </select>
@@ -717,7 +722,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
               >
                 {currentFilters.category && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink">
-                    Category: {currentFilters.category}
+                    {t('catalog.pillCategory', { value: catName(currentFilters.category) })}
                     <button
                       type="button"
                       onClick={() => applyFilterUpdate({ category: '' })}
@@ -732,7 +737,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                     key={b}
                     className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink"
                   >
-                    Brand: {b}
+                    {t('catalog.pillBrand', { value: b })}
                     <button
                       type="button"
                       onClick={() => handleToggleBrand(b)}
@@ -744,14 +749,14 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 ))}
                 {(currentFilters.minPrice !== '' || currentFilters.maxPrice !== '') && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink">
-                    Price:{' '}
+                    {t('catalog.pillPrice')}{' '}
                     {currentFilters.minPrice
                       ? formatPrice(Number(currentFilters.minPrice))
                       : '0 ₫'}{' '}
                     –{' '}
                     {currentFilters.maxPrice
                       ? formatPrice(Number(currentFilters.maxPrice))
-                      : 'Any'}
+                      : t('catalog.pillAny')}
                     <button
                       type="button"
                       onClick={() => applyFilterUpdate({ minPrice: '', maxPrice: '' })}
@@ -763,7 +768,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 )}
                 {currentFilters.minRating && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink">
-                    Rating: {currentFilters.minRating}★+
+                    {t('catalog.pillRating', { value: currentFilters.minRating })}
                     <button
                       type="button"
                       onClick={() => applyFilterUpdate({ minRating: '' })}
@@ -775,7 +780,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 )}
                 {currentFilters.tag && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink">
-                    Tag: #{currentFilters.tag}
+                    {t('catalog.pillTag', { value: currentFilters.tag })}
                     <button
                       type="button"
                       onClick={() => applyFilterUpdate({ tag: '' })}
@@ -787,7 +792,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 )}
                 {currentFilters.search && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface border border-border text-caption font-medium text-ink">
-                    Search: &ldquo;{currentFilters.search}&rdquo;
+                    {t('catalog.pillSearch')} &ldquo;{currentFilters.search}&rdquo;
                     <button
                       type="button"
                       onClick={() => applyFilterUpdate({ search: '' })}
@@ -802,7 +807,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
 
             {error && (
               <div className="p-4 mb-6 rounded-xl border border-red-200 bg-red-50 text-red-800 text-small">
-                {error}
+                {t('catalog.loadError')}
               </div>
             )}
 
@@ -821,10 +826,9 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 data-testid="catalog-empty-state"
                 className="bg-surface border border-border rounded-2xl p-12 text-center"
               >
-                <h2 className="text-h3 text-ink mb-2">No matching hardware found</h2>
+                <h2 className="text-h3 text-ink mb-2">{t('catalog.emptyTitle')}</h2>
                 <p className="text-small text-secondary max-w-md mx-auto mb-6">
-                  Try adjusting your price range, selecting fewer brands, or clearing your
-                  search keywords.
+                  {t('catalog.emptyDescription')}
                 </p>
                 <button
                   type="button"
@@ -832,7 +836,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ink text-white text-small font-medium hover:bg-ink/90 transition-colors"
                 >
                   <RotateCcw size={15} />
-                  Reset filters
+                  {t('catalog.resetFiltersLower')}
                 </button>
               </div>
             ) : (
@@ -856,7 +860,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
 
             {/* Pagination (Always rendered even when 1 page per requirement) */}
             <Pagination
-              label="Catalog Pagination"
+              label={t('catalog.catalogPagination')}
               page={pagination.page}
               totalPages={pagination.totalPages}
               total={pagination.total}
@@ -878,11 +882,11 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
           <div className="w-full max-w-sm bg-surface h-full overflow-y-auto p-6 flex flex-col justify-between shadow-xl">
             <div>
               <div className="flex items-center justify-between pb-4 mb-6 border-b border-border">
-                <h2 className="text-h3">Filter Hardware</h2>
+                <h2 className="text-h3">{t('catalog.filterHardwareTitle')}</h2>
                 <button
                   type="button"
                   onClick={() => setMobileDrawerOpen(false)}
-                  aria-label="Close filters"
+                  aria-label={t('catalog.closeFiltersAria')}
                   className="p-2 rounded-lg hover:bg-canvas"
                 >
                   <X size={20} />
@@ -901,14 +905,14 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 }}
                 className="flex-1 h-11 rounded-xl border border-border bg-surface text-small font-medium text-ink"
               >
-                Reset Filters
+                {t('catalog.resetFiltersBtn')}
               </button>
               <button
                 type="button"
                 onClick={() => setMobileDrawerOpen(false)}
                 className="flex-1 h-11 rounded-xl bg-ink text-white text-small font-medium"
               >
-                Apply Filters
+                {t('catalog.applyFiltersBtn')}
               </button>
             </div>
           </div>

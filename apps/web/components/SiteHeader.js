@@ -3,15 +3,18 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { cartApi } from '../lib/api';
+import { useI18n } from '../lib/i18n';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const NAV_LINKS = [
-  { href: '/products', label: 'Shop' },
-  { href: '/products?category=laptops', label: 'Laptops' },
-  { href: '/products?category=components', label: 'Components' },
-  { href: '/products?category=monitors', label: 'Monitors' },
+  { href: '/products', key: 'header.shop' },
+  { href: '/products?category=laptops', key: 'header.laptops' },
+  { href: '/products?category=components', key: 'header.components' },
+  { href: '/products?category=monitors', key: 'header.monitors' },
 ];
 
 export default function SiteHeader() {
+  const { t } = useI18n();
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
@@ -55,37 +58,38 @@ export default function SiteHeader() {
           aevo.
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8" aria-label="Primary">
+        <nav className="hidden md:flex items-center gap-8" aria-label={t('header.primaryNavAria')}>
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className="text-small font-medium hover:text-secondary transition-colors focus-ring rounded"
             >
-              {link.label}
+              {t(link.key)}
             </Link>
           ))}
         </nav>
 
         <div className="flex items-center gap-4">
+          <LanguageSwitcher />
           <Link
             href="/products"
             className="text-small font-medium hover:text-secondary transition-colors focus-ring rounded"
           >
-            Search
+            {t('header.search')}
           </Link>
           <Link
             href="/account/profile"
             className="text-small font-medium hover:text-secondary transition-colors focus-ring rounded"
           >
-            Account
+            {t('header.account')}
           </Link>
           <Link
             href="/cart"
             data-testid="header-cart-link"
             className="text-small font-medium hover:text-secondary transition-colors focus-ring rounded inline-flex items-center gap-1.5"
           >
-            <span>Cart</span>
+            <span>{t('header.cart')}</span>
             <span
               data-testid="header-cart-count"
               className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-ink text-white text-[11px] font-mono"
