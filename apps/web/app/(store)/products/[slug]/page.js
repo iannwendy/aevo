@@ -2,7 +2,8 @@ import SiteHeader from '../../../../components/SiteHeader';
 import SiteFooter from '../../../../components/SiteFooter';
 import ProductDetailClient from '../../../../components/product/ProductDetailClient';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL =
+  process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 async function fetchProductBySlugSafe(slug) {
   try {

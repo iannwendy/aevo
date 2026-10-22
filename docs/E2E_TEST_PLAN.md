@@ -824,14 +824,14 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 5.3: Docker Compose Setup
 
 ### Checklist
-- [ ] `docker-compose.yml` đầy đủ
-- [ ] Frontend service
-- [ ] Backend service
-- [ ] PostgreSQL service
-- [ ] Redis service
-- [ ] Health checks
-- [ ] Volume persistence
-- [ ] `docker compose up -d` chạy thành công
+- [x] `docker-compose.yml` đầy đủ
+- [x] Frontend service
+- [x] Backend service
+- [x] PostgreSQL service
+- [x] Redis service
+- [x] Health checks
+- [x] Volume persistence
+- [x] `docker compose up -d` chạy thành công
 
 ### Test Cases
 
@@ -894,7 +894,7 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 |----------|--------|
 | Responsive design hoàn chỉnh | ✅ |
 | Security validation pass | ✅ |
-| Docker deployment hoạt động | ⬜ |
+| Docker deployment hoạt động | ✅ |
 | Full E2E test pass | ✅ |
 | Horizontal scaling ready | ⬜ |
 | **PUSH TO REMOTE** | ✅ |

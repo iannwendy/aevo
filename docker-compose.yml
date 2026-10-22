@@ -1,49 +1,61 @@
-version: '3.8'
-
 services:
-  # Frontend - Next.js
+  # Frontend - Next.js 14 Storefront & Admin Control Panel
   web:
     build:
       context: ./apps/web
-      dockerfile: ../docker/Dockerfile.web
+      dockerfile: ../../docker/Dockerfile.web
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3001
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://api:3001
-    volumes:
-      - ./apps/web:/app
-      - /app/node_modules
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - INTERNAL_API_URL=http://api:3001
+      - JWT_SECRET=${JWT_SECRET:-aevo-dev-secret-key-change-in-production}
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/icon.svg >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
     networks:
       - aevo-network
 
-  # Backend - Express.js
+  # Backend - Stateless Express.js REST API + Socket.IO Server
   api:
     build:
       context: ./apps/api
-      dockerfile: ../docker/Dockerfile.api
+      dockerfile: ../../docker/Dockerfile.api
     ports:
       - "3001:3001"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/aevo
       - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=aevo-secret-key-change-in-production
+      - JWT_SECRET=${JWT_SECRET:-aevo-dev-secret-key-change-in-production}
+      - CLIENT_URL=http://localhost:3000
       - PORT=3001
-    volumes:
-      - ./apps/api:/app
-      - /app/node_modules
     depends_on:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/health >/dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
     networks:
       - aevo-network
 
-  # PostgreSQL Database
+  # PostgreSQL 16 Database
   db:
     image: postgres:16-alpine
     environment:
@@ -51,24 +63,31 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=aevo
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5434}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d aevo"]
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
     networks:
       - aevo-network
 
-  # Redis for caching and Socket.IO
+  # Redis 7 for Stateless Sessions, Rate Limiting & Socket.IO Pub/Sub
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
     networks:
       - aevo-network
 
