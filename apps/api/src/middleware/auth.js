@@ -57,17 +57,29 @@ async function resolveUser(req) {
   return user;
 }
 
+// Both are async, so a failing database lookup would otherwise surface as an
+// unhandled rejection (Express 4 ignores rejected async middleware). Forward
+// the error to the error handler instead: the request answers 500 and the
+// process keeps running.
 const authMiddleware = async (req, res, next) => {
-  const user = await resolveUser(req);
-  if (!user) {
-    return res.status(401).json({ error: 'Authentication required' });
+  try {
+    const user = await resolveUser(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+    next();
+  } catch (error) {
+    next(error);
   }
-  next();
 };
 
 const optionalAuth = async (req, res, next) => {
-  await resolveUser(req);
-  next();
+  try {
+    await resolveUser(req);
+    next();
+  } catch (error) {
+    next(error);
+  }
 };
 
 const adminOnly = (req, res, next) => {

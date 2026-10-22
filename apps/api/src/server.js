@@ -76,7 +76,37 @@ io.on('connection', (socket) => {
   });
 });
 
+// A rejected promise nobody awaited used to terminate the process with no
+// usable log (under nodemon that shows up as a bare "app crashed"). Log it and
+// keep serving: every route that can fail is expected to handle its own
+// errors, so this is a bug report, not a reason to take the API down.
+process.on('unhandledRejection', (reason) => {
+  console.error('[process] unhandled promise rejection:', reason);
+});
+
+// Last line of defence: if the process is going down anyway, make sure the
+// stack reaches the log before the exit (nodemon shows "app crashed" without
+// this). Exit explicitly so a supervisor restarts a known-clean process.
+process.on('uncaughtException', (error) => {
+  console.error('[process] uncaught exception, shutting down:', error);
+  process.exit(1);
+});
+
 const PORT = process.env.PORT || 3001;
+
+httpServer.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(
+      `[api] port ${PORT} is already in use. Another server is still running:\n` +
+        `      lsof -nP -iTCP:${PORT} -sTCP:LISTEN\n` +
+        '      Stop it (or set PORT to a free port) and start again.'
+    );
+    process.exit(1);
+  }
+
+  console.error('[api] failed to start the HTTP server:', error);
+  process.exit(1);
+});
 
 httpServer.listen(PORT, () => {
   console.log(`AEVO API server running on port ${PORT}`);

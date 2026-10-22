@@ -10,6 +10,7 @@ const {
   RESET_TOKEN_SECRET,
 } = require('../../middleware/auth');
 const { rateLimit } = require('../../middleware/rateLimit');
+const { asyncHandler } = require('../../middleware/asyncHandler');
 const { sendPasswordResetEmail } = require('../../services/mailer');
 const {
   passport,
@@ -146,6 +147,8 @@ router.post(
         return res.status(401).json({ error: 'Invalid email or password' });
       }
 
+      // A social-only account has no password to compare against, so say how
+      // to sign in instead of pretending the password was wrong.
       if (!user.password) {
         return res.status(401).json({ error: 'Please use social login' });
       }
@@ -187,7 +190,7 @@ router.post('/logout', (req, res) => {
 });
 
 // ----------------------------------------------------------------- Profile
-router.get('/profile', authMiddleware, async (req, res) => {
+router.get('/profile', authMiddleware, asyncHandler(async (req, res) => {
   const user = await prisma.user.findUnique({
     where: { id: req.user.id },
     include: { addresses: true, oauthAccounts: true },
@@ -206,7 +209,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
     addresses: user.addresses,
     oauthAccounts: user.oauthAccounts,
   });
-});
+}));
 
 router.put(
   '/profile',

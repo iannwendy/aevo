@@ -137,7 +137,7 @@ function ProfileView() {
           title="You’re not signed in."
           body="Sign in with Google or your email to view your account."
           actionLabel="Sign in"
-          actionHref="/login?next=%2Fprofile"
+          actionHref="/login?next=%2Faccount%2Fprofile"
         />
       </PageFrame>
     );
@@ -246,7 +246,7 @@ function ProfileView() {
               </p>
             </div>
             <Link
-              href="/login?next=%2Fprofile"
+              href="/login?next=%2Faccount%2Fprofile"
               className="text-small font-medium hover:underline underline-offset-4 focus-ring rounded"
             >
               Link Google
