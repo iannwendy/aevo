@@ -65,6 +65,15 @@ function cookieFrom(res, name = 'token') {
   return cookie ? cookie.split(';')[0] : null;
 }
 
+function randomCode5(prefix = 'P') {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let out = prefix.toUpperCase().slice(0, 1);
+  while (out.length < 5) {
+    out += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return out;
+}
+
 const uniqueEmail = (tag) =>
   `${tag}.${Date.now()}.${Math.floor(Math.random() * 1e6)}@example.com`;
 
@@ -623,6 +632,111 @@ async function registerCustomer(tag = 'phase4') {
     assert.equal(res.body.statusHistory[0].status, 'CONFIRMED');
     assert.ok(res.body.statusHistory[0].note.includes('AEVO Control'));
     return `historyCount=${res.body.statusHistory.length}, latest=${res.body.statusHistory[0].status}`;
+  });
+
+  // =========================================================================
+  // Task 4.6: Admin - Discount Management (ADMIN-16 -> ADMIN-19)
+  // =========================================================================
+  console.log('\n=== Task 4.6: Admin - Discount Management ===');
+
+  let p4DiscountId = null;
+  let p4DiscountCode = null;
+
+  await test('ADMIN-16', 'GET /api/discounts returns all discounts with usageCount and orders (admin only)', async () => {
+    const forbidden = await call('/api/discounts', { token: customer.token });
+    assert.equal(forbidden.status, 403);
+
+    const res = await call('/api/discounts', { token: admin.token });
+    assert.equal(res.status, 200);
+    assert.ok(Array.isArray(res.body));
+    assert.ok(res.body.length >= 1);
+    const first = res.body[0];
+    assert.equal(typeof first.code, 'string');
+    assert.equal(typeof first.usedCount, 'number');
+    assert.equal(typeof first.maxUses, 'number');
+    assert.ok(Array.isArray(first.usageHistory));
+    assert.ok(Array.isArray(first.orders));
+    return `count=${res.body.length}, sample=${first.code} (${first.usedCount}/${first.maxUses})`;
+  });
+
+  await test('ADMIN-18', 'POST /api/discounts creates a 5-char alphanumeric discount code with maxUses <= 10', async () => {
+    p4DiscountCode = randomCode5('D');
+    const res = await call('/api/discounts', {
+      method: 'POST',
+      token: admin.token,
+      body: {
+        code: p4DiscountCode,
+        description: 'Phase 4 Admin Discount Test',
+        discountType: 'percentage',
+        discountValue: 10,
+        maxUses: 5,
+      },
+    });
+    assert.equal(res.status, 201, `Create discount failed: ${JSON.stringify(res.body)}`);
+    assert.equal(res.body.code, p4DiscountCode);
+    assert.equal(res.body.maxUses, 5);
+    assert.equal(res.body.usedCount, 0);
+    assert.equal(res.body.isActive, true);
+    p4DiscountId = res.body.id;
+
+    // Also test PUT /api/discounts/:id to update description / maxUses
+    const updRes = await call(`/api/discounts/${p4DiscountId}`, {
+      method: 'PUT',
+      token: admin.token,
+      body: { maxUses: 8, description: 'Updated Phase 4 Discount' },
+    });
+    assert.equal(updRes.status, 200);
+    assert.equal(updRes.body.maxUses, 8);
+    return `code=${p4DiscountCode}, id=${p4DiscountId}, maxUses=${updRes.body.maxUses}`;
+  });
+
+  await test('ADMIN-17', 'Discount detail tracks usedCount and lists orders where coupon was applied', async () => {
+    // Place an order using p4DiscountCode so it has 1 applied order
+    const prodRes = await call('/api/products?limit=10');
+    const variant = prodRes.body.products
+      .flatMap((p) => p.variants || [])
+      .find((v) => v.inventory >= 5);
+    assert.ok(variant);
+
+    const orderRes = await call('/api/orders', {
+      method: 'POST',
+      token: customer.token,
+      body: {
+        items: [{ variantId: variant.id, quantity: 1 }],
+        discountCode: p4DiscountCode,
+        shippingAddress: {
+          fullName: 'Discount Usage Tester',
+          phone: '0909888777',
+          address: '200 Le Loi',
+          city: 'Ho Chi Minh City',
+        },
+        paymentMethod: 'cod',
+      },
+    });
+    assert.equal(orderRes.status, 201);
+
+    const detailRes = await call(`/api/discounts/${p4DiscountId}`, { token: admin.token });
+    assert.equal(detailRes.status, 200);
+    assert.equal(detailRes.body.usedCount, 1);
+    assert.equal(detailRes.body.orders.length, 1);
+    assert.equal(detailRes.body.orders[0].orderNumber, orderRes.body.orderNumber);
+    assert.equal(detailRes.body.usageHistory.length, 1);
+    assert.equal(detailRes.body.usageHistory[0].order.orderNumber, orderRes.body.orderNumber);
+    return `code=${p4DiscountCode}, usedCount=${detailRes.body.usedCount}, order=${orderRes.body.orderNumber}`;
+  });
+
+  await test('ADMIN-19', 'DELETE /api/discounts/:id deactivates discount (isActive = false)', async () => {
+    const delRes = await call(`/api/discounts/${p4DiscountId}`, {
+      method: 'DELETE',
+      token: admin.token,
+    });
+    assert.equal(delRes.status, 200);
+    assert.equal(delRes.body.isActive, false);
+
+    // Public validate should now return 400 (no longer active)
+    const valRes = await call(`/api/discounts/validate/${p4DiscountCode}`);
+    assert.equal(valRes.status, 400);
+    return `id=${p4DiscountId}, isActive=${delRes.body.isActive}`;
   });
 
   await prisma.$disconnect();

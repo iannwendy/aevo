@@ -709,12 +709,12 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 4.6: Admin - Discount Management
 
 ### Checklist
-- [ ] GET `/api/discounts` - list discounts
-- [ ] View usage count
-- [ ] View orders used
-- [ ] Create discount (admin)
-- [ ] Update discount
-- [ ] Delete (deactivate)
+- [x] GET `/api/discounts` - list discounts
+- [x] View usage count
+- [x] View orders used
+- [x] Create discount (admin)
+- [x] Update discount
+- [x] Delete (deactivate)
 
 ### Test Cases
 

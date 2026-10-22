@@ -56,34 +56,88 @@ router.get('/validate/:code', async (req, res) => {
   }
 });
 
+const DISCOUNT_ADMIN_INCLUDE = {
+  usageHistory: {
+    orderBy: { usedAt: 'desc' },
+    include: {
+      order: {
+        select: {
+          id: true,
+          orderNumber: true,
+          totalAmount: true,
+          discountAmount: true,
+          status: true,
+          guestName: true,
+          guestEmail: true,
+          createdAt: true,
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+            },
+          },
+        },
+      },
+    },
+  },
+  orders: {
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      orderNumber: true,
+      totalAmount: true,
+      discountAmount: true,
+      status: true,
+      guestName: true,
+      guestEmail: true,
+      createdAt: true,
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+        },
+      },
+    },
+  },
+  _count: { select: { orders: true } },
+};
+
 // Get all discounts (admin)
 router.get('/', authMiddleware, adminOnly, async (req, res) => {
   try {
     const discounts = await prisma.discount.findMany({
       orderBy: { createdAt: 'desc' },
-      include: {
-        usageHistory: {
-          orderBy: { usedAt: 'desc' },
-          include: {
-            order: {
-              select: {
-                id: true,
-                orderNumber: true,
-                totalAmount: true,
-                discountAmount: true,
-                createdAt: true,
-              },
-            },
-          },
-        },
-        _count: { select: { orders: true } },
-      },
+      include: DISCOUNT_ADMIN_INCLUDE,
     });
 
     res.json(discounts);
   } catch (error) {
     console.error('Get discounts error:', error);
     res.status(500).json({ error: 'Failed to fetch discounts' });
+  }
+});
+
+// Get single discount detail with orders where applied (admin)
+router.get('/:id', authMiddleware, adminOnly, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const discount = await prisma.discount.findFirst({
+      where: {
+        OR: [{ id }, { code: String(id).trim().toUpperCase() }],
+      },
+      include: DISCOUNT_ADMIN_INCLUDE,
+    });
+
+    if (!discount) {
+      return res.status(404).json({ error: 'Discount not found' });
+    }
+
+    res.json(discount);
+  } catch (error) {
+    console.error('Get discount detail error:', error);
+    res.status(500).json({ error: 'Failed to fetch discount detail' });
   }
 });
 
@@ -190,12 +244,12 @@ router.delete('/:id', authMiddleware, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
 
-    await prisma.discount.update({
+    const updated = await prisma.discount.update({
       where: { id },
       data: { isActive: false },
     });
 
-    res.json({ message: 'Discount deactivated' });
+    res.json({ message: 'Discount deactivated', ...updated, discount: updated });
   } catch (error) {
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'Discount not found' });
