@@ -194,19 +194,19 @@ function ProfileView() {
       <div className="flex flex-wrap items-center gap-2 pb-6 mb-8 border-b border-border">
         <Link
           href="/account/profile"
-          className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-small font-medium"
+          className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-small font-medium btn-interactive"
         >
           {t('profile.tabProfileSecurity')}
         </Link>
         <Link
           href="/account/addresses"
-          className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
+          className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink btn-interactive"
         >
           {t('profile.tabDeliveryAddresses')}
         </Link>
         <Link
           href="/account/orders"
-          className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
+          className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink btn-interactive"
         >
           {t('profile.tabOrderHistory')}
         </Link>
@@ -621,7 +621,7 @@ function EmptyState({ title, body, actionLabel, actionHref, onRetry }) {
 
 function StatCard({ label, value }) {
   return (
-    <div className="bg-surface border border-border rounded-xl p-6">
+    <div className="bg-surface border border-border rounded-xl p-6 transition-all duration-300 hover:-translate-y-1 hover:border-ink/30 hover:shadow-md animate-slide-up">
       <span className="text-caption font-mono text-secondary uppercase tracking-wider">
         {label}
       </span>
@@ -632,9 +632,9 @@ function StatCard({ label, value }) {
 
 function Section({ title, children }) {
   return (
-    <section className="mt-12">
+    <section className="mt-12 animate-fade-in">
       <h2 className="text-h3 mb-6">{title}</h2>
-      <div className="bg-surface border border-border rounded-xl p-6">
+      <div className="bg-surface border border-border rounded-xl p-6 transition-all duration-300 hover:border-ink/20">
         {children}
       </div>
     </section>

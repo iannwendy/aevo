@@ -225,12 +225,12 @@ function LoginView({ searchParams }) {
           </Link>
         </div>
 
-        <div className="max-w-md">
+        <div className="max-w-md animate-slide-up">
           <span className="text-caption font-mono text-secondary uppercase tracking-wider">
             {t('auth.accountEyebrow')}
           </span>
-          <h1 className="text-display mt-4">{t('auth.login.welcomeBack')}</h1>
-          <p className="text-xl text-secondary mt-6">
+          <h1 className="text-display mt-4 animate-hero-reveal stagger-1">{t('auth.login.welcomeBack')}</h1>
+          <p className="text-xl text-secondary mt-6 animate-slide-up stagger-2">
             {t('auth.login.sideDesc')}
           </p>
         </div>
@@ -242,7 +242,7 @@ function LoginView({ searchParams }) {
 
       {/* ---- Right: form panel ---- */}
       <section className="flex flex-col justify-center px-4 py-12 md:px-8 lg:px-16">
-        <div className="w-full max-w-md mx-auto">
+        <div className="w-full max-w-md mx-auto animate-fade-in">
           <div className="flex items-center justify-between mb-6">
             {/* Mobile brand */}
             <Link
@@ -259,13 +259,13 @@ function LoginView({ searchParams }) {
           <span className="text-caption font-mono text-secondary uppercase tracking-wider">
             {t('auth.login.signInEyebrow')}
           </span>
-          <h2 className="text-h1 mt-3">{t('auth.login.heading')}</h2>
+          <h2 className="text-h1 mt-3 animate-slide-up">{t('auth.login.heading')}</h2>
 
           {notice && (
             <p
               role={notice.kind === 'error' ? 'alert' : 'status'}
               aria-live="polite"
-              className={`mt-6 text-small rounded-lg border px-4 py-3 ${
+              className={`mt-6 text-small rounded-lg border px-4 py-3 animate-slide-up ${
                 notice.kind === 'error'
                   ? 'border-danger/30 bg-danger/10 text-danger'
                   : notice.kind === 'success'

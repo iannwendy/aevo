@@ -19,7 +19,8 @@ import {
   translate,
 } from '../../../../lib/i18n/dictionaries';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL =
+  process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 async function fetchOrderDetails(searchParams) {
   const ref =
@@ -81,9 +82,9 @@ export default async function CheckoutSuccessPage({ searchParams }) {
         <div className="container-main py-12 md:py-16">
           <div className="max-w-[820px] mx-auto">
             {/* Success Banner */}
-            <div className="bg-surface border border-border rounded-card p-8 md:p-10 mb-8">
+            <div className="bg-surface border border-border rounded-card p-8 md:p-10 mb-8 animate-scale-in">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-pill bg-success/10 text-success flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-pill bg-success/10 text-success flex items-center justify-center shrink-0 animate-badge-pop">
                   <CheckCircle2 className="w-6 h-6" strokeWidth={1.75} />
                 </div>
                 <div className="flex-1">
@@ -175,7 +176,7 @@ export default async function CheckoutSuccessPage({ searchParams }) {
             </div>
 
             {order ? (
-              <div className="space-y-8" data-testid="success-order-details">
+              <div className="space-y-8 animate-slide-up stagger-1" data-testid="success-order-details">
                 {/* Order Items */}
                 <section className="border border-border rounded-card p-6 md:p-8 bg-bg">
                   <div className="flex items-center gap-2 pb-4 border-b border-border mb-4">
@@ -336,19 +337,19 @@ export default async function CheckoutSuccessPage({ searchParams }) {
             ) : null}
 
             {/* Action Buttons */}
-            <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
+            <div className="mt-10 flex flex-wrap items-center justify-between gap-4 animate-slide-up stagger-2">
               <Link
                 href="/account/orders"
-                className="px-6 py-3 rounded-pill border border-border text-[14px] font-medium text-ink hover:border-ink transition-colors"
+                className="px-6 py-3 rounded-pill border border-border text-[14px] font-medium text-ink hover:border-ink btn-interactive"
               >
                 {t('checkoutSuccess.viewOrderHistoryBtn')}
               </Link>
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-pill bg-primary text-primary-foreground text-[14px] font-medium hover:bg-primary/90 transition-colors"
+                className="group inline-flex items-center gap-2 px-7 py-3.5 rounded-pill bg-primary text-primary-foreground text-[14px] font-medium hover:bg-primary/90 btn-interactive"
               >
                 <span>{t('checkoutSuccess.continueShoppingBtn')}</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
               </Link>
             </div>
           </div>

@@ -104,26 +104,26 @@ export default function AccountOrdersPage() {
         <div className="flex flex-wrap items-center gap-2 pb-6 mb-8 border-b border-border">
           <Link
             href="/account/profile"
-            className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
+            className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink btn-interactive"
           >
             {t('orders.tabProfileSecurity')}
           </Link>
           <Link
             href="/account/addresses"
-            className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
+            className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink btn-interactive"
           >
             {t('orders.tabDeliveryAddresses')}
           </Link>
           <Link
             href="/account/orders"
-            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-small font-medium"
+            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-small font-medium btn-interactive"
           >
             {t('orders.tabOrderHistoryLoyalty')}
           </Link>
         </div>
 
         {/* Order Number Lookup Bar (works for both Guest & Member) */}
-        <div className="bg-surface border border-border rounded-2xl p-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-surface border border-border rounded-2xl p-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
           <div>
             <h2 className="text-base font-display font-medium text-ink">
               {t('orders.trackByOrderNumberTitle')}
@@ -150,7 +150,7 @@ export default function AccountOrdersPage() {
             <button
               type="submit"
               data-testid="order-lookup-button"
-              className="h-11 px-5 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 transition-colors shrink-0"
+              className="h-11 px-5 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 btn-interactive shrink-0"
             >
               {t('orders.trackBtn')}
             </button>
@@ -272,7 +272,7 @@ export default function AccountOrdersPage() {
                     <article
                       key={order.id}
                       data-testid="order-card"
-                      className="bg-surface border border-border rounded-2xl p-6 transition-all hover:border-ink/40"
+                      className="group bg-surface border border-border rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:border-ink/40 hover:shadow-md animate-slide-up"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
                         <div>

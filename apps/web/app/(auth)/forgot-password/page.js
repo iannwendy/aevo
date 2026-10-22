@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
   return (
     <main className="min-h-screen bg-canvas">
       <div className="container-main min-h-screen flex flex-col justify-center py-12">
-        <div className="w-full max-w-md mx-auto bg-surface border border-border rounded-2xl p-8 md:p-10">
+        <div className="w-full max-w-md mx-auto bg-surface border border-border rounded-2xl p-8 md:p-10 animate-scale-in shadow-sm">
           <div className="flex items-center justify-between">
             <Link
               href="/"

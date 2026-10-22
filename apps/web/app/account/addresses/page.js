@@ -169,19 +169,19 @@ export default function AddressesPage() {
         <div className="flex flex-wrap items-center gap-2 pb-6 mb-8 border-b border-border">
           <Link
             href="/account/profile"
-            className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
+            className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink btn-interactive"
           >
             {t('addresses.tabProfileSecurity')}
           </Link>
           <Link
             href="/account/addresses"
-            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-small font-medium"
+            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-small font-medium btn-interactive"
           >
             {t('addresses.tabDeliveryAddresses')}
           </Link>
           <Link
             href="/account/orders"
-            className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink"
+            className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink btn-interactive"
           >
             {t('addresses.tabOrderHistory')}
           </Link>
@@ -213,7 +213,7 @@ export default function AddressesPage() {
                 type="button"
                 onClick={handleOpenCreate}
                 data-testid="add-address-button"
-                className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 transition-colors self-start sm:self-auto"
+                className="inline-flex items-center gap-2 px-5 h-11 rounded-xl bg-primary text-primary-foreground text-small font-medium hover:bg-primary/90 btn-interactive self-start sm:self-auto"
               >
                 <Plus size={16} />
                 <span>{t('addresses.addNewBtn')}</span>
@@ -223,7 +223,7 @@ export default function AddressesPage() {
             {feedback && (
               <div
                 data-testid="address-feedback"
-                className={`mb-6 p-4 rounded-xl border text-small ${
+                className={`mb-6 p-4 rounded-xl border text-small animate-slide-up ${
                   feedback.type === 'success'
                     ? 'bg-success/10 border-success/30 text-success'
                     : 'bg-danger/10 border-danger/30 text-danger'
@@ -238,7 +238,7 @@ export default function AddressesPage() {
               <form
                 onSubmit={handleSubmit}
                 data-testid="address-form"
-                className="bg-surface border border-border rounded-2xl p-6 mb-8 space-y-4 max-w-2xl"
+                className="bg-surface border border-border rounded-2xl p-6 mb-8 space-y-4 max-w-2xl animate-slide-up shadow-sm"
               >
                 <h2 className="text-h3">
                   {editingId ? t('addresses.editFormTitle') : t('addresses.newFormTitle')}
@@ -410,8 +410,8 @@ export default function AddressesPage() {
                   <article
                     key={addr.id}
                     data-testid="address-card"
-                    className={`bg-surface rounded-2xl border p-6 flex flex-col justify-between ${
-                      addr.isDefault ? 'border-ink ring-1 ring-ink/10' : 'border-border'
+                    className={`bg-surface rounded-2xl border p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md animate-slide-up ${
+                      addr.isDefault ? 'border-ink ring-1 ring-ink/10' : 'border-border hover:border-ink/30'
                     }`}
                   >
                     <div>

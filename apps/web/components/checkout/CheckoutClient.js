@@ -370,9 +370,9 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     if (s.id <= step) setStep(s.id);
                   }}
                   data-testid={`checkout-step-tab-${s.id}`}
-                  className={`px-3 py-1.5 rounded-lg text-caption font-mono transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-caption font-mono transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 ${
                     isCurrent
-                      ? 'bg-primary text-primary-foreground font-medium'
+                      ? 'bg-primary text-primary-foreground font-medium shadow-xs'
                       : isCompleted
                       ? 'bg-sage/15 text-sage font-medium'
                       : 'bg-surface border border-border text-secondary'
@@ -388,7 +388,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
         {stepError && (
           <div
             data-testid="checkout-error"
-            className="mt-6 p-4 rounded-xl border border-danger/30 bg-danger/10 text-danger text-small"
+            className="mt-6 p-4 rounded-xl border border-danger/30 bg-danger/10 text-danger text-small animate-slide-up"
           >
             {stepError}
           </div>
@@ -401,7 +401,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
             {step === 1 && (
               <section
                 data-testid="checkout-step-1"
-                className="bg-surface border border-border rounded-2xl p-6 md:p-8 space-y-5"
+                className="bg-surface border border-border rounded-2xl p-6 md:p-8 space-y-5 animate-slide-up"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -496,10 +496,10 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="button"
                     onClick={handleNextStep}
                     data-testid="checkout-continue-to-shipping"
-                    className="h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 inline-flex items-center gap-2 transition-colors"
+                    className="group h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 inline-flex items-center gap-2 btn-interactive"
                   >
                     <span>{t('checkout.continueToAddressBtn')}</span>
-                    <ArrowRight size={17} />
+                    <ArrowRight size={17} className="transition-transform duration-200 group-hover:translate-x-1" />
                   </button>
                 </div>
               </section>
@@ -509,7 +509,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
             {step === 2 && (
               <section
                 data-testid="checkout-step-2"
-                className="bg-surface border border-border rounded-2xl p-6 md:p-8 space-y-5"
+                className="bg-surface border border-border rounded-2xl p-6 md:p-8 space-y-5 animate-slide-up"
               >
                 <div>
                   <span className="text-caption font-mono uppercase tracking-wider text-secondary">
@@ -533,9 +533,9 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                             type="button"
                             onClick={() => handleSelectSavedAddress(addr)}
                             data-testid={`select-saved-address-${addr.id}`}
-                            className={`p-3.5 rounded-xl border text-left transition-all ${
+                            className={`p-3.5 rounded-xl border text-left transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${
                               isSelected
-                                ? 'border-ink bg-canvas ring-1 ring-ink'
+                                ? 'border-ink bg-canvas ring-1 ring-ink shadow-xs'
                                 : 'border-border bg-surface hover:border-ink/40'
                             }`}
                           >
@@ -630,7 +630,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="h-11 px-5 rounded-xl border border-border bg-surface text-small font-medium text-ink inline-flex items-center gap-2"
+                    className="h-11 px-5 rounded-xl border border-border bg-surface text-small font-medium text-ink inline-flex items-center gap-2 btn-interactive"
                   >
                     <ArrowLeft size={16} />
                     <span>{t('checkout.backBtn')}</span>
@@ -639,10 +639,10 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="button"
                     onClick={handleNextStep}
                     data-testid="checkout-continue-to-method"
-                    className="h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 inline-flex items-center gap-2"
+                    className="group h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 inline-flex items-center gap-2 btn-interactive"
                   >
                     <span>{t('checkout.continueToMethodBtn')}</span>
-                    <ArrowRight size={17} />
+                    <ArrowRight size={17} className="transition-transform duration-200 group-hover:translate-x-1" />
                   </button>
                 </div>
               </section>
@@ -652,7 +652,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
             {step === 3 && (
               <section
                 data-testid="checkout-step-3"
-                className="bg-surface border border-border rounded-2xl p-6 md:p-8 space-y-5"
+                className="bg-surface border border-border rounded-2xl p-6 md:p-8 space-y-5 animate-slide-up"
               >
                 <div>
                   <span className="text-caption font-mono uppercase tracking-wider text-secondary">
@@ -666,10 +666,10 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="button"
                     onClick={() => setShippingMethod('standard')}
                     data-testid="shipping-method-standard"
-                    className={`w-full p-4 rounded-xl border text-left flex items-center justify-between ${
+                    className={`w-full p-4 rounded-xl border text-left flex items-center justify-between transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] ${
                       shippingMethod === 'standard'
-                        ? 'border-ink bg-canvas ring-1 ring-ink'
-                        : 'border-border bg-surface'
+                        ? 'border-ink bg-canvas ring-1 ring-ink shadow-xs'
+                        : 'border-border bg-surface hover:border-ink/40'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -694,10 +694,10 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="button"
                     onClick={() => setShippingMethod('express')}
                     data-testid="shipping-method-express"
-                    className={`w-full p-4 rounded-xl border text-left flex items-center justify-between ${
+                    className={`w-full p-4 rounded-xl border text-left flex items-center justify-between transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] ${
                       shippingMethod === 'express'
-                        ? 'border-ink bg-canvas ring-1 ring-ink'
-                        : 'border-border bg-surface'
+                        ? 'border-ink bg-canvas ring-1 ring-ink shadow-xs'
+                        : 'border-border bg-surface hover:border-ink/40'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -723,7 +723,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                   <button
                     type="button"
                     onClick={() => setStep(2)}
-                    className="h-11 px-5 rounded-xl border border-border bg-surface text-small font-medium text-ink inline-flex items-center gap-2"
+                    className="h-11 px-5 rounded-xl border border-border bg-surface text-small font-medium text-ink inline-flex items-center gap-2 btn-interactive"
                   >
                     <ArrowLeft size={16} />
                     <span>{t('checkout.backBtn')}</span>
@@ -732,10 +732,10 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="button"
                     onClick={handleNextStep}
                     data-testid="checkout-continue-to-payment"
-                    className="h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 inline-flex items-center gap-2"
+                    className="group h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 inline-flex items-center gap-2 btn-interactive"
                   >
                     <span>{t('checkout.continueToPaymentBtn')}</span>
-                    <ArrowRight size={17} />
+                    <ArrowRight size={17} className="transition-transform duration-200 group-hover:translate-x-1" />
                   </button>
                 </div>
               </section>
@@ -745,7 +745,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
             {step === 4 && (
               <section
                 data-testid="checkout-step-4"
-                className="bg-surface border border-border rounded-2xl p-6 md:p-8 space-y-6"
+                className="bg-surface border border-border rounded-2xl p-6 md:p-8 space-y-6 animate-slide-up"
               >
                 <div>
                   <span className="text-caption font-mono uppercase tracking-wider text-secondary">
@@ -761,10 +761,10 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                       type="button"
                       onClick={() => setPaymentMethod(opt.value)}
                       data-testid={`payment-method-${opt.value}`}
-                      className={`w-full p-4 rounded-xl border text-left flex items-center justify-between ${
+                      className={`w-full p-4 rounded-xl border text-left flex items-center justify-between transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] ${
                         paymentMethod === opt.value
-                          ? 'border-ink bg-canvas ring-1 ring-ink'
-                          : 'border-border bg-surface'
+                          ? 'border-ink bg-canvas ring-1 ring-ink shadow-xs'
+                          : 'border-border bg-surface hover:border-ink/40'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -780,7 +780,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                         }`}
                       >
                         {paymentMethod === opt.value && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary-foreground animate-scale-in" />
                         )}
                       </span>
                     </button>
@@ -804,7 +804,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                   <button
                     type="button"
                     onClick={() => setStep(3)}
-                    className="h-11 px-5 rounded-xl border border-border bg-surface text-small font-medium text-ink inline-flex items-center gap-2"
+                    className="h-11 px-5 rounded-xl border border-border bg-surface text-small font-medium text-ink inline-flex items-center gap-2 btn-interactive"
                   >
                     <ArrowLeft size={16} />
                     <span>{t('checkout.backBtn')}</span>
@@ -813,10 +813,10 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="button"
                     onClick={handleNextStep}
                     data-testid="checkout-continue-to-review"
-                    className="h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 inline-flex items-center gap-2"
+                    className="group h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 inline-flex items-center gap-2 btn-interactive"
                   >
                     <span>{t('checkout.reviewOrderBtn')}</span>
-                    <ArrowRight size={17} />
+                    <ArrowRight size={17} className="transition-transform duration-200 group-hover:translate-x-1" />
                   </button>
                 </div>
               </section>
@@ -826,7 +826,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
             {step === 5 && (
               <section
                 data-testid="checkout-step-5"
-                className="bg-surface border border-border rounded-2xl p-6 md:p-8 space-y-6"
+                className="bg-surface border border-border rounded-2xl p-6 md:p-8 space-y-6 animate-slide-up"
               >
                 <div>
                   <span className="text-caption font-mono uppercase tracking-wider text-secondary">
@@ -844,7 +844,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                       <button
                         type="button"
                         onClick={() => setStep(1)}
-                        className="text-caption underline"
+                        className="text-caption underline hover:text-ink transition-colors"
                       >
                         {t('checkout.editBtn')}
                       </button>
@@ -862,7 +862,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                       <button
                         type="button"
                         onClick={() => setStep(2)}
-                        className="text-caption underline"
+                        className="text-caption underline hover:text-ink transition-colors"
                       >
                         {t('checkout.editBtn')}
                       </button>
@@ -883,7 +883,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                   <button
                     type="button"
                     onClick={() => setStep(4)}
-                    className="h-11 px-5 rounded-xl border border-border bg-surface text-small font-medium text-ink inline-flex items-center gap-2"
+                    className="h-11 px-5 rounded-xl border border-border bg-surface text-small font-medium text-ink inline-flex items-center gap-2 btn-interactive"
                   >
                     <ArrowLeft size={16} />
                     <span>{t('checkout.backBtn')}</span>
@@ -893,7 +893,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     onClick={handlePlaceOrder}
                     disabled={placingOrder || items.length === 0}
                     data-testid="place-order-button"
-                    className="h-12 px-8 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 disabled:opacity-50 inline-flex items-center gap-2"
+                    className="h-12 px-8 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 disabled:opacity-50 inline-flex items-center gap-2 btn-interactive"
                   >
                     <Check size={18} />
                     <span>
@@ -964,7 +964,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="submit"
                     disabled={validatingDiscount}
                     data-testid="checkout-apply-discount"
-                    className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-caption font-medium hover:bg-primary/90"
+                    className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-caption font-medium hover:bg-primary/90 btn-interactive"
                   >
                     {t('checkout.applyBtn')}
                   </button>
@@ -972,7 +972,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                 {discountFeedback && (
                   <p
                     data-testid="checkout-discount-feedback"
-                    className={`mt-2 text-caption ${
+                    className={`mt-2 text-caption animate-slide-up ${
                       discountFeedback.type === 'success'
                         ? 'text-success'
                         : 'text-danger'
@@ -1023,7 +1023,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     type="submit"
                     disabled={!user}
                     data-testid="checkout-apply-points"
-                    className="h-10 px-4 rounded-xl border border-border bg-surface hover:bg-canvas text-caption font-medium text-ink disabled:opacity-50"
+                    className="h-10 px-4 rounded-xl border border-border bg-surface hover:bg-canvas text-caption font-medium text-ink disabled:opacity-50 btn-interactive"
                   >
                     {t('checkout.redeemBtn')}
                   </button>
@@ -1031,7 +1031,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                 {pointsFeedback && (
                   <p
                     data-testid="checkout-points-feedback"
-                    className={`mt-2 text-caption ${
+                    className={`mt-2 text-caption animate-slide-up ${
                       pointsFeedback.type === 'success'
                         ? 'text-success'
                         : 'text-danger'

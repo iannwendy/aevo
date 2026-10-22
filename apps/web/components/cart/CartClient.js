@@ -12,7 +12,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { cartApi } from '../../lib/api';
-import { formatPrice } from '../../lib/utils';
+import { FALLBACK_PRODUCT_IMAGE, formatPrice, handleImageError } from '../../lib/utils';
 import { useI18n } from '../../lib/i18n';
 
 const FREE_SHIPPING_THRESHOLD = 20000000;
@@ -200,9 +200,9 @@ export default function CartClient({ initialCart }) {
         ) : items.length === 0 ? (
           <div
             data-testid="cart-empty-state"
-            className="mt-10 bg-surface border border-border rounded-2xl p-12 md:p-16 text-center max-w-2xl mx-auto"
+            className="mt-10 bg-surface border border-border rounded-2xl p-12 md:p-16 text-center max-w-2xl mx-auto animate-scale-in"
           >
-            <div className="w-14 h-14 rounded-2xl bg-canvas border border-border flex items-center justify-center mx-auto mb-5">
+            <div className="w-14 h-14 rounded-2xl bg-canvas border border-border flex items-center justify-center mx-auto mb-5 animate-float">
               <ShoppingBag size={24} className="text-secondary" />
             </div>
             <h2 className="text-h2 mb-2">{t('cart.emptyTitle')}</h2>
@@ -212,10 +212,10 @@ export default function CartClient({ initialCart }) {
             <Link
               href="/products"
               data-testid="cart-empty-explore-cta"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3.5 rounded-xl font-medium text-small hover:bg-primary/90 transition-colors"
+              className="group inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3.5 rounded-xl font-medium text-small hover:bg-primary/90 btn-interactive"
             >
               {t('cart.exploreCollection')}
-              <ArrowRight size={18} />
+              <ArrowRight size={18} className="transition-transform duration-200 group-hover:translate-x-1" />
             </Link>
           </div>
         ) : (
@@ -228,7 +228,7 @@ export default function CartClient({ initialCart }) {
                   item.productImage ||
                   product?.images?.find((i) => i.isPrimary)?.url ||
                   product?.images?.[0]?.url ||
-                  'https://images.unsplash.com/photo-1517336714731-489689fd1d8a?auto=format&fit=crop&w=1200&q=80';
+                  FALLBACK_PRODUCT_IMAGE;
                 const unitPrice = item.variant?.price || 0;
                 const lineTotal = unitPrice * item.quantity;
                 const maxStock = item.variant?.inventory ?? 99;
@@ -238,7 +238,7 @@ export default function CartClient({ initialCart }) {
                   <article
                     key={item.id}
                     data-testid="cart-item"
-                    className="bg-surface border border-border rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-5 transition-opacity"
+                    className="group bg-surface border border-border rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row gap-5 transition-all duration-300 hover:border-ink/30 hover:shadow-sm animate-slide-up"
                   >
                     <Link
                       href={`/products/${product?.slug || ''}`}
@@ -247,7 +247,8 @@ export default function CartClient({ initialCart }) {
                       <img
                         src={imageUrl}
                         alt={product?.name || 'Product'}
-                        className="w-full h-full object-contain"
+                        onError={handleImageError}
+                        className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
                       />
                     </Link>
 
@@ -282,7 +283,7 @@ export default function CartClient({ initialCart }) {
                           disabled={isBusy}
                           data-testid={`cart-item-remove-${item.id}`}
                           aria-label={`Remove ${product?.name}`}
-                          className="p-2 rounded-lg text-secondary hover:text-danger hover:bg-canvas transition-colors"
+                          className="p-2 rounded-lg text-secondary hover:text-danger hover:bg-canvas transition-all duration-150 hover:scale-110 active:scale-90"
                         >
                           <Trash2 size={17} />
                         </button>
@@ -300,13 +301,14 @@ export default function CartClient({ initialCart }) {
                               disabled={isBusy || item.quantity <= 1}
                               data-testid={`cart-item-decrease-${item.id}`}
                               aria-label="Decrease quantity"
-                              className="w-8 h-8 rounded-lg inline-flex items-center justify-center text-ink hover:bg-surface disabled:opacity-40"
+                              className="w-8 h-8 rounded-lg inline-flex items-center justify-center text-ink hover:bg-surface active:scale-90 transition-all duration-150 disabled:opacity-40 disabled:active:scale-100"
                             >
                               <Minus size={14} />
                             </button>
                             <span
+                              key={item.quantity}
                               data-testid={`cart-item-quantity-${item.id}`}
-                              className="w-10 text-center text-small font-mono font-medium text-ink"
+                              className="w-10 text-center text-small font-mono font-medium text-ink animate-scale-in"
                             >
                               {item.quantity}
                             </span>
@@ -318,7 +320,7 @@ export default function CartClient({ initialCart }) {
                               disabled={isBusy || item.quantity >= maxStock}
                               data-testid={`cart-item-increase-${item.id}`}
                               aria-label="Increase quantity"
-                              className="w-8 h-8 rounded-lg inline-flex items-center justify-center text-ink hover:bg-surface disabled:opacity-40"
+                              className="w-8 h-8 rounded-lg inline-flex items-center justify-center text-ink hover:bg-surface active:scale-90 transition-all duration-150 disabled:opacity-40 disabled:active:scale-100"
                             >
                               <Plus size={14} />
                             </button>
@@ -409,15 +411,15 @@ export default function CartClient({ initialCart }) {
                   <Link
                     href="/checkout"
                     data-testid="cart-checkout-cta"
-                    className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 transition-colors inline-flex items-center justify-center gap-2"
+                    className="group w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 btn-interactive inline-flex items-center justify-center gap-2"
                   >
                     <span>{t('cart.checkout')}</span>
-                    <ArrowRight size={18} />
+                    <ArrowRight size={18} className="transition-transform duration-200 group-hover:translate-x-1" />
                   </Link>
 
                   <Link
                     href="/products"
-                    className="w-full h-11 rounded-xl border border-border bg-surface hover:bg-canvas text-ink font-medium text-small transition-colors inline-flex items-center justify-center"
+                    className="w-full h-11 rounded-xl border border-border bg-surface hover:bg-canvas text-ink font-medium text-small btn-interactive inline-flex items-center justify-center"
                   >
                     {t('cart.continueShopping')}
                   </Link>

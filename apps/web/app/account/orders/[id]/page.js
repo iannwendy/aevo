@@ -97,9 +97,9 @@ export default function OrderDetailPage({ params }) {
             </Link>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-8 animate-fade-in">
             {/* Order Header */}
-            <div className="bg-surface border border-border rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="bg-surface border border-border rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-slide-up">
               <div>
                 <span className="text-caption font-mono uppercase tracking-wider text-secondary">
                   {t('orders.orderDetailsEyebrow')}
