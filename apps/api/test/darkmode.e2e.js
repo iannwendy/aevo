@@ -85,7 +85,8 @@ async function main() {
       'Missing color-scheme: light'
     );
     for (const [token, hex] of Object.entries(expectedLight)) {
-      const regex = new RegExp(`${token}\\s*:\\s*${hex}`, 'i');
+      const hexPattern = hex === '#ffffff' ? '(?:#ffffff|#fff)\\b' : hex;
+      const regex = new RegExp(`${token}\\s*:\\s*${hexPattern}`, 'i');
       assert.match(lowerCss, regex, `Missing ${token}: ${hex} in compiled CSS`);
     }
     return '13 light tokens + color-scheme: light verified';

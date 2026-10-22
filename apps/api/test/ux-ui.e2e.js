@@ -233,12 +233,14 @@ async function main() {
 
   try {
     // Fetch a known in-stock product slug from API for PDP & Checkout tests
-    const prodRes = await fetch(`${API}/api/products?limit=20`);
+    const prodRes = await fetch(`${API}/api/products?limit=50`);
     const prodList = await prodRes.json();
     const sampleProduct =
       (prodList.products || []).find(
-        (p) => (p.variants || []).length >= 2 && p.variants.some((v) => v.inventory >= 5)
-      ) || prodList.products[0];
+        (p) => (p.variants || []).length >= 2 && (p.variants[0]?.inventory || 0) >= 10
+      ) ||
+      (prodList.products || []).find((p) => (p.variants?.[0]?.inventory || 0) >= 10) ||
+      prodList.products[0];
     assert.ok(sampleProduct, 'Seeded products required for UX/UI E2E tests');
 
     // =========================================================================
@@ -1260,6 +1262,7 @@ async function main() {
       'UX-31',
       'Auth UI validation on /login, /register, /forgot-password & /reset-password',
       async () => {
+        await logoutInBrowser(page);
         devtools.reset();
         // 1. Login empty submit validation
         await page.goto(`${CLIENT}/login`, { waitUntil: 'networkidle' });

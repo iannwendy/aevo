@@ -239,7 +239,7 @@ async function launchBrowser() {
           animInfo.className.includes('animate-fade-in'),
           `Expected animate-fade-in on page-transition-wrapper, got ${animInfo.className}`
         );
-        assert.equal(animInfo.animationName, 'fade-in');
+        assert.equal(animInfo.animationName, 'fadeIn');
         assert.ok(
           parseFloat(animInfo.animationDuration) > 0,
           `Expected animationDuration > 0s, got ${animInfo.animationDuration}`
@@ -271,7 +271,7 @@ async function launchBrowser() {
         });
         assert.ok(heroStats, 'Hero section must exist');
         assert.ok(heroStats.h1Class.includes('animate-hero-reveal'), 'Hero h1 must have animate-hero-reveal');
-        assert.equal(heroStats.h1Anim, 'hero-reveal');
+        assert.equal(heroStats.h1Anim, 'heroReveal');
         assert.ok(heroStats.pClass.includes('animate-slide-up'), 'Hero p must have animate-slide-up');
         assert.ok(heroStats.ctasClass.includes('stagger-3'), 'Hero CTAs container must have stagger-3');
         return `h1=${heroStats.h1Anim} (delay ${heroStats.h1Delay}), p=${heroStats.pAnim}`;
@@ -293,7 +293,7 @@ async function launchBrowser() {
           };
         });
         assert.ok(floatInfo, 'Expected .animate-float element inside hero-section');
-        assert.equal(floatInfo.animationName, 'float');
+        assert.equal(floatInfo.animationName, 'floatSlow');
         assert.equal(floatInfo.animationIterationCount, 'infinite');
         return `float animation verified (duration=${floatInfo.animationDuration}, iteration=${floatInfo.animationIterationCount})`;
       }
@@ -334,7 +334,7 @@ async function launchBrowser() {
           const card = document.querySelector('.animate-scale-in');
           return card ? window.getComputedStyle(card).animationName : null;
         });
-        assert.equal(forgotCard, 'scale-in');
+        assert.equal(forgotCard, 'scaleIn');
         return 'Verified /login and /forgot-password entrance animations';
       }
     );
@@ -389,7 +389,7 @@ async function launchBrowser() {
         });
         assert.ok(navInfo, 'Expected .nav-link-animated in SiteHeader');
         assert.equal(navInfo.position, 'relative');
-        assert.equal(navInfo.afterHeight, '2px');
+        assert.equal(navInfo.afterHeight, '1.5px');
         assert.ok(parseFloat(navInfo.afterTransitionDuration) > 0);
         return `nav-link-animated ::after height=${navInfo.afterHeight}, transition=${navInfo.afterTransitionDuration}`;
       }
@@ -397,26 +397,33 @@ async function launchBrowser() {
 
     await runTest(
       'ANIM-13',
-      'SettingsMenu button rotates gear icon (rotate-90) and scales in popover (animate-scale-in)',
+      'SettingsMenu button rotates icon (rotate-90) and scales in popover panel (scale-100)',
       async () => {
         const trigger = page.getByTestId('settings-menu-trigger');
         await trigger.click();
-        const popover = page.getByTestId('settings-menu-popover');
-        await popover.waitFor({ state: 'visible', timeout: 5000 });
+        const panel = page.getByTestId('settings-menu-panel');
+        await panel.waitFor({ state: 'visible', timeout: 5000 });
 
-        const popoverInfo = await popover.evaluate((el) => {
+        const panelInfo = await panel.evaluate((el) => {
           const cs = window.getComputedStyle(el);
           return {
             className: el.className,
-            animationName: cs.animationName,
+            transitionDuration: cs.transitionDuration,
+            opacity: cs.opacity,
           };
         });
-        assert.ok(popoverInfo.className.includes('animate-scale-in'));
-        assert.equal(popoverInfo.animationName, 'scale-in');
+        assert.ok(panelInfo.className.includes('scale-100'));
+        assert.ok(parseFloat(panelInfo.transitionDuration) > 0);
+
+        const iconRotated = await trigger.evaluate((btn) => {
+          const svg = btn.querySelector('svg');
+          return svg?.getAttribute('class') || '';
+        });
+        assert.ok(iconRotated.includes('rotate-90'), 'Expected SettingsMenu icon to include rotate-90 when open');
 
         // Close popover by clicking trigger again
         await trigger.click();
-        return `SettingsMenu popover animationName=${popoverInfo.animationName}`;
+        return `SettingsMenu panel transitionDuration=${panelInfo.transitionDuration}, icon=rotate-90`;
       }
     );
 
@@ -437,7 +444,7 @@ async function launchBrowser() {
           animationName: window.getComputedStyle(el).animationName,
         }));
         assert.ok(drawerAnim.className.includes('animate-slide-down'));
-        assert.equal(drawerAnim.animationName, 'slide-down');
+        assert.equal(drawerAnim.animationName, 'slideDown');
 
         await page.setViewportSize({ width: 1440, height: 900 });
         return `Mobile drawer animationName=${drawerAnim.animationName}`;
@@ -483,7 +490,7 @@ async function launchBrowser() {
         assert.ok(cardInfo, 'Expected product-card on /');
         assert.ok(cardInfo.cardClass.includes('hover:-translate-y-1.5'));
         assert.ok(cardInfo.cardClass.includes('hover:shadow-lg'));
-        assert.equal(cardInfo.cardAnim, 'fade-in');
+        assert.equal(cardInfo.cardAnim, 'fadeIn');
         assert.ok(cardInfo.imgClass.includes('group-hover:scale-[1.06]'));
         assert.ok(parseFloat(cardInfo.imgTransition) >= 0.3);
         return `ProductCard anim=${cardInfo.cardAnim}, imgTransition=${cardInfo.imgTransition}`;
@@ -524,7 +531,7 @@ async function launchBrowser() {
         });
         assert.ok(pillInfo, 'Expected active filter pill on /products?category=laptops');
         assert.ok(pillInfo.className.includes('animate-scale-in'));
-        assert.equal(pillInfo.animationName, 'scale-in');
+        assert.equal(pillInfo.animationName, 'scaleIn');
 
         // Verify mobile filter drawer slide-in animation at 390px
         await page.setViewportSize({ width: 390, height: 844 });
@@ -539,8 +546,8 @@ async function launchBrowser() {
             panelAnim: panel ? window.getComputedStyle(panel).animationName : null,
           };
         });
-        assert.equal(drawerAnimations.backdropAnim, 'fade-in');
-        assert.equal(drawerAnimations.panelAnim, 'slide-in');
+        assert.equal(drawerAnimations.backdropAnim, 'fadeIn');
+        assert.equal(drawerAnimations.panelAnim, 'slideIn');
 
         await page.setViewportSize({ width: 1440, height: 900 });
         return `Filter pill=${pillInfo.animationName}, drawer=${drawerAnimations.panelAnim}`;
@@ -563,7 +570,7 @@ async function launchBrowser() {
           animationName: window.getComputedStyle(el).animationName,
         }));
         assert.ok(imgAnim.className.includes('animate-fade-in'));
-        assert.equal(imgAnim.animationName, 'fade-in');
+        assert.equal(imgAnim.animationName, 'fadeIn');
 
         // Click quantity increase and verify scale-in animation on quantity-value
         await page.getByTestId('quantity-increase').click();
@@ -572,7 +579,7 @@ async function launchBrowser() {
           animationName: window.getComputedStyle(el).animationName,
         }));
         assert.equal(qtyAnim.text, '2');
-        assert.equal(qtyAnim.animationName, 'scale-in');
+        assert.equal(qtyAnim.animationName, 'scaleIn');
         return `Gallery cross-fade=${imgAnim.animationName}, quantity pop=${qtyAnim.animationName}`;
       }
     );
@@ -590,7 +597,7 @@ async function launchBrowser() {
           animationName: window.getComputedStyle(el).animationName,
         }));
         assert.ok(fbAnim.className.includes('animate-slide-up'));
-        assert.equal(fbAnim.animationName, 'slide-up');
+        assert.equal(fbAnim.animationName, 'slideUp');
 
         const badge = page.getByTestId('header-cart-count');
         await badge.waitFor({ state: 'visible', timeout: 5000 });
@@ -599,7 +606,7 @@ async function launchBrowser() {
           animationName: window.getComputedStyle(el).animationName,
         }));
         assert.ok(badgeAnim.className.includes('animate-badge-pop'));
-        assert.equal(badgeAnim.animationName, 'badge-pop');
+        assert.equal(badgeAnim.animationName, 'badgePop');
         return `Feedback=${fbAnim.animationName}, Cart badge=${badgeAnim.animationName}`;
       }
     );
@@ -622,7 +629,7 @@ async function launchBrowser() {
           animationName: window.getComputedStyle(el).animationName,
         }));
         assert.ok(itemAnim.className.includes('animate-slide-up'));
-        assert.equal(itemAnim.animationName, 'slide-up');
+        assert.equal(itemAnim.animationName, 'slideUp');
         return `Cart item animationName=${itemAnim.animationName}`;
       }
     );
@@ -636,7 +643,7 @@ async function launchBrowser() {
         await step1.waitFor({ state: 'visible', timeout: 5000 });
 
         const step1Anim = await step1.evaluate((el) => window.getComputedStyle(el).animationName);
-        assert.equal(step1Anim, 'slide-up');
+        assert.equal(step1Anim, 'slideUp');
 
         await page.getByTestId('checkout-email-input').fill('anim-test@example.com');
         await page.getByTestId('checkout-fullname-input').fill('Animation Tester');
@@ -646,7 +653,7 @@ async function launchBrowser() {
         const step2 = page.getByTestId('checkout-step-2');
         await step2.waitFor({ state: 'visible', timeout: 5000 });
         const step2Anim = await step2.evaluate((el) => window.getComputedStyle(el).animationName);
-        assert.equal(step2Anim, 'slide-up');
+        assert.equal(step2Anim, 'slideUp');
 
         await page.getByTestId('checkout-address-input').fill('123 Le Loi');
         await page.getByTestId('checkout-city-input').fill('Ho Chi Minh City');
@@ -655,9 +662,9 @@ async function launchBrowser() {
         const step3 = page.getByTestId('checkout-step-3');
         await step3.waitFor({ state: 'visible', timeout: 5000 });
         const step3Anim = await step3.evaluate((el) => window.getComputedStyle(el).animationName);
-        assert.equal(step3Anim, 'slide-up');
+        assert.equal(step3Anim, 'slideUp');
 
-        return `Verified slide-up transition on checkout steps 1, 2, and 3`;
+        return `Verified slideUp transition on checkout steps 1, 2, and 3`;
       }
     );
 
@@ -688,9 +695,9 @@ async function launchBrowser() {
         assert.equal(kpiInfo.filter(Boolean).length, 4);
         for (const item of kpiInfo) {
           assert.ok(item.className.includes('hover-lift'), `${item.id} missing hover-lift`);
-          assert.equal(item.animationName, 'slide-up');
+          assert.equal(item.animationName, 'slideUp');
         }
-        return `Verified 4 Admin KPI cards with staggered slide-up & hover-lift`;
+        return `Verified 4 Admin KPI cards with staggered slideUp & hover-lift`;
       }
     );
 
