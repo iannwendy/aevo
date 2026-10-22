@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../../utils/prisma');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
-
-const prisma = new PrismaClient();
 
 function computeReviewStats(reviews = []) {
   const ratings = reviews.filter((r) => typeof r.rating === 'number' && r.rating >= 1 && r.rating <= 5);
@@ -29,6 +27,7 @@ function formatProductListItem(p) {
   const stats = computeReviewStats(p.reviews || []);
   const primaryImage = p.images?.find((img) => img.isPrimary) || p.images?.[0] || null;
   const lowestVariant = p.variants?.[0] || null;
+  const totalInventory = (p.variants || []).reduce((sum, v) => sum + (v.inventory || 0), 0);
   return {
     id: p.id,
     name: p.name,
@@ -50,10 +49,44 @@ function formatProductListItem(p) {
     reviewCount: stats.reviewCount,
     ratingCount: stats.ratingCount,
     inStock: (p.variants || []).some((v) => v.inventory > 0),
+    totalInventory,
+    isActive: p.isActive,
     isNewArrival: p.isNewArrival,
     isBestSeller: p.isBestSeller,
     createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
   };
+}
+
+async function generateUniqueSlug(name, excludeProductId = null) {
+  const base =
+    String(name || 'product')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]/g, '') || 'product';
+
+  const existing = await prisma.product.findUnique({ where: { slug: base } });
+  if (!existing || existing.id === excludeProductId) {
+    return base;
+  }
+  const suffix = `${Date.now().toString(36).slice(-4)}${Math.floor(Math.random() * 100)}`;
+  return `${base}-${suffix}`;
+}
+
+async function recalculateProductMinPrice(tx, productId) {
+  const activeVariants = await tx.productVariant.findMany({
+    where: { productId, isActive: true },
+    select: { price: true },
+  });
+  const minPrice = activeVariants.length
+    ? Math.min(...activeVariants.map((v) => Number(v.price) || 0))
+    : 0;
+  await tx.product.update({
+    where: { id: productId },
+    data: { minPrice },
+  });
+  return minPrice;
 }
 
 async function listProductsHandler(req, res) {
@@ -278,6 +311,103 @@ router.get('/', listProductsHandler);
 // Search products endpoint (alias for GET /products?search=...)
 router.get('/search', listProductsHandler);
 
+// Admin: Get all products (supports active/inactive filter, search, category, pagination)
+router.get('/admin/all', authMiddleware, adminOnly, async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      category,
+      brand,
+      status = 'active', // 'active' | 'inactive' | 'all'
+    } = req.query;
+
+    const andConditions = [];
+    if (status === 'active') {
+      andConditions.push({ isActive: true });
+    } else if (status === 'inactive') {
+      andConditions.push({ isActive: false });
+    }
+
+    if (category) {
+      andConditions.push({
+        OR: [
+          { categoryId: String(category) },
+          { category: { slug: { equals: String(category).toLowerCase(), mode: 'insensitive' } } },
+        ],
+      });
+    }
+
+    if (brand) {
+      andConditions.push({
+        brand: { equals: String(brand), mode: 'insensitive' },
+      });
+    }
+
+    if (search && String(search).trim()) {
+      const q = String(search).trim();
+      andConditions.push({
+        OR: [
+          { name: { contains: q, mode: 'insensitive' } },
+          { brand: { contains: q, mode: 'insensitive' } },
+          { description: { contains: q, mode: 'insensitive' } },
+        ],
+      });
+    }
+
+    const where =
+      andConditions.length === 0
+        ? {}
+        : andConditions.length === 1
+        ? andConditions[0]
+        : { AND: andConditions };
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 20));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limitNum,
+        include: {
+          category: true,
+          variants: {
+            where: { isActive: true },
+            orderBy: { price: 'asc' },
+          },
+          images: {
+            orderBy: { position: 'asc' },
+          },
+          tags: {
+            include: { tag: true },
+          },
+          reviews: {
+            select: { rating: true },
+          },
+        },
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    res.json({
+      products: products.map(formatProductListItem),
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limitNum)),
+      },
+    });
+  } catch (error) {
+    console.error('Admin get products error:', error);
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
+});
+
 // Get available filter metadata (brands, tags, price bounds)
 router.get('/filters', async (req, res) => {
   try {
@@ -445,6 +575,83 @@ router.get('/slug/:slug', async (req, res) => {
   }
 });
 
+// ====================================================================
+// Admin: Variant & Inventory Management (declared before '/:id')
+// ====================================================================
+
+async function updateVariantInventoryOrFields(req, res) {
+  try {
+    const { variantId } = req.params;
+    const { name, sku, price, comparePrice, inventory, isActive } = req.body;
+
+    const existing = await prisma.productVariant.findUnique({
+      where: { id: variantId },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Product variant not found' });
+    }
+
+    if (inventory !== undefined && (Number.isNaN(Number(inventory)) || Number(inventory) < 0)) {
+      return res.status(400).json({ error: 'Inventory must be a non-negative number' });
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const variant = await tx.productVariant.update({
+        where: { id: variantId },
+        data: {
+          ...(name !== undefined && { name: String(name).trim() }),
+          ...(sku !== undefined && { sku: String(sku).trim() }),
+          ...(price !== undefined && { price: Number(price) }),
+          ...(comparePrice !== undefined && {
+            comparePrice: comparePrice !== null && comparePrice !== '' ? Number(comparePrice) : null,
+          }),
+          ...(inventory !== undefined && { inventory: Math.max(0, parseInt(inventory, 10) || 0) }),
+          ...(isActive !== undefined && { isActive: Boolean(isActive) }),
+        },
+      });
+
+      await recalculateProductMinPrice(tx, existing.productId);
+      return variant;
+    });
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Update variant error:', error);
+    res.status(500).json({ error: 'Failed to update variant' });
+  }
+}
+
+router.put('/variants/:variantId', authMiddleware, adminOnly, updateVariantInventoryOrFields);
+router.put('/variants/:variantId/inventory', authMiddleware, adminOnly, updateVariantInventoryOrFields);
+
+router.delete('/variants/:variantId', authMiddleware, adminOnly, async (req, res) => {
+  try {
+    const { variantId } = req.params;
+    const existing = await prisma.productVariant.findUnique({
+      where: { id: variantId },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Product variant not found' });
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const variant = await tx.productVariant.update({
+        where: { id: variantId },
+        data: { isActive: false },
+      });
+      await recalculateProductMinPrice(tx, existing.productId);
+      return variant;
+    });
+
+    res.json({ message: 'Variant removed', isActive: false, ...updated, variant: updated });
+  } catch (error) {
+    console.error('Delete variant error:', error);
+    res.status(500).json({ error: 'Failed to remove variant' });
+  }
+});
+
 // Get single product by ID
 router.get('/:id', async (req, res) => {
   try {
@@ -485,7 +692,16 @@ router.get('/:id', async (req, res) => {
 // Admin: Create product
 router.post('/', authMiddleware, adminOnly, async (req, res) => {
   try {
-    const { name, description, brand, categoryId, isNewArrival, isBestSeller, variants, images } = req.body;
+    const {
+      name,
+      description,
+      brand,
+      categoryId,
+      isNewArrival,
+      isBestSeller,
+      variants,
+      images,
+    } = req.body;
 
     if (!name || !description || !brand || !categoryId) {
       return res.status(400).json({ error: 'Name, description, brand and categoryId are required' });
@@ -495,30 +711,32 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
       ? Math.min(...variants.map((v) => Number(v.price) || 0))
       : 0;
 
-    const slugBase = name
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w-]/g, '');
+    const slug = await generateUniqueSlug(name);
 
     const product = await prisma.product.create({
       data: {
-        name,
-        slug: slugBase,
-        description,
-        brand,
+        name: String(name).trim(),
+        slug,
+        description: String(description).trim(),
+        brand: String(brand).trim(),
         categoryId,
         minPrice,
         isNewArrival: Boolean(isNewArrival),
         isBestSeller: Boolean(isBestSeller),
         variants: variants?.length
           ? {
-              create: variants.map((v) => ({
-                name: v.name,
-                sku: v.sku,
-                price: Number(v.price),
-                comparePrice: v.comparePrice != null ? Number(v.comparePrice) : null,
-                inventory: Number(v.inventory) || 0,
+              create: variants.map((v, idx) => ({
+                name: String(v.name || `Configuration ${idx + 1}`).trim(),
+                sku:
+                  v.sku && String(v.sku).trim()
+                    ? String(v.sku).trim()
+                    : `AEVO-${Date.now().toString(36).toUpperCase()}-${idx + 1}`,
+                price: Number(v.price) || 0,
+                comparePrice:
+                  v.comparePrice != null && v.comparePrice !== ''
+                    ? Number(v.comparePrice)
+                    : null,
+                inventory: Math.max(0, parseInt(v.inventory, 10) || 0),
               })),
             }
           : undefined,
@@ -526,16 +744,22 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
           ? {
               create: images.map((img, idx) => ({
                 url: typeof img === 'string' ? img : img.url,
-                isPrimary: idx === 0,
-                position: idx,
+                isPrimary:
+                  typeof img === 'object' && img.isPrimary !== undefined
+                    ? Boolean(img.isPrimary)
+                    : idx === 0,
+                position:
+                  typeof img === 'object' && img.position !== undefined
+                    ? Number(img.position)
+                    : idx,
               })),
             }
           : undefined,
       },
       include: {
         category: true,
-        variants: true,
-        images: true,
+        variants: { where: { isActive: true }, orderBy: { price: 'asc' } },
+        images: { orderBy: { position: 'asc' } },
       },
     });
 
@@ -546,35 +770,139 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
   }
 });
 
-// Admin: Update product
+// Admin: Update product (including optional variants & images sync)
 router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, brand, categoryId, isNewArrival, isBestSeller } = req.body;
+    const {
+      name,
+      description,
+      brand,
+      categoryId,
+      isNewArrival,
+      isBestSeller,
+      isActive,
+      variants,
+      images,
+    } = req.body;
+
+    const existingProduct = await prisma.product.findUnique({ where: { id } });
+    if (!existingProduct) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
 
     const data = {};
     if (name !== undefined) {
-      data.name = name;
-      data.slug = name
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w-]/g, '');
+      data.name = String(name).trim();
+      if (data.name !== existingProduct.name) {
+        data.slug = await generateUniqueSlug(data.name, id);
+      }
     }
-    if (description !== undefined) data.description = description;
-    if (brand !== undefined) data.brand = brand;
+    if (description !== undefined) data.description = String(description).trim();
+    if (brand !== undefined) data.brand = String(brand).trim();
     if (categoryId !== undefined) data.categoryId = categoryId;
     if (isNewArrival !== undefined) data.isNewArrival = Boolean(isNewArrival);
     if (isBestSeller !== undefined) data.isBestSeller = Boolean(isBestSeller);
+    if (isActive !== undefined) data.isActive = Boolean(isActive);
 
-    const product = await prisma.product.update({
-      where: { id },
-      data,
-      include: {
-        category: true,
-        variants: { where: { isActive: true }, orderBy: { price: 'asc' } },
-        images: { orderBy: { position: 'asc' } },
-      },
+    const product = await prisma.$transaction(async (tx) => {
+      await tx.product.update({
+        where: { id },
+        data,
+      });
+
+      // Sync images if provided
+      if (Array.isArray(images)) {
+        await tx.productImage.deleteMany({ where: { productId: id } });
+        if (images.length > 0) {
+          await tx.productImage.createMany({
+            data: images.map((img, idx) => ({
+              productId: id,
+              url: typeof img === 'string' ? img : img.url,
+              isPrimary:
+                typeof img === 'object' && img.isPrimary !== undefined
+                  ? Boolean(img.isPrimary)
+                  : idx === 0,
+              position:
+                typeof img === 'object' && img.position !== undefined
+                  ? Number(img.position)
+                  : idx,
+            })),
+          });
+        }
+      }
+
+      // Sync variants if provided
+      if (Array.isArray(variants)) {
+        const currentVariants = await tx.productVariant.findMany({
+          where: { productId: id, isActive: true },
+        });
+        const incomingIds = new Set(variants.map((v) => v.id).filter(Boolean));
+
+        // Soft-deactivate removed variants
+        for (const cv of currentVariants) {
+          if (!incomingIds.has(cv.id)) {
+            await tx.productVariant.update({
+              where: { id: cv.id },
+              data: { isActive: false },
+            });
+          }
+        }
+
+        // Update existing or create new variants
+        for (let idx = 0; idx < variants.length; idx++) {
+          const v = variants[idx];
+          if (v.id) {
+            await tx.productVariant.update({
+              where: { id: v.id },
+              data: {
+                ...(v.name !== undefined && { name: String(v.name).trim() }),
+                ...(v.sku !== undefined && { sku: String(v.sku).trim() }),
+                ...(v.price !== undefined && { price: Number(v.price) || 0 }),
+                ...(v.comparePrice !== undefined && {
+                  comparePrice:
+                    v.comparePrice != null && v.comparePrice !== ''
+                      ? Number(v.comparePrice)
+                      : null,
+                }),
+                ...(v.inventory !== undefined && {
+                  inventory: Math.max(0, parseInt(v.inventory, 10) || 0),
+                }),
+                isActive: v.isActive !== undefined ? Boolean(v.isActive) : true,
+              },
+            });
+          } else {
+            await tx.productVariant.create({
+              data: {
+                productId: id,
+                name: String(v.name || `Configuration ${idx + 1}`).trim(),
+                sku:
+                  v.sku && String(v.sku).trim()
+                    ? String(v.sku).trim()
+                    : `AEVO-${Date.now().toString(36).toUpperCase()}-${idx + 1}`,
+                price: Number(v.price) || 0,
+                comparePrice:
+                  v.comparePrice != null && v.comparePrice !== ''
+                    ? Number(v.comparePrice)
+                    : null,
+                inventory: Math.max(0, parseInt(v.inventory, 10) || 0),
+                isActive: true,
+              },
+            });
+          }
+        }
+
+        await recalculateProductMinPrice(tx, id);
+      }
+
+      return tx.product.findUnique({
+        where: { id },
+        include: {
+          category: true,
+          variants: { where: { isActive: true }, orderBy: { price: 'asc' } },
+          images: { orderBy: { position: 'asc' } },
+        },
+      });
     });
 
     res.json(product);
@@ -584,18 +912,101 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
   }
 });
 
-// Admin: Delete product (soft delete)
+// Admin: Add a variant to a product
+router.post('/:id/variants', authMiddleware, adminOnly, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, sku, price, comparePrice, inventory = 0 } = req.body;
+
+    if (!name || price === undefined) {
+      return res.status(400).json({ error: 'Variant name and price are required' });
+    }
+
+    const product = await prisma.product.findUnique({ where: { id } });
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    const created = await prisma.$transaction(async (tx) => {
+      const variant = await tx.productVariant.create({
+        data: {
+          productId: id,
+          name: String(name).trim(),
+          sku:
+            sku && String(sku).trim()
+              ? String(sku).trim()
+              : `AEVO-${Date.now().toString(36).toUpperCase()}`,
+          price: Number(price) || 0,
+          comparePrice:
+            comparePrice != null && comparePrice !== '' ? Number(comparePrice) : null,
+          inventory: Math.max(0, parseInt(inventory, 10) || 0),
+          isActive: true,
+        },
+      });
+
+      await recalculateProductMinPrice(tx, id);
+      return variant;
+    });
+
+    res.status(201).json(created);
+  } catch (error) {
+    console.error('Add variant error:', error);
+    res.status(500).json({ error: 'Failed to add variant' });
+  }
+});
+
+// Admin: Update a variant on a product
+router.put('/:id/variants/:variantId', authMiddleware, adminOnly, updateVariantInventoryOrFields);
+router.put('/:id/variants/:variantId/inventory', authMiddleware, adminOnly, updateVariantInventoryOrFields);
+
+// Admin: Remove a variant from a product
+router.delete('/:id/variants/:variantId', authMiddleware, adminOnly, async (req, res) => {
+  try {
+    const { id, variantId } = req.params;
+    const existing = await prisma.productVariant.findFirst({
+      where: { id: variantId, productId: id },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Product variant not found' });
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const variant = await tx.productVariant.update({
+        where: { id: variantId },
+        data: { isActive: false },
+      });
+      await recalculateProductMinPrice(tx, id);
+      return variant;
+    });
+
+    res.json({ message: 'Variant removed', isActive: false, ...updated, variant: updated });
+  } catch (error) {
+    console.error('Delete product variant error:', error);
+    res.status(500).json({ error: 'Failed to remove variant' });
+  }
+});
+
+// Admin: Delete product (soft delete -> isActive = false)
 router.delete('/:id', authMiddleware, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
 
-    await prisma.product.update({
+    const updated = await prisma.product.update({
       where: { id },
       data: { isActive: false },
     });
 
-    res.json({ message: 'Product deleted' });
+    res.json({
+      message: 'Product deleted',
+      id: updated.id,
+      isActive: updated.isActive,
+      product: updated,
+    });
   } catch (error) {
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Product not found' });
+    }
     res.status(500).json({ error: 'Failed to delete product' });
   }
 });

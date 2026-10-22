@@ -269,6 +269,179 @@ async function registerCustomer(tag = 'phase4') {
     return `revenue=${revenue}, profit=${profit} (20% margin)`;
   });
 
+  // =========================================================================
+  // Task 4.3: Admin - Product Management (ADMIN-01 -> ADMIN-06)
+  // =========================================================================
+  console.log('\n=== Task 4.3: Admin - Product Management ===');
+
+  const catRes = await call('/api/categories');
+  assert.equal(catRes.status, 200);
+  const laptopsCategory =
+    catRes.body.find((c) => c.slug === 'laptops') || catRes.body[0];
+  assert.ok(laptopsCategory, 'Expected a valid category');
+
+  let createdProductId = null;
+  let createdVariantId = null;
+
+  await test('ADMIN-01', 'Admin can POST /api/products to create a product (non-admin rejected)', async () => {
+    const nonAdmin = await call('/api/products', {
+      method: 'POST',
+      token: customer.token,
+      body: {
+        name: 'Forbidden Product',
+        description: 'Should fail',
+        brand: 'AEVO',
+        categoryId: laptopsCategory.id,
+      },
+    });
+    assert.equal(nonAdmin.status, 403);
+
+    const res = await call('/api/products', {
+      method: 'POST',
+      token: admin.token,
+      body: {
+        name: `AEVO Pro Workstation ${Date.now()}`,
+        description:
+          'Line 1: Precision-milled CNC aluminum chassis.\nLine 2: Dual-fan vapor chamber thermal system.\nLine 3: Calibrated 4K OLED reference display.\nLine 4: Thunderbolt 4 connectivity.\nLine 5: Built for studio engineers.',
+        brand: 'AEVO',
+        categoryId: laptopsCategory.id,
+        isNewArrival: true,
+        isBestSeller: false,
+      },
+    });
+    assert.equal(res.status, 201, `Create product failed: ${JSON.stringify(res.body)}`);
+    assert.ok(res.body.id);
+    assert.equal(res.body.isActive, true);
+    assert.equal(res.body.brand, 'AEVO');
+
+    // Clean up basic product right after verifying
+    await call(`/api/products/${res.body.id}`, { method: 'DELETE', token: admin.token });
+    return `id=${res.body.id}, slug=${res.body.slug}`;
+  });
+
+  await test('ADMIN-02', 'Admin can create product with variants array (>= 2 variants with independent inventory)', async () => {
+    const skuPrefix = `AEVO-P4-${Date.now().toString(36).toUpperCase()}`;
+    const res = await call('/api/products', {
+      method: 'POST',
+      token: admin.token,
+      body: {
+        name: `AEVO Studio Book ${Date.now()}`,
+        description:
+          'Line 1: Workstation class mobile compute.\nLine 2: ECC-ready high bandwidth memory.\nLine 3: Gen5 NVMe RAID storage.\nLine 4: Reference color accuracy.\nLine 5: Whisper-quiet acoustics.',
+        brand: 'ASUS',
+        categoryId: laptopsCategory.id,
+        isNewArrival: true,
+        variants: [
+          {
+            name: '32GB RAM / 1TB NVMe SSD',
+            sku: `${skuPrefix}-32-1T`,
+            price: 45990000,
+            comparePrice: 48990000,
+            inventory: 15,
+          },
+          {
+            name: '64GB RAM / 2TB NVMe SSD',
+            sku: `${skuPrefix}-64-2T`,
+            price: 56990000,
+            comparePrice: 59990000,
+            inventory: 8,
+          },
+        ],
+        images: [
+          'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=1000',
+          'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=1000',
+          'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=1000',
+        ],
+      },
+    });
+    assert.equal(res.status, 201);
+    assert.equal(res.body.variants.length, 2);
+    assert.equal(res.body.minPrice, 45990000);
+    createdProductId = res.body.id;
+    createdVariantId = res.body.variants[0].id;
+    return `variants=${res.body.variants.length}, minPrice=${res.body.minPrice}`;
+  });
+
+  await test('ADMIN-03', 'Admin creates product with >= 3 images ordered by position with primary image flagged', async () => {
+    const getRes = await call(`/api/products/${createdProductId}`);
+    assert.equal(getRes.status, 200);
+    assert.ok(getRes.body.images.length >= 3, 'Expected at least 3 images');
+    assert.equal(getRes.body.images[0].isPrimary, true);
+    assert.equal(getRes.body.images[0].position, 0);
+    assert.equal(getRes.body.images[1].position, 1);
+    assert.equal(getRes.body.images[2].position, 2);
+    return `images=${getRes.body.images.length}, primary=${getRes.body.images[0].isPrimary}`;
+  });
+
+  await test('ADMIN-04', 'Admin can PUT /api/products/:id to update product info and add/remove variants', async () => {
+    const updateRes = await call(`/api/products/${createdProductId}`, {
+      method: 'PUT',
+      token: admin.token,
+      body: {
+        name: `AEVO Studio Book Updated ${Date.now()}`,
+        brand: 'LENOVO',
+        isBestSeller: true,
+      },
+    });
+    assert.equal(updateRes.status, 200);
+    assert.equal(updateRes.body.brand, 'LENOVO');
+    assert.equal(updateRes.body.isBestSeller, true);
+
+    // Add a 3rd variant via POST /api/products/:id/variants
+    const addVarRes = await call(`/api/products/${createdProductId}/variants`, {
+      method: 'POST',
+      token: admin.token,
+      body: {
+        name: '128GB RAM / 4TB NVMe SSD',
+        sku: `AEVO-128-${Date.now().toString(36).toUpperCase()}`,
+        price: 72990000,
+        inventory: 4,
+      },
+    });
+    assert.equal(addVarRes.status, 201);
+
+    // Remove the 3rd variant via DELETE /api/products/:id/variants/:variantId
+    const delVarRes = await call(
+      `/api/products/${createdProductId}/variants/${addVarRes.body.id}`,
+      {
+        method: 'DELETE',
+        token: admin.token,
+      }
+    );
+    assert.equal(delVarRes.status, 200);
+    assert.equal(delVarRes.body.isActive, false);
+    return `brand=${updateRes.body.brand}, added & removed variant=${addVarRes.body.id}`;
+  });
+
+  await test('ADMIN-05', 'Admin can update variant inventory via PUT /api/products/variants/:variantId/inventory', async () => {
+    const invRes = await call(`/api/products/variants/${createdVariantId}/inventory`, {
+      method: 'PUT',
+      token: admin.token,
+      body: { inventory: 42 },
+    });
+    assert.equal(invRes.status, 200);
+    assert.equal(invRes.body.inventory, 42);
+
+    const checkProd = await call(`/api/products/${createdProductId}`);
+    const updatedVariant = checkProd.body.variants.find((v) => v.id === createdVariantId);
+    assert.equal(updatedVariant.inventory, 42);
+    return `variantId=${createdVariantId}, inventory=${updatedVariant.inventory}`;
+  });
+
+  await test('ADMIN-06', 'Admin can DELETE /api/products/:id to soft-delete product (isActive = false)', async () => {
+    const delRes = await call(`/api/products/${createdProductId}`, {
+      method: 'DELETE',
+      token: admin.token,
+    });
+    assert.equal(delRes.status, 200);
+    assert.equal(delRes.body.isActive, false);
+
+    // Public GET /api/products/:id should now return 404
+    const publicGet = await call(`/api/products/${createdProductId}`);
+    assert.equal(publicGet.status, 404);
+    return `id=${createdProductId}, isActive=${delRes.body.isActive}`;
+  });
+
   await prisma.$disconnect();
 
   const passed = results.filter((r) => r.ok).length;

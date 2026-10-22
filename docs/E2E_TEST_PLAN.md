@@ -641,13 +641,13 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 4.3: Admin - Product Management
 
 ### Checklist
-- [ ] Admin: CRUD products
-- [ ] Create với variants
-- [ ] Create với images
-- [ ] Update product info
-- [ ] Add/remove variants
-- [ ] Update inventory
-- [ ] Delete (soft delete - isActive=false)
+- [x] Admin: CRUD products
+- [x] Create với variants
+- [x] Create với images
+- [x] Update product info
+- [x] Add/remove variants
+- [x] Update inventory
+- [x] Delete (soft delete - isActive=false)
 
 ### Test Cases
 
