@@ -11,8 +11,10 @@ const routes = require('./routes');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { passport } = require('./config/passport');
 const { isAllowedOrigin } = require('./config/origins');
+const { sanitizeRequest } = require('./utils/security');
 
 const app = express();
+app.disable('x-powered-by');
 const httpServer = createServer(app);
 
 // Socket.IO setup for realtime reviews
@@ -21,6 +23,7 @@ const io = new Server(httpServer, {
     origin: isAllowedOrigin,
     methods: ['GET', 'POST'],
   },
+  maxHttpBufferSize: 64 * 1024, // 64KB max socket payload
 });
 
 // Make io available globally
@@ -29,6 +32,8 @@ app.set('io', io);
 // Middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  frameguard: { action: 'deny' },
 }));
 app.use(cors({
   // Only the allowlisted client origins get an Access-Control-Allow-Origin
@@ -37,9 +42,10 @@ app.use(cors({
   credentials: true,
 }));
 app.use(morgan('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: '100kb', parameterLimit: 100 }));
 app.use(cookieParser());
+app.use(sanitizeRequest);
 
 // Passport is mounted for the social login routes. The strategies themselves
 // only register when their credentials are present.
@@ -60,14 +66,20 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // Socket.IO connection handling
+const SAFE_ROOM_ID = /^[\w-]{1,64}$/;
+const MAX_ROOMS_PER_SOCKET = 25;
+
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);
 
   socket.on('join-product', (productId) => {
+    if (typeof productId !== 'string' || !SAFE_ROOM_ID.test(productId)) return;
+    if (socket.rooms.size >= MAX_ROOMS_PER_SOCKET) return;
     socket.join(`product-${productId}`);
   });
 
   socket.on('leave-product', (productId) => {
+    if (typeof productId !== 'string' || !SAFE_ROOM_ID.test(productId)) return;
     socket.leave(`product-${productId}`);
   });
 

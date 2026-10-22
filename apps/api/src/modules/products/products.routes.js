@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const prisma = require('../../utils/prisma');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
+const { isSafeImageUrl } = require('../../utils/security');
 
 function computeReviewStats(reviews = []) {
   const ratings = reviews.filter((r) => typeof r.rating === 'number' && r.rating >= 1 && r.rating <= 5);
@@ -581,19 +582,23 @@ router.get('/slug/:slug', async (req, res) => {
 
 async function updateVariantInventoryOrFields(req, res) {
   try {
-    const { variantId } = req.params;
+    const { id: productIdParam, variantId } = req.params;
     const { name, sku, price, comparePrice, inventory, isActive } = req.body;
 
     const existing = await prisma.productVariant.findUnique({
       where: { id: variantId },
     });
 
-    if (!existing) {
+    if (!existing || (productIdParam && existing.productId !== productIdParam)) {
       return res.status(404).json({ error: 'Product variant not found' });
     }
 
-    if (inventory !== undefined && (Number.isNaN(Number(inventory)) || Number(inventory) < 0)) {
+    if (inventory !== undefined && (!Number.isFinite(Number(inventory)) || Number(inventory) < 0)) {
       return res.status(400).json({ error: 'Inventory must be a non-negative number' });
+    }
+
+    if (price !== undefined && (!Number.isFinite(Number(price)) || Number(price) < 0)) {
+      return res.status(400).json({ error: 'Variant price must be a non-negative number' });
     }
 
     const updated = await prisma.$transaction(async (tx) => {
@@ -707,6 +712,24 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
       return res.status(400).json({ error: 'Name, description, brand and categoryId are required' });
     }
 
+    if (Array.isArray(variants)) {
+      for (const v of variants) {
+        const vp = Number(v?.price);
+        if (!Number.isFinite(vp) || vp < 0) {
+          return res.status(400).json({ error: 'Variant price must be a non-negative number' });
+        }
+      }
+    }
+
+    if (Array.isArray(images)) {
+      for (const img of images) {
+        const rawUrl = typeof img === 'string' ? img : img?.url;
+        if (!isSafeImageUrl(rawUrl)) {
+          return res.status(400).json({ error: 'Invalid or unsafe image URL' });
+        }
+      }
+    }
+
     const minPrice = variants?.length
       ? Math.min(...variants.map((v) => Number(v.price) || 0))
       : 0;
@@ -791,6 +814,23 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
+    if (Array.isArray(variants)) {
+      for (const v of variants) {
+        if (v?.price !== undefined && (!Number.isFinite(Number(v.price)) || Number(v.price) < 0)) {
+          return res.status(400).json({ error: 'Variant price must be a non-negative number' });
+        }
+      }
+    }
+
+    if (Array.isArray(images)) {
+      for (const img of images) {
+        const rawUrl = typeof img === 'string' ? img : img?.url;
+        if (!isSafeImageUrl(rawUrl)) {
+          return res.status(400).json({ error: 'Invalid or unsafe image URL' });
+        }
+      }
+    }
+
     const data = {};
     if (name !== undefined) {
       data.name = String(name).trim();
@@ -837,6 +877,7 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
         const currentVariants = await tx.productVariant.findMany({
           where: { productId: id, isActive: true },
         });
+        const ownedVariantIds = new Set(currentVariants.map((cv) => cv.id));
         const incomingIds = new Set(variants.map((v) => v.id).filter(Boolean));
 
         // Soft-deactivate removed variants
@@ -849,10 +890,11 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
           }
         }
 
-        // Update existing or create new variants
+        // Update existing (only if owned by this product) or create new variants
         for (let idx = 0; idx < variants.length; idx++) {
           const v = variants[idx];
           if (v.id) {
+            if (!ownedVariantIds.has(v.id)) continue;
             await tx.productVariant.update({
               where: { id: v.id },
               data: {
@@ -920,6 +962,10 @@ router.post('/:id/variants', authMiddleware, adminOnly, async (req, res) => {
 
     if (!name || price === undefined) {
       return res.status(400).json({ error: 'Variant name and price are required' });
+    }
+
+    if (!Number.isFinite(Number(price)) || Number(price) < 0) {
+      return res.status(400).json({ error: 'Variant price must be a non-negative number' });
     }
 
     const product = await prisma.product.findUnique({ where: { id } });

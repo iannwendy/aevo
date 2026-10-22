@@ -34,17 +34,19 @@ function readToken(req) {
  */
 async function resolveUser(req) {
   const token = readToken(req);
-  if (!token) return null;
+  if (!token || typeof token !== 'string' || token.length > 2048) return null;
 
   let decoded;
   try {
-    decoded = jwt.verify(token, JWT_SECRET);
+    decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
   } catch (error) {
     return null;
   }
 
-  // A reset token must never authenticate a session.
-  if (decoded.purpose) return null;
+  // A reset token must never authenticate a session, and id must be a valid string.
+  if (!decoded || typeof decoded !== 'object' || decoded.purpose || typeof decoded.id !== 'string') {
+    return null;
+  }
 
   const user = await prisma.user.findUnique({
     where: { id: decoded.id },
@@ -93,11 +95,12 @@ const signSessionToken = (user) =>
   jwt.sign(
     { id: user.id, email: user.email, role: user.role },
     JWT_SECRET,
-    { expiresIn: SESSION_TTL }
+    { algorithm: 'HS256', expiresIn: SESSION_TTL }
   );
 
 const signResetToken = (user) =>
   jwt.sign({ id: user.id, purpose: 'password_reset' }, RESET_TOKEN_SECRET, {
+    algorithm: 'HS256',
     expiresIn: '1h',
   });
 

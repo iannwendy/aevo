@@ -76,11 +76,16 @@ router.post('/', optionalAuth, async (req, res) => {
       return res.status(400).json({ error: 'Shipping address is required' });
     }
 
-    if (!req.user && !shippingAddress.email) {
-      return res.status(400).json({ error: 'Email is required for guest checkout' });
+    if (!req.user) {
+      const rawGuestEmail = String(shippingAddress.email || '').trim();
+      if (!rawGuestEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawGuestEmail)) {
+        return res.status(400).json({ error: 'Valid email is required for guest checkout' });
+      }
     }
 
-    const sessionId = req.cookies?.sessionId || req.body?.sessionId;
+    const sessionId = typeof (req.cookies?.sessionId || req.body?.sessionId) === 'string'
+      ? (req.cookies?.sessionId || req.body?.sessionId)
+      : null;
 
     // Resolve cart (user cart first, then guest session cart)
     let cart = null;
@@ -113,18 +118,31 @@ router.post('/', optionalAuth, async (req, res) => {
     // Build source items from cart or fallback direct items array
     let sourceItems = cart?.items || [];
     if (sourceItems.length === 0 && Array.isArray(directItems) && directItems.length > 0) {
-      const hydrated = [];
+      const mergedMap = new Map();
       for (const di of directItems) {
+        if (!di || typeof di.variantId !== 'string' || !di.variantId.trim()) {
+          return res.status(400).json({ error: 'Valid variantId is required for each item' });
+        }
+        const rawQty = di.quantity === undefined ? 1 : Number(di.quantity);
+        if (!Number.isInteger(rawQty) || rawQty < 1 || rawQty > 1000) {
+          return res.status(400).json({ error: 'Item quantity must be a positive integer' });
+        }
+        const vId = di.variantId.trim();
+        mergedMap.set(vId, (mergedMap.get(vId) || 0) + rawQty);
+      }
+
+      const hydrated = [];
+      for (const [vId, totalQty] of mergedMap.entries()) {
         const variant = await prisma.productVariant.findUnique({
-          where: { id: di.variantId },
+          where: { id: vId },
           include: { product: true },
         });
-        if (!variant) {
+        if (!variant || !variant.isActive || !variant.product?.isActive) {
           return res.status(404).json({ error: 'Product variant not found' });
         }
         hydrated.push({
           variantId: variant.id,
-          quantity: Number(di.quantity) || 1,
+          quantity: totalQty,
           variant,
         });
       }
@@ -141,9 +159,13 @@ router.post('/', optionalAuth, async (req, res) => {
 
     for (const item of sourceItems) {
       const variant = item.variant;
-      const qty = Number(item.quantity) || 1;
+      const qty = Number(item.quantity);
 
-      if (!variant || variant.inventory < qty) {
+      if (!Number.isInteger(qty) || qty < 1) {
+        return res.status(400).json({ error: 'Item quantity must be a positive integer' });
+      }
+
+      if (!variant || !variant.isActive || !variant.product?.isActive || variant.inventory < qty) {
         return res.status(400).json({
           error: `Insufficient inventory for ${variant?.product?.name || 'product'}`,
         });
@@ -264,6 +286,9 @@ router.post('/', optionalAuth, async (req, res) => {
         let guestUser = await tx.user.findUnique({
           where: { email: normalizedGuestEmail },
         });
+        if (guestUser && !guestUser.isActive) {
+          throw Object.assign(new Error('Account has been banned'), { status: 403 });
+        }
         if (!guestUser) {
           guestUser = await tx.user.create({
             data: {
@@ -456,6 +481,17 @@ router.get('/number/:orderNumber', optionalAuth, async (req, res) => {
       return res.status(404).json({ error: 'Order not found' });
     }
 
+    // If a non-admin logged-in user attempts to inspect a different user's non-guest order, reject
+    if (
+      req.user &&
+      req.user.role !== 'ADMIN' &&
+      order.userId &&
+      order.userId !== req.user.id &&
+      !order.guestEmail
+    ) {
+      return res.status(403).json({ error: 'Not authorized to view this order' });
+    }
+
     res.json({
       ...order,
       loyaltyDiscount: (order.usedLoyaltyPoints || 0) * POINT_VALUE,
@@ -630,18 +666,112 @@ router.put('/:id/status', authMiddleware, adminOnly, async (req, res) => {
       return res.status(400).json({ error: 'Invalid order status' });
     }
 
-    const order = await prisma.order.update({
+    const existingOrder = await prisma.order.findUnique({
       where: { id },
-      data: {
-        status,
-        statusHistory: {
-          create: {
-            status,
-            note: note || `Status changed to ${status}`,
+      include: { items: true },
+    });
+
+    if (!existingOrder) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (existingOrder.status === 'CANCELLED' && status !== 'CANCELLED') {
+      return res.status(400).json({ error: 'Cannot change status of a cancelled order' });
+    }
+
+    const order = await prisma.$transaction(async (tx) => {
+      // If transitioning to CANCELLED for the first time, restore stock, discount usage & loyalty points
+      if (status === 'CANCELLED' && existingOrder.status !== 'CANCELLED') {
+        // 1. Restore variant inventory
+        for (const item of existingOrder.items || []) {
+          if (item.variantId && item.quantity > 0) {
+            await tx.productVariant.updateMany({
+              where: { id: item.variantId },
+              data: { inventory: { increment: item.quantity } },
+            });
+          }
+        }
+
+        // 2. Release discount usage if a coupon was applied
+        if (existingOrder.discountCodeId) {
+          await tx.discount.updateMany({
+            where: { id: existingOrder.discountCodeId, usedCount: { gt: 0 } },
+            data: { usedCount: { decrement: 1 } },
+          });
+          await tx.discountUsage.deleteMany({
+            where: { orderId: existingOrder.id },
+          });
+        }
+
+        // 3. Reverse loyalty points (refund redeemed points & claw back earned points)
+        if (existingOrder.userId) {
+          const orderTxns = await tx.loyaltyTransaction.findMany({
+            where: { orderId: existingOrder.id, userId: existingOrder.userId },
+          });
+          const earnedOnOrder = orderTxns
+            .filter((t) => t.type === 'earn' && t.amount > 0)
+            .reduce((sum, t) => sum + t.amount, 0);
+          const redeemedOnOrder = existingOrder.usedLoyaltyPoints || 0;
+          const netDelta = redeemedOnOrder - earnedOnOrder;
+
+          if (netDelta !== 0) {
+            const currentUser = await tx.user.findUnique({
+              where: { id: existingOrder.userId },
+              select: { loyaltyPoints: true },
+            });
+            if (currentUser) {
+              const updatedPoints = Math.max(0, (currentUser.loyaltyPoints || 0) + netDelta);
+              await tx.user.update({
+                where: { id: existingOrder.userId },
+                data: { loyaltyPoints: updatedPoints },
+              });
+            }
+          }
+
+          if (redeemedOnOrder > 0) {
+            await tx.loyaltyTransaction.create({
+              data: {
+                userId: existingOrder.userId,
+                orderId: existingOrder.id,
+                amount: redeemedOnOrder,
+                type: 'refund',
+                description: `Refunded ${redeemedOnOrder} redeemed points from cancelled order ${existingOrder.orderNumber}`,
+              },
+            });
+          }
+
+          if (earnedOnOrder > 0) {
+            await tx.loyaltyTransaction.create({
+              data: {
+                userId: existingOrder.userId,
+                orderId: existingOrder.id,
+                amount: -earnedOnOrder,
+                type: 'reversal',
+                description: `Reversed ${earnedOnOrder} earned points from cancelled order ${existingOrder.orderNumber}`,
+              },
+            });
+          }
+        }
+      }
+
+      const cleanNote =
+        typeof note === 'string' && note.trim()
+          ? note.trim().slice(0, 500)
+          : `Status changed to ${status}`;
+
+      return tx.order.update({
+        where: { id },
+        data: {
+          status,
+          statusHistory: {
+            create: {
+              status,
+              note: cleanNote,
+            },
           },
         },
-      },
-      include: ORDER_DETAIL_INCLUDE,
+        include: ORDER_DETAIL_INCLUDE,
+      });
     });
 
     res.json(order);
@@ -649,6 +779,7 @@ router.put('/:id/status', authMiddleware, adminOnly, async (req, res) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ error: 'Order not found' });
     }
+    console.error('Update order status error:', error);
     res.status(500).json({ error: 'Failed to update order status' });
   }
 });

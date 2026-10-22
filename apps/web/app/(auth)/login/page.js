@@ -21,11 +21,19 @@ import SettingsMenu from '@/components/SettingsMenu';
  *   failure returns here as /login?error=oauth_failed
  */
 
-// Only allow same-site relative targets from ?next (no open redirect).
+// Only allow same-site relative targets from ?next (no open redirect or backslash tricks).
 function safeNext(value) {
-  return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//')
-    ? value
-    : '/account/profile';
+  if (typeof value !== 'string') return '/account/profile';
+  const trimmed = value.trim();
+  if (
+    !trimmed.startsWith('/') ||
+    trimmed.startsWith('//') ||
+    trimmed.includes('\\') ||
+    /[\u0000-\u001F]/.test(trimmed)
+  ) {
+    return '/account/profile';
+  }
+  return trimmed;
 }
 
 const OAUTH_ERROR_COPY = {

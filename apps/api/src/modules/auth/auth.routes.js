@@ -52,11 +52,17 @@ function publicUser(user) {
 // ---------------------------------------------------------------- Register
 router.post(
   '/register',
-  rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 'Too many registration attempts' }),
+  rateLimit({ windowMs: 15 * 60 * 1000, max: 80, message: 'Too many registration attempts' }),
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    message: 'Too many registration attempts for this email',
+    keyGenerator: (req) => String(req.body?.email || '').toLowerCase(),
+  }),
   [
-    body('email').isEmail().normalizeEmail(),
-    body('password').isLength({ min: 6, max: PASSWORD_MAX }),
-    body('fullName').trim().notEmpty(),
+    body('email').isString().isEmail().normalizeEmail(),
+    body('password').isString().isLength({ min: 6, max: PASSWORD_MAX }),
+    body('fullName').isString().trim().isLength({ min: 1, max: 120 }),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -75,18 +81,23 @@ router.post(
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
+      const cleanAddress = typeof address === 'string' && address.trim() ? address.trim().slice(0, 300) : null;
+      const cleanPhone = typeof phone === 'string' ? phone.trim().slice(0, 30) : '';
 
       const user = await prisma.user.create({
         data: {
           email,
           password: hashedPassword,
           fullName,
-          addresses: address
+          role: 'CUSTOMER',
+          loyaltyPoints: 0,
+          isActive: true,
+          addresses: cleanAddress
             ? {
                 create: {
                   fullName,
-                  phone: phone || '',
-                  address,
+                  phone: cleanPhone,
+                  address: cleanAddress,
                   city: 'Ho Chi Minh City',
                   isDefault: true,
                 },
@@ -116,7 +127,7 @@ router.post(
   // Per-IP limit plus a per-account limit, so one attacker cannot lock a
   // victim out by burning their budget from a single address, and one address
   // cannot spread guesses across many accounts within the IP budget.
-  rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 'Too many login attempts' }),
+  rateLimit({ windowMs: 15 * 60 * 1000, max: 80, message: 'Too many login attempts' }),
   rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 10,
@@ -124,8 +135,8 @@ router.post(
     keyGenerator: (req) => String(req.body?.email || '').toLowerCase(),
   }),
   [
-    body('email').isEmail().normalizeEmail(),
-    body('password').notEmpty(),
+    body('email').isString().isEmail().normalizeEmail(),
+    body('password').isString().notEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -307,8 +318,14 @@ router.post(
     message: 'Too many reset requests for this address',
     keyGenerator: (req) => String(req.body?.email || '').toLowerCase(),
   }),
-  [body('email').isEmail().normalizeEmail()],
+  [body('email').isString().isEmail().normalizeEmail()],
   async (req, res) => {
+    const errors = validationResult(req);
+    const generic = { message: 'If email exists, reset link will be sent' };
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
     const { email } = req.body;
 
     try {
@@ -316,9 +333,7 @@ router.post(
 
       // The response is identical whether or not the address exists, so the
       // endpoint cannot be used to discover registered accounts.
-      const generic = { message: 'If email exists, reset link will be sent' };
-
-      if (!user) return res.json(generic);
+      if (!user || !user.isActive) return res.json(generic);
 
       const token = signResetToken(user);
 
@@ -354,8 +369,8 @@ router.post(
   '/reset-password',
   rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: 'Too many reset attempts' }),
   [
-    body('token').notEmpty(),
-    body('newPassword').isLength({ min: 6, max: PASSWORD_MAX }),
+    body('token').isString().notEmpty(),
+    body('newPassword').isString().isLength({ min: 6, max: PASSWORD_MAX }),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -366,8 +381,8 @@ router.post(
     const { token, newPassword } = req.body;
 
     try {
-      const decoded = jwt.verify(token, RESET_TOKEN_SECRET);
-      if (decoded.purpose !== 'password_reset') {
+      const decoded = jwt.verify(token, RESET_TOKEN_SECRET, { algorithms: ['HS256'] });
+      if (!decoded || decoded.purpose !== 'password_reset' || typeof decoded.id !== 'string') {
         return res.status(400).json({ error: 'Invalid token' });
       }
 
@@ -396,8 +411,8 @@ router.post(
         data: { password: hashedPassword },
       });
 
-      await prisma.passwordResetToken.update({
-        where: { id: record.id },
+      await prisma.passwordResetToken.updateMany({
+        where: { userId: decoded.id, usedAt: null },
         data: { usedAt: new Date() },
       });
 

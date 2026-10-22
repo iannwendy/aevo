@@ -804,12 +804,12 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 5.2: Security & Validation
 
 ### Checklist
-- [ ] JWT token validation
-- [ ] Role-based access (admin vs customer)
-- [ ] Input validation (register, checkout)
-- [ ] SQL injection prevention (Prisma handles)
-- [ ] XSS prevention (React handles)
-- [ ] Password not returned in responses
+- [x] JWT token validation
+- [x] Role-based access (admin vs customer)
+- [x] Input validation (register, checkout)
+- [x] SQL injection prevention (Prisma handles)
+- [x] XSS prevention (React handles)
+- [x] Password not returned in responses
 
 ### Test Cases
 
@@ -893,7 +893,7 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 | Criteria | Status |
 |----------|--------|
 | Responsive design hoàn chỉnh | ⬜ |
-| Security validation pass | ⬜ |
+| Security validation pass | ✅ |
 | Docker deployment hoạt động | ⬜ |
 | Full E2E test pass | ⬜ |
 | Horizontal scaling ready | ⬜ |

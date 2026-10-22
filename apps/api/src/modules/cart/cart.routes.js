@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const prisma = require('../../utils/prisma');
 const { optionalAuth } = require('../../middleware/auth');
@@ -72,9 +73,23 @@ function setSessionCookie(res, sessionId) {
   });
 }
 
+function readCallerSessionId(req) {
+  const raw = req.cookies?.sessionId || req.body?.sessionId || req.query?.sessionId;
+  if (typeof raw !== 'string') return null;
+  const trimmed = raw.trim();
+  return trimmed.length > 0 && trimmed.length <= 128 ? trimmed : null;
+}
+
+function isCallerCartOwner(req, cart) {
+  if (!cart) return false;
+  const cookieSessionId = readCallerSessionId(req);
+  if (req.user && cart.userId === req.user.id) return true;
+  if (cookieSessionId && cart.sessionId === cookieSessionId) return true;
+  return false;
+}
+
 async function resolveOrCreateCart(req, res) {
-  const cookieSessionId =
-    req.cookies?.sessionId || req.body?.sessionId || req.query?.sessionId;
+  const cookieSessionId = readCallerSessionId(req);
 
   if (req.user) {
     let userCart = await prisma.cart.findUnique({
@@ -145,7 +160,7 @@ async function resolveOrCreateCart(req, res) {
 
   if (!cart) {
     sessionId =
-      sessionId || `guest_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+      sessionId || `guest_${Date.now()}_${crypto.randomBytes(16).toString('hex')}`;
     cart = await prisma.cart.create({
       data: { sessionId },
       include: CART_INCLUDE,
@@ -244,7 +259,7 @@ router.put('/items/:itemId', optionalAuth, async (req, res) => {
     const { quantity } = req.body;
     const parsedQty = Number(quantity);
 
-    if (quantity === undefined || Number.isNaN(parsedQty)) {
+    if (quantity === undefined || Number.isNaN(parsedQty) || !Number.isFinite(parsedQty)) {
       return res.status(400).json({ error: 'Valid quantity is required' });
     }
 
@@ -255,6 +270,10 @@ router.put('/items/:itemId', optionalAuth, async (req, res) => {
 
     if (!cartItem) {
       return res.status(404).json({ error: 'Item not found in cart' });
+    }
+
+    if (!isCallerCartOwner(req, cartItem.cart)) {
+      return res.status(403).json({ error: 'Not authorized to access this cart item' });
     }
 
     if (parsedQty > cartItem.variant.inventory) {
@@ -294,10 +313,15 @@ router.delete('/items/:itemId', optionalAuth, async (req, res) => {
 
     const cartItem = await prisma.cartItem.findUnique({
       where: { id: itemId },
+      include: { cart: true },
     });
 
     if (!cartItem) {
       return res.status(404).json({ error: 'Item not found in cart' });
+    }
+
+    if (!isCallerCartOwner(req, cartItem.cart)) {
+      return res.status(403).json({ error: 'Not authorized to access this cart item' });
     }
 
     await prisma.cartItem.delete({

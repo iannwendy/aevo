@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../../utils/prisma');
 const { optionalAuth } = require('../../middleware/auth');
-
-const prisma = new PrismaClient();
+const { rateLimit } = require('../../middleware/rateLimit');
 
 function buildReviewStats(reviews = []) {
   const ratings = reviews.filter((r) => typeof r.rating === 'number' && r.rating >= 1 && r.rating <= 5);
@@ -51,11 +50,15 @@ router.get('/product/:productId', async (req, res) => {
 });
 
 // Create review (comment - guest allowed, rating - login required)
-router.post('/', optionalAuth, async (req, res) => {
+router.post(
+  '/',
+  rateLimit({ windowMs: 15 * 60 * 1000, max: 40, message: 'Too many review submissions' }),
+  optionalAuth,
+  async (req, res) => {
   try {
     const { productId, rating, comment, guestName } = req.body;
 
-    if (!productId) {
+    if (!productId || typeof productId !== 'string') {
       return res.status(400).json({ error: 'Product ID is required' });
     }
 
@@ -75,10 +78,13 @@ router.post('/', optionalAuth, async (req, res) => {
       }
     }
 
-    // Comment is required
+    // Comment is required and bounded to 2000 characters
     const cleanComment = comment ? String(comment).trim() : '';
     if (!cleanComment) {
       return res.status(400).json({ error: 'Comment is required' });
+    }
+    if (cleanComment.length > 2000) {
+      return res.status(400).json({ error: 'Comment must not exceed 2000 characters' });
     }
 
     const product = await prisma.product.findUnique({ where: { id: productId } });
@@ -100,7 +106,10 @@ router.post('/', optionalAuth, async (req, res) => {
       isVerified = Boolean(priorPurchase);
     }
 
-    const cleanGuestName = guestName && String(guestName).trim() ? String(guestName).trim() : 'Guest';
+    const cleanGuestName =
+      guestName && String(guestName).trim()
+        ? String(guestName).trim().slice(0, 100)
+        : 'Guest';
 
     const review = await prisma.review.create({
       data: {

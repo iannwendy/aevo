@@ -1,7 +1,9 @@
-// Generate unique order number
+const crypto = require('crypto');
+
+// Generate unique order number using CSPRNG entropy
 function generateOrderNumber() {
   const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const random = crypto.randomBytes(4).toString('hex').toUpperCase();
   return `AEVO-${timestamp}${random}`;
 }
 

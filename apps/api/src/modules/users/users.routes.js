@@ -293,15 +293,24 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
     const { id } = req.params;
     const { fullName, role, isActive, loyaltyPoints } = req.body;
 
+    if (id === req.user.id) {
+      if (isActive === false) {
+        return res.status(400).json({ error: 'Cannot deactivate your own admin account' });
+      }
+      if (role !== undefined && role !== 'ADMIN') {
+        return res.status(400).json({ error: 'Cannot demote your own admin account' });
+      }
+    }
+
     const user = await prisma.user.update({
       where: { id },
       data: {
-        ...(fullName !== undefined && String(fullName).trim() && { fullName: String(fullName).trim() }),
+        ...(fullName !== undefined && String(fullName).trim() && { fullName: String(fullName).trim().slice(0, 120) }),
         ...(role !== undefined && ['CUSTOMER', 'ADMIN'].includes(role) && { role }),
         ...(isActive !== undefined && { isActive: Boolean(isActive) }),
         ...(loyaltyPoints !== undefined &&
-          !Number.isNaN(Number(loyaltyPoints)) && {
-            loyaltyPoints: Math.max(0, parseInt(loyaltyPoints, 10) || 0),
+          Number.isFinite(Number(loyaltyPoints)) && {
+            loyaltyPoints: Math.min(100000000, Math.max(0, parseInt(loyaltyPoints, 10) || 0)),
           }),
       },
       select: {
@@ -328,6 +337,10 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
 router.put('/:id/ban', authMiddleware, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (id === req.user.id) {
+      return res.status(400).json({ error: 'Cannot ban your own admin account' });
+    }
 
     const user = await prisma.user.update({
       where: { id },

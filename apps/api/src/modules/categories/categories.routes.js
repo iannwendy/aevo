@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../../utils/prisma');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
-
-const prisma = new PrismaClient();
+const { isSafeImageUrl } = require('../../utils/security');
 
 // Get all active categories
 router.get('/', async (req, res) => {
@@ -92,6 +91,10 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
       return res.status(400).json({ error: 'Category name is required' });
     }
 
+    if (image && !isSafeImageUrl(image)) {
+      return res.status(400).json({ error: 'Invalid or unsafe image URL' });
+    }
+
     const cleanName = String(name).trim();
     const slug = cleanName
       .toLowerCase()
@@ -135,7 +138,12 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
         .replace(/[^\w-]/g, '');
     }
     if (description !== undefined) data.description = description;
-    if (image !== undefined) data.image = image;
+    if (image !== undefined) {
+      if (image && !isSafeImageUrl(image)) {
+        return res.status(400).json({ error: 'Invalid or unsafe image URL' });
+      }
+      data.image = image;
+    }
     if (isActive !== undefined) data.isActive = Boolean(isActive);
 
     const category = await prisma.category.update({

@@ -169,7 +169,7 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
     }
 
     const parsedValue = Number(discountValue);
-    if (Number.isNaN(parsedValue) || parsedValue <= 0) {
+    if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
       return res.status(400).json({ error: 'Discount value must be greater than 0' });
     }
 
@@ -177,6 +177,12 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
       return res
         .status(400)
         .json({ error: 'Discount type must be percentage or fixed' });
+    }
+
+    if (discountType === 'percentage' && parsedValue > 100) {
+      return res
+        .status(400)
+        .json({ error: 'Percentage discount cannot exceed 100%' });
     }
 
     const existing = await prisma.discount.findUnique({
@@ -216,6 +222,28 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
         return res
           .status(400)
           .json({ error: 'Maximum usage limit must be between 1 and 10' });
+      }
+    }
+
+    if (discountType !== undefined && !['percentage', 'fixed'].includes(discountType)) {
+      return res
+        .status(400)
+        .json({ error: 'Discount type must be percentage or fixed' });
+    }
+
+    if (discountValue !== undefined) {
+      const parsedVal = Number(discountValue);
+      if (!Number.isFinite(parsedVal) || parsedVal <= 0) {
+        return res.status(400).json({ error: 'Discount value must be greater than 0' });
+      }
+      if ((discountType === 'percentage' || discountType === undefined) && parsedVal > 100) {
+        const existing = await prisma.discount.findUnique({ where: { id } });
+        const effectiveType = discountType || existing?.discountType || 'percentage';
+        if (effectiveType === 'percentage' && parsedVal > 100) {
+          return res
+            .status(400)
+            .json({ error: 'Percentage discount cannot exceed 100%' });
+        }
       }
     }
 
