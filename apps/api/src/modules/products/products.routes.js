@@ -3,6 +3,15 @@ const router = express.Router();
 const prisma = require('../../utils/prisma');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
 const { isSafeImageUrl } = require('../../utils/security');
+const { publishDomainEvent } = require('../../utils/eventBus');
+const {
+  searchProductsWithElasticsearch,
+  syncSingleProductToElasticsearch,
+} = require('../../utils/elasticsearch');
+const {
+  enrichReviewWithSentiment,
+  computeSentimentSummary,
+} = require('../../utils/sentiment');
 
 function computeReviewStats(reviews = []) {
   const ratings = reviews.filter((r) => typeof r.rating === 'number' && r.rating >= 1 && r.rating <= 5);
@@ -110,6 +119,13 @@ async function listProductsHandler(req, res) {
     } = req.query;
 
     const searchQuery = (search ?? q ?? '').toString().trim();
+
+    // Optional Elasticsearch path when engine=es or fuzzy=true is requested
+    if (req.query.engine === 'es' || req.query.engine === 'elasticsearch' || req.query.fuzzy === 'true') {
+      const esRes = await searchProductsWithElasticsearch(req.query);
+      return res.json(esRes);
+    }
+
     const andConditions = [{ isActive: true }];
 
     // Category filter (supports slug or comma-separated slugs)
@@ -522,12 +538,15 @@ router.get('/best-sellers', async (req, res) => {
 });
 
 function formatProductDetail(product) {
-  const stats = computeReviewStats(product.reviews || []);
+  const enrichedReviews = (product.reviews || []).map(enrichReviewWithSentiment);
+  const stats = computeReviewStats(enrichedReviews);
+  const sentimentSummary = computeSentimentSummary(enrichedReviews);
   const lowestVariant = product.variants?.[0] || null;
   const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0] || null;
 
   return {
     ...product,
+    reviews: enrichedReviews,
     price: lowestVariant?.price ?? product.minPrice ?? 0,
     comparePrice: lowestVariant?.comparePrice ?? null,
     image: primaryImage?.url || null,
@@ -536,6 +555,7 @@ function formatProductDetail(product) {
     reviewCount: stats.reviewCount,
     ratingCount: stats.ratingCount,
     ratingDistribution: stats.ratingDistribution,
+    sentimentSummary,
   };
 }
 
@@ -829,6 +849,13 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
       });
     });
 
+    syncSingleProductToElasticsearch(product.id).catch(() => {});
+    publishDomainEvent('PRODUCT_CREATED', {
+      productId: product.id,
+      name: product.name,
+      slug: product.slug,
+    }).catch(() => {});
+
     res.status(201).json(product);
   } catch (error) {
     console.error('Create product error:', error);
@@ -1027,6 +1054,13 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
       });
     });
 
+    syncSingleProductToElasticsearch(product.id).catch(() => {});
+    publishDomainEvent('PRODUCT_UPDATED', {
+      productId: product.id,
+      name: product.name,
+      slug: product.slug,
+    }).catch(() => {});
+
     res.json(product);
   } catch (error) {
     console.error('Update product error:', error);
@@ -1122,6 +1156,11 @@ router.delete('/:id', authMiddleware, adminOnly, async (req, res) => {
       where: { id },
       data: { isActive: false },
     });
+
+    syncSingleProductToElasticsearch(updated.id).catch(() => {});
+    publishDomainEvent('PRODUCT_DELETED', {
+      productId: updated.id,
+    }).catch(() => {});
 
     res.json({
       message: 'Product deleted',

@@ -18,6 +18,11 @@ const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { passport } = require('./config/passport');
 const { isAllowedOrigin } = require('./config/origins');
 const { sanitizeRequest } = require('./utils/security');
+const { registerAllDomainConsumers } = require('./microservices/domain-consumers');
+const {
+  syncAllProductsToElasticsearch,
+  checkEsClusterHealth,
+} = require('./utils/elasticsearch');
 
 const app = express();
 app.disable('x-powered-by');
@@ -77,6 +82,7 @@ app.get('/health', async (req, res) => {
     dbStatus = 'disconnected';
   }
   const redisInfo = getRedisStatus();
+  const esInfo = await checkEsClusterHealth();
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
@@ -85,6 +91,7 @@ app.get('/health', async (req, res) => {
     authMode: 'jwt',
     database: dbStatus,
     redis: redisInfo,
+    elasticsearch: esInfo,
   });
 });
 
@@ -154,6 +161,8 @@ httpServer.listen(PORT, async () => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     console.log('[db] Connected to postgres database successfully');
+    await registerAllDomainConsumers('all');
+    await syncAllProductsToElasticsearch();
   } catch (err) {
     console.error('[db] Failed to verify postgres connection:', err.message);
   }

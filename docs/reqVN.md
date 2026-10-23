@@ -10,7 +10,13 @@ Giảng viên: Mai Van Manh
 
 ## I. TỔNG QUAN
 
-Đồ án cuối kỳ của môn học này yêu cầu phát triển một website thương mại điện tử có đầy đủ chức năng. Đồ án sẽ kiểm tra kiến thức phát triển web của bạn bằng Node.js ở phía backend, cùng với bất kỳ framework frontend nào bạn lựa chọn. Đồ án được thực hiện theo nhóm 2–3 thành viên. Mỗi nhóm được yêu cầu thiết kế, triển khai và đưa vào vận hành một ứng dụng thương mại điện tử bao gồm các chức năng thiết yếu như xác thực người dùng, quản lý sản phẩm và hệ thống đặt hàng. Bạn được tự do lựa chọn các thư viện và công cụ hỗ trợ để nâng cao chức năng của ứng dụng, nhưng backend cốt lõi phải được phát triển bằng framework Node.js như Express.js. Để ngăn chặn gian lận, bạn bắt buộc phải phát triển website chỉ bán máy tính và linh kiện máy tính. Việc bán điện thoại hoặc bất kỳ sản phẩm nào khác đều bị nghiêm cấm, và mọi hành vi vi phạm quy định này sẽ khiến toàn bộ đồ án bị chấm 0 điểm. Bạn cũng cần triển khai ứng dụng lên một dịch vụ hosting công khai (ví dụ: Heroku, Vercel, AWS, v.v.) hoặc thay vào đó đóng gói dự án bằng Docker Compose và cung cấp các cấu hình Docker cần thiết để có thể chạy cục bộ trên bất kỳ máy tính nào.
+Đồ án cuối kỳ của môn học này yêu cầu phát triển một website thương mại điện tử có đầy đủ chức năng. Đồ án sẽ kiểm tra kiến thức phát triển web của bạn bằng Node.js ở phía backend, cùng với bất kỳ framework frontend nào bạn lựa chọn. Đồ án được thực hiện theo nhóm 2–3 thành viên. Mỗi nhóm được yêu cầu thiết kế, triển khai và đưa vào vận hành một ứng dụng thương mại điện tử bao gồm các chức năng thiết yếu như xác thực người dùng, quản lý sản phẩm và hệ thống đặt hàng. Bạn được tự do lựa chọn các thư viện và công cụ hỗ trợ để nâng cao chức năng của ứng dụng, nhưng backend cốt lõi phải được phát triển bằng framework Node.js như Express.js. Để ngăn chặn gian lận, bạn bắt buộc phải phát triển website chỉ bán máy tính và linh kiện máy tính. Việc bán điện thoại hoặc bất kỳ sản phẩm nào khác
+
+
+Trang 1 / 13
+
+
+đều bị nghiêm cấm, và mọi hành vi vi phạm quy định này sẽ khiến toàn bộ đồ án bị chấm 0 điểm. Bạn cũng cần triển khai ứng dụng lên một dịch vụ hosting công khai (ví dụ: Heroku, Vercel, AWS, v.v.) hoặc thay vào đó đóng gói dự án bằng Docker Compose và cung cấp các cấu hình Docker cần thiết để có thể chạy cục bộ trên bất kỳ máy tính nào.
 
 ## II. YÊU CẦU ĐỒ ÁN
 
@@ -36,7 +42,9 @@ Giảng viên: Mai Van Manh
 
 - Danh mục sản phẩm: Một trang riêng (không phải trang chủ) hiển thị danh sách sản phẩm với thông tin cơ bản như tên, giá, hình ảnh và mô tả ngắn (dạng danh sách hoặc dạng lưới), có cơ chế phân trang để giới hạn số sản phẩm hiển thị cùng lúc. Sắp xếp sản phẩm thành các danh mục và thẻ để cải thiện điều hướng và SEO. Chức năng phân trang phải hoạt động ở mọi nơi có hiển thị danh sách sản phẩm. Phải hiển thị số trang, kể cả khi chỉ có một trang. Khi
 
+
 Trang 2 / 13
+
 
 trình diễn, nếu website không có đủ dữ liệu để thể hiện chức năng “phân trang”, hệ thống sẽ bị xem là không có chức năng này.
 
@@ -62,7 +70,9 @@ trình diễn, nếu website không có đủ dữ liệu để thể hiện ch�
 
 ### 5. Quản lý đơn hàng
 
+
 Trang 3 / 13
+
 
 - Tạo đơn hàng: Sau khi thanh toán thành công, phải tạo bản ghi đơn hàng và liên kết với tài khoản người dùng. Sau khi giao dịch mua hàng hoàn tất, người dùng phải thấy màn hình thành công hiển thị tất cả thông tin liên quan đến đơn hàng vừa đặt. Ngoài ra, người dùng phải nhận email xác nhận kèm chi tiết đơn hàng.
 
@@ -86,7 +96,9 @@ Trang 3 / 13
 
 - Quản lý đơn hàng: Quản trị viên có thể xem, cập nhật và xử lý đơn hàng (ví dụ: chuyển trạng thái từ đang chờ sang đã xác nhận).
 
+
 Trang 4 / 13
+
 
   - Xem danh sách đơn hàng: Quản trị viên có thể xem danh sách đơn hàng trên toàn hệ thống, được sắp xếp để các đơn hàng mới nhất xuất hiện trước. Phải áp dụng phân trang, hiển thị khoảng 20 mục mỗi trang. Giao diện này cũng phải cho phép quản trị viên lọc đơn hàng theo các khoảng thời gian khác nhau, chẳng hạn: hôm nay, hôm qua, tuần này, tháng này hoặc khoảng ngày cụ thể (bắt đầu–kết thúc).
 
@@ -120,7 +132,9 @@ Bạn bắt buộc phải chọn một trong hai phương pháp dưới đây đ
 
 ### 8. Các yêu cầu khác
 
+
 Trang 5 / 13
+
 
 - UI/UX: Ứng dụng web phải có thiết kế rõ ràng, thân thiện với người dùng và điều hướng trực quan. Tập trung vào trải nghiệm người dùng, tốc độ tải nhanh và tương tác dễ dàng với các thành phần.
 
@@ -144,13 +158,14 @@ Triển khai và hoàn thành đầy đủ thành công các chức năng sau s�
 
 Nếu nhóm triển khai thành công bất kỳ chức năng cộng điểm nào trong số này, bạn phải nêu rõ trong phiếu tự đánh giá, tệp README, video giới thiệu sản phẩm cùng bằng chứng cụ thể và thuyết phục. Điều này đảm bảo các đóng góp của nhóm được ghi nhận và truyền đạt đầy đủ tới người đánh giá.
 
+
 Trang 6 / 13
+
 
 ## III. BẢNG TIÊU CHÍ CHẤM ĐIỂM
 
 | ID | CHỨC NĂNG |  | 1 | 2 | 3 |
 | --- | --- | --- | --- | --- | --- |
-| ID | FEATURES |  | 1 | 2 | 3 |
 |  |  | ĐIỂM | 0 ĐIỂM | 1/2 ĐIỂM | ĐIỂM TỐI ĐA |
 | CHỨC NĂNG KHÁCH HÀNG – 6,0 điểm |  |  |  |  |  |
 | 1 | Xác thực qua mạng xã hội | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
@@ -164,6 +179,7 @@ Trang 6 / 13
 Trang 7 / 13
 
 | 8 | Trang chủ | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
+| --- | --- | --- | --- | --- | --- |
 | 9 | Danh mục sản phẩm (xem sản phẩm theo danh mục) | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
 | 10 | Phân trang | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
 | 11 | Xem chi tiết sản phẩm | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
@@ -176,6 +192,7 @@ Trang 7 / 13
 Trang 8 / 13
 
 | 18 | Cập nhật giỏ hàng | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
+| --- | --- | --- | --- | --- | --- |
 | 19 | Quy trình thanh toán | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
 | 20 | Sử dụng mã giảm giá khi mua hàng | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
 | 21 | Thông báo qua email (sau khi đặt hàng) | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
@@ -188,6 +205,7 @@ Trang 8 / 13
 Trang 9 / 13
 
 | 26 | Quản lý người dùng | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
+| --- | --- | --- | --- | --- | --- |
 | 25 | Quản lý sản phẩm | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
 | 31 | Quản lý mã giảm giá | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
 | 29 | Xem danh sách đơn hàng | 0.25 | Chức năng chưa được triển khai, không hoạt động hoặc có lỗi nghiêm trọng khiến không thể sử dụng cơ bản | Chức năng đã có nhưng chưa hoàn chỉnh, có các vấn đề như kiểm tra dữ liệu đầu vào kém, lỗ hổng bảo mật hoặc không tuân thủ các tiêu chuẩn. | Chức năng được triển khai đầy đủ, bảo mật và đáp ứng các tiêu chuẩn, không có vấn đề hoặc lỗi nghiêm trọng. |
@@ -200,22 +218,24 @@ Trang 9 / 13
 Trang 10 / 13
 
 | 33 | Làm việc nhóm (làm một mình hoặc không có bằng chứng GitHub Insights sẽ không được điểm này) | 0.5 | Không có bằng chứng làm việc nhóm trên GitHub; đóng góp rời rạc hoặc không có, không có commit từ sớm hoặc đều đặn. | Có thể thấy một phần hoạt động làm việc nhóm với các commit thỉnh thoảng xuất hiện, nhưng công việc phân chia không đều, có trì hoãn hoặc thiếu đóng góp từ sớm. | Có bằng chứng làm việc nhóm hiệu quả, phân chia công việc cân bằng, commit sớm và thường xuyên, chủ động hợp tác trong suốt đồ án. |
+| --- | --- | --- | --- | --- | --- |
 | 34 | Responsive Chấm điểm dựa trên đánh giá của giảng viên; chỉ sản phẩm trên mức trung bình mới được điểm (giao diện cơ bản không được điểm) | 0.5 | Website không responsive; không điều chỉnh theo các kích thước màn hình hoặc thiết bị khác nhau. Người dùng gặp vấn đề bố cục, khiến điều hướng khó khăn. | Website có một số thành phần responsive nhưng chưa được tối ưu hoàn toàn. Một số trang hoặc thành phần có thể không hiển thị đúng trên mọi thiết bị, dẫn đến trải nghiệm không nhất quán. | Website hoàn toàn responsive, mang đến trải nghiệm tối ưu trên mọi thiết bị. Mọi thành phần, bố cục và chức năng điều chỉnh liền mạch theo các kích thước màn hình khác nhau, bảo đảm điều hướng dễ dàng. |
 | 35 | Mở rộng theo chiều ngang | 0.5 | Ứng dụng không được thiết kế để mở rộng theo chiều ngang; nó phụ thuộc vào một máy chủ duy nhất. Điều này giới hạn hiệu năng và có thể gây ngừng hoạt động khi tải tăng. | Ứng dụng cho thấy một số tiềm năng mở rộng theo chiều ngang nhưng chưa được triển khai đầy đủ. Một số thành phần có thể phân tán trên nhiều máy chủ, nhưng có thể gặp vấn đề về cân bằng tải hoặc quản lý trạng thái | Ứng dụng được thiết kế đầy đủ để mở rộng theo chiều ngang. Ứng dụng sử dụng hiệu quả nhiều máy chủ, áp dụng cân bằng tải và duy trì kiến trúc không lưu trạng thái, cho phép xử lý lưu lượng tăng lên một cách liền mạch. |
 
 Mô tả ở trên chỉ nhằm làm hướng dẫn chung và không thể được xem là hướng dẫn triển khai chi tiết từng bước cho mỗi chức năng, xác định điều gì đúng hay sai. Tuy nhiên, trong quá trình chấm điểm, các chức năng phải được phát triển dựa trên những mô tả này, đặc biệt là những nội dung được tô màu riêng biệt. Các chức năng này phải được triển khai ở mức tiêu chuẩn tương đối cao để đủ điều kiện nhận điểm tối đa. Các nhóm nên chủ động tham khảo các ứng dụng liên quan và áp dụng trải nghiệm sử dụng những ứng dụng đó hằng ngày vào bài làm. Ví dụ:
 
-- Hiển thị giá sản phẩm:
+-  Hiển thị giá sản phẩm:
 
-  - Cách làm chưa tốt: Hiển thị dữ liệu trực tiếp từ cơ sở dữ liệu dưới dạng “75299000”, rất khó đọc.
+  -  Cách làm chưa tốt: Hiển thị dữ liệu trực tiếp từ cơ sở dữ liệu dưới dạng “75299000”, rất khó đọc.
 
-  - Cách làm tốt hơn: Định dạng thành “75,299,000đ” có dấu phân cách và đơn vị tiền tệ, cải thiện độ rõ ràng và dễ đọc.
+  -  Cách làm tốt hơn: Định dạng thành “75,299,000đ” có dấu phân cách và đơn vị tiền tệ, cải thiện độ rõ ràng và dễ đọc.
 
-- Khi hiển thị danh sách đơn hàng:
+-  Khi hiển thị danh sách đơn hàng:
 
-  - Cách làm chưa tốt: Chỉ sử dụng “select all” từ cơ sở dữ liệu, hiển thị dữ liệu theo thứ tự tăng dần. Đơn hàng mới xuất hiện ở cuối, không có phân trang nên khó tìm kiếm. Những thông tin quan trọng như tổng tiền, tên người mua, trạng thái và định dạng ngày tháng không được hiển thị rõ ràng.
+  -  Cách làm chưa tốt: Chỉ sử dụng “select all” từ cơ sở dữ liệu, hiển thị dữ liệu theo thứ tự tăng dần. Đơn hàng mới xuất hiện ở cuối, không có phân trang nên khó tìm kiếm. Những thông tin quan trọng như tổng tiền, tên người mua, trạng thái và định dạng ngày tháng không được hiển thị rõ ràng.
 
-  - Cách làm tốt hơn: Sắp xếp dữ liệu theo ngày giảm dần để đơn hàng mới nằm trên cùng. Triển khai phân trang để dễ xem hơn, đảm bảo mọi thông tin quan trọng được hiển thị rõ ràng với định dạng phù hợp và sử dụng màu sắc thích hợp.
+  -  Cách làm tốt hơn: Sắp xếp dữ liệu theo ngày giảm dần để đơn hàng mới nằm trên cùng. Triển khai phân trang để dễ xem hơn, đảm bảo mọi thông tin quan trọng được hiển thị rõ ràng với định dạng phù hợp và sử dụng màu sắc thích hợp.
+
 
 Trang 11 / 13
 
@@ -239,7 +259,9 @@ Trang 11 / 13
 
   - Rubrik.docx: Tệp này liệt kê các chức năng bắt buộc của dự án. Các nhóm phải tự đánh giá mức độ hoàn thành trong tệp này. Giảng viên sẽ cung cấp tệp vào thời điểm nộp bài. Tệp cũng sẽ chứa URL công khai của ứng dụng web và mọi tên đăng nhập/mật khẩu cần thiết để đăng nhập.
 
+
 Trang 12 / 13
+
 
 - Sắp xếp tất cả nội dung trên vào một thư mục có tên id1_fullname1_id2_fullname2, sau đó nén thư mục này thành định dạng ZIP với cùng tên, ví dụ id1_fullname1_id2_fullname2.zip. Một đại diện nhóm phải nộp tệp này trên hệ thống học tập trực tuyến theo hướng dẫn của giảng viên môn học.
 
@@ -270,5 +292,6 @@ Trang 12 / 13
   - Nộp toàn bộ dự án mà không dọn dẹp để loại bỏ các tệp không cần thiết: Trừ 0,5 điểm.
 
   - Không cung cấp thông tin cần thiết để chấm điểm, chẳng hạn thiếu tên đăng nhập/mật khẩu, đặt tên tệp không đúng hoặc thiếu nội dung bắt buộc: Trừ 1,0 điểm.
+
 
 Trang 13 / 13

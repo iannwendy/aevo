@@ -12,11 +12,13 @@ import {
   RotateCcw,
   Star,
   Tag,
+  Camera,
+  Upload,
 } from 'lucide-react';
 import ProductCard from './ProductCard';
 import Pagination from './Pagination';
-import { productsApi, categoriesApi } from '../../lib/api';
-import { formatPrice } from '../../lib/utils';
+import { productsApi, categoriesApi, aiApi } from '../../lib/api';
+import { FALLBACK_PRODUCT_IMAGE, formatPrice, handleImageError } from '../../lib/utils';
 import { useI18n } from '../../lib/i18n';
 
 const SORT_OPTIONS = [
@@ -102,6 +104,12 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
   const [maxPriceInput, setMaxPriceInput] = useState(currentFilters.maxPrice);
   const [viewMode, setViewMode] = useState('grid');
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+  // AI Image Search state
+  const [imageSearchOpen, setImageSearchOpen] = useState(false);
+  const [imageSearching, setImageSearching] = useState(false);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [imageSearchResult, setImageSearchResult] = useState(null);
 
   const [products, setProducts] = useState(initialData?.products || []);
   const [pagination, setPagination] = useState(
@@ -254,6 +262,40 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
     router.push(pathname, { scroll: false });
   };
 
+  const runVisualSearch = async ({ imageBase64, fileName, categoryHint, queryHint, previewUrl }) => {
+    setImageSearching(true);
+    if (previewUrl) setImagePreviewUrl(previewUrl);
+    try {
+      const res = await aiApi.imageSearch({
+        imageBase64,
+        fileName,
+        categoryHint,
+        queryHint,
+        limit: 6,
+      });
+      setImageSearchResult(res.data || null);
+    } catch {
+      setImageSearchResult(null);
+    } finally {
+      setImageSearching(false);
+    }
+  };
+
+  const handleImageFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      runVisualSearch({
+        imageBase64: dataUrl,
+        fileName: file.name,
+        previewUrl: dataUrl,
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const hasActiveFilters = Boolean(
     currentFilters.search ||
       currentFilters.category ||
@@ -293,6 +335,15 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
             {t('catalog.go')}
           </button>
         </form>
+        <button
+          type="button"
+          onClick={() => setImageSearchOpen(true)}
+          data-testid={idPrefix === 'desktop' ? 'image-search-trigger' : `${idPrefix}-image-search-trigger`}
+          className="mt-2.5 w-full h-9 px-3 rounded-xl border border-border bg-canvas hover:bg-surface text-caption font-medium text-ink inline-flex items-center justify-center gap-2 transition-all duration-200"
+        >
+          <Camera size={14} className="text-secondary" />
+          <span>{t('ai.imageSearchBtn')}</span>
+        </button>
       </div>
 
       {/* Category Filter */}
@@ -377,7 +428,13 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
           data-testid={`${idPrefix}-filter-brands`}
           className="max-h-52 overflow-y-auto pr-1 space-y-1.5"
         >
-          {(filterMeta.brands || []).map((brandName) => {
+          {[...(filterMeta.brands || [])]
+            .sort((a, b) => {
+              if (a === 'Apple') return -1;
+              if (b === 'Apple') return 1;
+              return a.localeCompare(b);
+            })
+            .map((brandName) => {
             const checked = currentFilters.brands.some(
               (b) => b.toLowerCase() === brandName.toLowerCase()
             );
@@ -393,7 +450,9 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                   data-testid={`${idPrefix}-brand-${brandName.toLowerCase().replace(/\s+/g, '-')}`}
                   className="h-4 w-4 rounded border-border text-ink focus:ring-ink"
                 />
-                <span className="truncate">{brandName}</span>
+                <span className="truncate">
+                  {brandName === 'Apple' ? ' Apple' : brandName}
+                </span>
               </label>
             );
           })}
@@ -645,6 +704,88 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
 
           {/* Product Grid Area */}
           <div className="lg:col-span-9">
+            {/* Apple 2026 Ecosystem Quick-Filter Strip */}
+            <div
+              data-testid="apple-ecosystem-bar"
+              className="bg-surface border border-border rounded-2xl p-3.5 mb-4 flex flex-wrap items-center gap-2"
+            >
+              <span className="text-caption font-mono uppercase tracking-wider text-secondary px-2">
+                 {t('catalog.appleQuickBarLabel')}
+              </span>
+              {[
+                {
+                  key: 'catalog.appleAll',
+                  patch: { brands: ['Apple'], category: '', tag: '' },
+                  active:
+                    currentFilters.brands.some((b) => b.toLowerCase() === 'apple') &&
+                    !currentFilters.category &&
+                    !currentFilters.tag,
+                },
+                {
+                  key: 'catalog.appleMacBookProM5',
+                  patch: { brands: ['Apple'], category: 'laptops', tag: 'macbook-pro' },
+                  active:
+                    currentFilters.category === 'laptops' &&
+                    currentFilters.tag === 'macbook-pro',
+                },
+                {
+                  key: 'catalog.appleMacBookAirM5',
+                  patch: { brands: ['Apple'], category: 'laptops', tag: 'macbook-air' },
+                  active:
+                    currentFilters.category === 'laptops' &&
+                    currentFilters.tag === 'macbook-air',
+                },
+                {
+                  key: 'catalog.appleMacBookNeo',
+                  patch: { brands: ['Apple'], category: 'laptops', tag: 'macbook-neo' },
+                  active:
+                    currentFilters.category === 'laptops' &&
+                    currentFilters.tag === 'macbook-neo',
+                },
+                {
+                  key: 'catalog.appleMacDesktop',
+                  patch: { brands: ['Apple'], category: 'components', tag: '' },
+                  active:
+                    currentFilters.brands.some((b) => b.toLowerCase() === 'apple') &&
+                    currentFilters.category === 'components',
+                },
+                {
+                  key: 'catalog.appleStudioDisplay',
+                  patch: { brands: ['Apple'], category: 'monitors', tag: '' },
+                  active:
+                    currentFilters.brands.some((b) => b.toLowerCase() === 'apple') &&
+                    currentFilters.category === 'monitors',
+                },
+                {
+                  key: 'catalog.appleMagicAudio',
+                  patch: { brands: ['Apple'], category: 'peripherals', tag: '' },
+                  active:
+                    currentFilters.brands.some((b) => b.toLowerCase() === 'apple') &&
+                    currentFilters.category === 'peripherals',
+                },
+                {
+                  key: 'catalog.appleAccessories',
+                  patch: { brands: ['Apple'], category: 'accessories', tag: '' },
+                  active:
+                    currentFilters.brands.some((b) => b.toLowerCase() === 'apple') &&
+                    currentFilters.category === 'accessories',
+                },
+              ].map((pill) => (
+                <button
+                  key={pill.key}
+                  type="button"
+                  onClick={() => applyFilterUpdate(pill.patch)}
+                  className={`px-3 py-1.5 rounded-full text-caption font-medium transition-all duration-200 active:scale-95 ${
+                    pill.active
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'bg-canvas border border-border text-ink hover:border-ink'
+                  }`}
+                >
+                  {t(pill.key)}
+                </button>
+              ))}
+            </div>
+
             {/* Toolbar: Product Count, Active Filter Pills, Sort Dropdown, View Toggle */}
             <div className="bg-surface border border-border rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="text-small text-secondary" data-testid="catalog-count">
@@ -921,6 +1062,219 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                 {t('catalog.applyFiltersBtn')}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Visual Image Search Modal */}
+      {imageSearchOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-obsidian/60 backdrop-blur-xs animate-fade-in"
+          data-testid="image-search-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('ai.imageSearchTitle')}
+        >
+          <div className="w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-2xl bg-surface border border-border p-6 shadow-xl space-y-5 animate-scale-in">
+            <div className="flex items-start justify-between gap-4 pb-4 border-b border-border">
+              <div>
+                <h2 className="text-h3 text-ink">{t('ai.imageSearchTitle')}</h2>
+                <p className="text-caption text-secondary mt-1">
+                  {t('ai.imageSearchSubtitle')}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setImageSearchOpen(false)}
+                data-testid="image-search-close"
+                aria-label="Close visual search"
+                className="p-2 rounded-lg text-secondary hover:text-ink hover:bg-canvas transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* File Upload Dropzone */}
+            <div>
+              <label
+                htmlFor="image-search-file-input"
+                className="flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed border-border bg-canvas hover:border-ink/40 cursor-pointer transition-colors text-center"
+              >
+                <Upload size={22} className="text-secondary mb-2" />
+                <span className="text-small font-medium text-ink">
+                  {t('ai.uploadDropzoneTitle')}
+                </span>
+                <span className="text-caption text-secondary mt-1">
+                  {t('ai.uploadDropzoneHint')}
+                </span>
+                <input
+                  id="image-search-file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageFileUpload}
+                  data-testid="image-search-file-input"
+                  className="sr-only"
+                />
+              </label>
+
+              {/* Sample Quick Presets */}
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                <button
+                  type="button"
+                  data-testid="image-search-sample-laptops"
+                  onClick={() =>
+                    runVisualSearch({
+                      fileName: 'macbook-pro-m3-laptop.png',
+                      categoryHint: 'laptops',
+                      queryHint: 'laptop macbook',
+                      previewUrl:
+                        'https://images.unsplash.com/photo-1517336714731-489689fd1d8a?auto=format&fit=crop&w=600&q=80',
+                    })
+                  }
+                  className="px-3 py-1.5 rounded-xl bg-canvas border border-border text-caption text-ink hover:border-ink transition-colors"
+                >
+                  {t('ai.sampleLaptop')}
+                </button>
+                <button
+                  type="button"
+                  data-testid="image-search-sample-monitors"
+                  onClick={() =>
+                    runVisualSearch({
+                      fileName: 'ultrawide-4k-oled-monitor.png',
+                      categoryHint: 'monitors',
+                      queryHint: 'monitor oled 4k',
+                      previewUrl:
+                        'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=600&q=80',
+                    })
+                  }
+                  className="px-3 py-1.5 rounded-xl bg-canvas border border-border text-caption text-ink hover:border-ink transition-colors"
+                >
+                  {t('ai.sampleMonitor')}
+                </button>
+                <button
+                  type="button"
+                  data-testid="image-search-sample-components"
+                  onClick={() =>
+                    runVisualSearch({
+                      fileName: 'nvidia-rtx-4080-gpu-card.png',
+                      categoryHint: 'components',
+                      queryHint: 'rtx gpu graphics',
+                      previewUrl:
+                        'https://images.unsplash.com/photo-1591488320449-011701bb6704?auto=format&fit=crop&w=600&q=80',
+                    })
+                  }
+                  className="px-3 py-1.5 rounded-xl bg-canvas border border-border text-caption text-ink hover:border-ink transition-colors"
+                >
+                  {t('ai.sampleGpu')}
+                </button>
+              </div>
+            </div>
+
+            {imageSearching && (
+              <div
+                data-testid="image-search-loading"
+                className="p-4 rounded-xl bg-canvas border border-border text-small text-secondary text-center animate-pulse"
+              >
+                {t('ai.analyzingImage')}
+              </div>
+            )}
+
+            {imageSearchResult && !imageSearching && (
+              <div data-testid="image-search-analysis" className="space-y-4">
+                <div className="p-4 rounded-xl bg-canvas border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    {imagePreviewUrl && (
+                      <img
+                        src={imagePreviewUrl}
+                        alt="Uploaded preview"
+                        onError={handleImageError}
+                        className="w-14 h-14 rounded-xl object-cover border border-border bg-surface shrink-0"
+                      />
+                    )}
+                    <div>
+                      <div className="text-caption text-secondary">
+                        {t('ai.detectedCategoryLabel')}{' '}
+                        <strong
+                          data-testid="image-search-detected-category"
+                          className="text-ink font-medium"
+                        >
+                          {catName(imageSearchResult.detectedCategory)}
+                        </strong>
+                      </div>
+                      <div className="text-caption text-secondary mt-0.5">
+                        {t('ai.visualConfidenceLabel')}{' '}
+                        <span className="font-mono text-ink">
+                          {Math.round((imageSearchResult.confidence || 0.9) * 100)}%
+                        </span>
+                      </div>
+                      {Array.isArray(imageSearchResult.visualLabels) && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {imageSearchResult.visualLabels.slice(0, 3).map((lbl) => (
+                            <span
+                              key={lbl}
+                              className="px-2 py-0.5 rounded-full bg-surface border border-border text-[10px] font-mono text-secondary"
+                            >
+                              {lbl}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    data-testid="image-search-apply-filter"
+                    onClick={() => {
+                      applyFilterUpdate({
+                        category: imageSearchResult.detectedCategory || '',
+                        search: '',
+                      });
+                      setImageSearchOpen(false);
+                    }}
+                    className="px-4 h-10 rounded-xl bg-primary text-primary-foreground text-caption font-medium shrink-0 hover:bg-primary/90 transition-all"
+                  >
+                    {t('ai.applyVisualFilterBtn')}
+                  </button>
+                </div>
+
+                {/* Matched Visual Products */}
+                <div
+                  data-testid="image-search-results"
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                >
+                  {(imageSearchResult.products || []).slice(0, 4).map((prod) => (
+                    <Link
+                      key={prod.id}
+                      href={`/products/${prod.slug}`}
+                      data-testid="image-search-result-card"
+                      onClick={() => setImageSearchOpen(false)}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-canvas border border-border hover:border-ink/40 transition-all group"
+                    >
+                      <img
+                        src={prod.image || FALLBACK_PRODUCT_IMAGE}
+                        alt={prod.name}
+                        onError={handleImageError}
+                        className="w-14 h-14 rounded-lg object-contain bg-surface p-1.5 shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-small font-medium text-ink truncate group-hover:underline">
+                          {prod.name}
+                        </div>
+                        <div className="text-caption text-secondary">
+                          {prod.brand} · {formatPrice(prod.price)}
+                        </div>
+                        {prod.similarityScore && (
+                          <div className="text-[10px] font-mono text-secondary mt-0.5">
+                            Match: {Math.round(prod.similarityScore * 100)}%
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

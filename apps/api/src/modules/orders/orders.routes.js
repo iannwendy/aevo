@@ -7,6 +7,7 @@ const { authMiddleware, optionalAuth, adminOnly, signResetToken } = require('../
 const { CLIENT_URL } = require('../../config/passport');
 const { generateOrderNumber } = require('../../utils/helpers');
 const { sendOrderConfirmationEmail } = require('../../services/mailer');
+const { publishDomainEvent } = require('../../utils/eventBus');
 
 const guestCredentialsByOrderNumber = new Map();
 
@@ -525,6 +526,26 @@ router.post('/', optionalAuth, async (req, res) => {
       ).catch((error) => console.error('Order confirmation email failed:', error));
     }
 
+    // Publish asynchronous domain events over Redis Event Bus
+    publishDomainEvent('ORDER_CREATED', {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      userId: order.userId,
+      totalAmount: order.totalAmount,
+      status: order.status,
+      productIds: orderItems.map((oi) => oi.productId),
+    }).catch(() => {});
+
+    if (order.userId && (pointsToEarn > 0 || pointsToRedeem > 0)) {
+      publishDomainEvent('LOYALTY_UPDATED', {
+        userId: order.userId,
+        orderId: order.id,
+        pointsEarned: pointsToEarn,
+        pointsRedeemed: pointsToRedeem,
+        pointsDelta: pointsToEarn - pointsToRedeem,
+      }).catch(() => {});
+    }
+
     res.status(201).json(
       enrichOrder(order, {
         earnedPoints: pointsToEarn,
@@ -855,6 +876,16 @@ router.put('/:id/status', authMiddleware, adminOnly, async (req, res) => {
         include: ORDER_DETAIL_INCLUDE,
       });
     });
+
+    publishDomainEvent(
+      status === 'CANCELLED' ? 'ORDER_CANCELLED' : 'ORDER_STATUS_CHANGED',
+      {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        productIds: (existingOrder.items || []).map((i) => i.productId),
+      }
+    ).catch(() => {});
 
     res.json(enrichOrder(order));
   } catch (error) {

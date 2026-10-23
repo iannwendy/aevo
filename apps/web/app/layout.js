@@ -5,6 +5,7 @@ import { I18nProvider } from '../lib/i18n';
 import { LOCALE_COOKIE_NAME, normalizeLocale } from '../lib/i18n/dictionaries';
 import { ThemeProvider } from '../components/providers/theme-provider';
 import PageTransition from '../components/PageTransition';
+import AiAssistantWidget from '../components/ai/AiAssistantWidget';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
         <ThemeProvider>
           <I18nProvider initialLocale={locale}>
             <PageTransition>{children}</PageTransition>
+            <AiAssistantWidget />
           </I18nProvider>
         </ThemeProvider>
       </body>

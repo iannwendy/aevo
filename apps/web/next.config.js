@@ -10,6 +10,7 @@ const nextConfig = {
       'm.media-amazon.com',
       'bizweb.dktcdn.net',
       'cdn.shopify.com',
+      'macone.vn',
     ],
     remotePatterns: [
       {

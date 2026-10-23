@@ -22,6 +22,9 @@ services:
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET:-aevo-dev-secret-key-change-in-production}
       - CLIENT_URL=http://localhost:3000
+      - API_URL=${API_URL:-http://localhost:3001}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-699562916647-lhh1cqbt00qmu2qf44qr8kcdeitkmslb.apps.googleusercontent.com}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-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}
       - PORT=3001
     depends_on:
       db:
@@ -42,6 +45,9 @@ services:
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET:-aevo-dev-secret-key-change-in-production}
       - CLIENT_URL=http://localhost:3000
+      - API_URL=${API_URL:-http://localhost:3001}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-699562916647-lhh1cqbt00qmu2qf44qr8kcdeitkmslb.apps.googleusercontent.com}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-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}
       - PORT=3001
     depends_on:
       db:

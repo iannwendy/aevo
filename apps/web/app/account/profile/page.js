@@ -7,6 +7,7 @@ import { LogOut, Loader2, RefreshCw } from 'lucide-react';
 import { fetchProfile, postLogout } from '@/lib/auth-client';
 import { updateProfile, changePassword } from '@/lib/account-client';
 import SiteHeader from '@/components/SiteHeader';
+import SiteFooter from '@/components/SiteFooter';
 import { useI18n } from '@/lib/i18n';
 
 /**
@@ -228,27 +229,6 @@ function ProfileView() {
           </button>
         </p>
       )}
-
-      <div className="flex flex-wrap items-center gap-2 pb-6 mb-8 border-b border-border">
-        <Link
-          href="/account/profile"
-          className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-small font-medium btn-interactive"
-        >
-          {t('profile.tabProfileSecurity')}
-        </Link>
-        <Link
-          href="/account/addresses"
-          className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink btn-interactive"
-        >
-          {t('profile.tabDeliveryAddresses')}
-        </Link>
-        <Link
-          href="/account/orders"
-          className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink btn-interactive"
-        >
-          {t('profile.tabOrderHistory')}
-        </Link>
-      </div>
 
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
         <div>
@@ -606,10 +586,39 @@ function FormNotice({ notice }) {
 // ------------------------------------------------------------------ layout
 
 function PageFrame({ children }) {
+  const { t } = useI18n();
   return (
-    <main className="min-h-screen bg-canvas">
+    <main className="min-h-screen flex flex-col justify-between bg-canvas">
       <SiteHeader />
-      <div className="container-main pt-[72px] section-py">{children}</div>
+      <div className="w-full container-main pt-[72px] flex-1" data-testid="profile-page">
+        <div className="pt-6 pb-12 md:pb-16">
+          <div
+            data-testid="account-nav-tabs"
+            className="flex flex-wrap items-center gap-2 pb-6 mb-8 border-b border-border"
+          >
+            <Link
+              href="/account/profile"
+              className="px-4 py-2 rounded-xl border border-primary bg-primary text-primary-foreground text-small font-medium transition-colors"
+            >
+              {t('profile.tabProfileSecurity')}
+            </Link>
+            <Link
+              href="/account/addresses"
+              className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink transition-colors"
+            >
+              {t('profile.tabDeliveryAddresses')}
+            </Link>
+            <Link
+              href="/account/orders"
+              className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink transition-colors"
+            >
+              {t('profile.tabOrderHistory')}
+            </Link>
+          </div>
+          {children}
+        </div>
+      </div>
+      <SiteFooter />
     </main>
   );
 }

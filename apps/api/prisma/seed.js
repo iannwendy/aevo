@@ -15,6 +15,7 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const NEW_PRODUCTS_2026 = require('./products-2026.json');
+const APPLE_PRODUCTS_2026 = require('./apple-2026.json');
 
 const prisma = new PrismaClient();
 
@@ -71,29 +72,31 @@ const PRODUCTS = [
     name: 'MacBook Pro M3',
     slug: 'macbook-pro-m3',
     images: [
-      'https://m.media-amazon.com/images/I/51Zuib0V6uL._AC_SL1200_.jpg',
-      'https://m.media-amazon.com/images/I/31f7u4+Uz6L._AC_SL1200_.jpg',
-      'https://m.media-amazon.com/images/I/51a6zax50zL._AC_SL1200_.jpg',
-      'https://m.media-amazon.com/images/I/51H1YCrJQlL._AC_SL1200_.jpg',
+      'https://macone.vn/wp-content/uploads/2025/09/MacBook_Pro_14-in_M5_Pro_Space_Black_PDP_Image_Position_1__VN-VI-768x768.jpg',
+      'https://macone.vn/wp-content/uploads/2025/09/MacBook_Pro_14-in_M5_Pro_Space_Black_PDP_Image_Position_2__VN-VI-768x768.jpg',
+      'https://macone.vn/wp-content/uploads/2025/09/MacBook_Pro_14-in_M5_Pro_Silver_PDP_Image_Position_1__VN-VI-768x768.jpg',
+      'https://macone.vn/wp-content/uploads/2025/09/MacBook_Pro_14-in_M5_Pro_Space_Black_PDP_Image_Position_6__VN-VI-768x768.jpg',
     ],
     brand: 'Apple',
     category: 'laptops',
     isNewArrival: true,
     isBestSeller: true,
     description: [
-      'The MacBook Pro M3 pairs the Apple M3 Pro chip with a 120Hz Liquid Retina XDR display.',
-      'Its 18-core GPU delivers real-time ray tracing for 3D work and video editing.',
-      'The unified memory architecture scales from 8GB to 36GB without swapping to disk.',
-      'Battery life reaches 22 hours of video playback on a single charge.',
-      'A six-speaker array with Spatial Audio fills the room.',
-      'Every port you still need is here: three Thunderbolt 4 ports, HDMI, SDXC and MagSafe 3.',
+      'The MacBook Pro M3 flagship laptop pairs the Apple M3, M3 Pro and M3 Max 3nm chips with a 120Hz ProMotion Liquid Retina XDR display.',
+      'Hardware-accelerated ray tracing and Dynamic Caching deliver desktop-class GPU performance for 3D rendering, Xcode and 8K video.',
+      'Unified Memory scales from 16GB up to 64GB with ultra-fast NVMe SSD storage from 512GB to 2TB.',
+      'Battery life reaches up to 22 hours on a single charge with silent fan curves under everyday workloads.',
+      'Six-speaker high-fidelity sound system with force-cancelling woofers and studio-quality three-mic array.',
+      'Full pro connectivity: three Thunderbolt 4 ports, HDMI 2.1, SDXC card slot, headphone jack and MagSafe 3 in Space Black or Silver.',
     ].join('\n'),
     variants: [
-      { name: 'M3 Pro / 18GB / 512GB', sku: 'MBP-M3P-18-512', price: 39990000, comparePrice: 42990000, inventory: 25 },
-      { name: 'M3 Pro / 36GB / 1TB', sku: 'MBP-M3P-36-1T', price: 54990000, comparePrice: 59990000, inventory: 18 },
-      { name: 'M3 Max / 48GB / 1TB', sku: 'MBP-M3M-48-1T', price: 79990000, comparePrice: null, inventory: 9 },
+      { name: 'M3 (8C CPU / 10C GPU) / 16GB / 512GB / Space Grey', sku: 'MBP-M3-16-512-SG', price: 35990000, comparePrice: 39990000, inventory: 22 },
+      { name: 'M3 Pro (11C CPU / 14C GPU) / 18GB / 512GB / Space Black', sku: 'MBP-M3P-18-512', price: 39990000, comparePrice: 44990000, inventory: 25 },
+      { name: 'M3 Pro (12C CPU / 18C GPU) / 36GB / 1TB / Space Black', sku: 'MBP-M3P-36-1T', price: 52990000, comparePrice: 57990000, inventory: 18 },
+      { name: 'M3 Max (14C CPU / 30C GPU) / 36GB / 1TB / Silver', sku: 'MBP-M3M-36-1T-SL', price: 68990000, comparePrice: 74990000, inventory: 12 },
+      { name: 'M3 Max (16C CPU / 40C GPU) / 48GB / 1TB / Space Black', sku: 'MBP-M3M-48-1T', price: 79990000, comparePrice: 85990000, inventory: 9 },
     ],
-    tags: ['apple', 'pro', 'creator'],
+    tags: ['apple', 'macbook', 'macbook-pro', 'm3', 'pro', 'creator'],
   },
   {
     name: 'ASUS ROG Zephyrus G14',
@@ -621,10 +624,10 @@ const PRODUCTS = [
     name: 'Anker 575 USB-C Docking Station (13-in-1)',
     slug: 'anker-575-usb-c-docking-station-13-in-1',
     images: [
-      'https://m.media-amazon.com/images/I/61RBOqHLI0L._AC_SL1500_.jpg',
-      'https://m.media-amazon.com/images/I/71YqWcZ8ufL._AC_SL1250_.jpg',
-      'https://m.media-amazon.com/images/I/612R7T6l3mL._AC_SL1500_.jpg',
-      'https://m.media-amazon.com/images/I/71gk7GAoDaL._AC_SL1500_.jpg',
+      'https://cdn.shopify.com/s/files/1/0493/9834/9974/products/666.png?v=1756800781',
+      'https://cdn.shopify.com/s/files/1/0493/9834/9974/files/A83921A1_Rich_image_TD02_EN_V2.jpg?v=1764735579',
+      'https://cdn.shopify.com/s/files/1/0493/9834/9974/files/A83921A1_Rich_image_TD05_EN_V2.jpg?v=1764735579',
+      'https://cdn.shopify.com/s/files/1/0493/9834/9974/files/A83921A1_Rich_image_TD08_EN_V2.jpg?v=1764735579',
     ],
     brand: 'Anker',
     category: 'accessories',
@@ -821,12 +824,12 @@ const PRODUCTS = [
 ];
 
 const CATEGORIES = [
-  { name: 'Laptops', slug: 'laptops', description: 'Portable machines for work, study and play.', image: 'https://m.media-amazon.com/images/I/51Zuib0V6uL._AC_SL1200_.jpg' },
-  { name: 'Components', slug: 'components', description: 'CPUs, GPUs, memory and cooling for a desktop build.', image: 'https://m.media-amazon.com/images/I/514QPBuqGyL._AC_SL1002_.jpg' },
-  { name: 'Monitors', slug: 'monitors', description: 'Colour-accurate and high-refresh displays.', image: 'https://m.media-amazon.com/images/I/81iMclFYKIL._AC_SL1500_.jpg' },
-  { name: 'Storage', slug: 'storage', description: 'SSDs, hard drives and portable backup media.', image: 'https://m.media-amazon.com/images/I/71OWtcxKgvL._AC_SL1500_.jpg' },
-  { name: 'Peripherals', slug: 'peripherals', description: 'Keyboards, mice and audio for the desk.', image: 'https://m.media-amazon.com/images/I/71ayR53urCL._AC_SL1500_.jpg' },
-  { name: 'Accessories', slug: 'accessories', description: 'Thunderbolt docks, USB-C hubs, laptop stands and display cables.', image: 'https://m.media-amazon.com/images/I/61RBOqHLI0L._AC_SL1500_.jpg' },
+  { name: 'Laptops', slug: 'laptops', description: 'Apple MacBook Pro M5, MacBook Air M5, MacBook Neo & flagship portable workstations.', image: 'https://macone.vn/wp-content/uploads/2025/09/MacBook_Pro_14-in_M5_Pro_Space_Black_PDP_Image_Position_1__VN-VI-768x768.jpg' },
+  { name: 'Components', slug: 'components', description: 'Apple Mac Studio, Mac mini, iMac 24", Mac Pro & flagship desktop hardware.', image: 'https://macone.vn/wp-content/uploads/2026/08/Mac_Studio_M5_Max_Aug26_PDP_Image_Position_1__VN-VI-768x768.jpg' },
+  { name: 'Monitors', slug: 'monitors', description: 'Apple Studio Display XDR, Pro Display XDR & colour-accurate 5K/6K studio displays.', image: 'https://macone.vn/wp-content/uploads/2026/03/Studio_Display_XDR_PDP_Image_Position_1__VN-VI-768x768.jpg' },
+  { name: 'Storage', slug: 'storage', description: 'Apple Mac Pro & Mac Studio SSD upgrade kits, Thunderbolt 5 NVMe & studio RAID.', image: 'https://macone.vn/wp-content/uploads/2026/08/Mac_Studio_M5_Ultra_Aug26_PDP_Image_Position_1__VN-VI-768x768.jpg' },
+  { name: 'Peripherals', slug: 'peripherals', description: 'Apple Magic Keyboard Touch ID, Magic Trackpad, Magic Mouse, AirPods Max & desk gear.', image: 'https://macone.vn/wp-content/uploads/2024/12/MXK83_AV1.jpeg' },
+  { name: 'Accessories', slug: 'accessories', description: 'Apple Thunderbolt 5 Pro cables, MagSafe 3 chargers, USB-C adapters & workspace stands.', image: 'https://macone.vn/wp-content/uploads/2023/12/MU2G3.jpeg' },
 ];
 
 const DISCOUNTS = [
@@ -925,7 +928,22 @@ async function seedCatalogue() {
 
   const tagMap = new Map();
   const products = [];
-  const allProducts = [...NEW_PRODUCTS_2026, ...PRODUCTS];
+  const macbookProM3 = PRODUCTS.find((p) => p.slug === 'macbook-pro-m3');
+  const otherBaseProducts = PRODUCTS.filter((p) => p.slug !== 'macbook-pro-m3');
+  const appleNonLaptops = APPLE_PRODUCTS_2026.filter((p) => p.category !== 'laptops');
+  const appleLaptops = APPLE_PRODUCTS_2026.filter((p) => p.category === 'laptops');
+  // Order ensures:
+  // 1) In every category (Accessories, Storage, Peripherals, Monitors, Components, Laptops),
+  //    Apple products have the newest timestamps and appear first on Page 1.
+  // 2) All 12 Apple MacBook laptops (including macbook-pro-m3) are the 12 newest items overall.
+  const allProducts = [
+    ...NEW_PRODUCTS_2026,
+    ...otherBaseProducts,
+    ...appleNonLaptops,
+    ...appleLaptops.slice(0, 1),
+    ...(macbookProM3 ? [macbookProM3] : []),
+    ...appleLaptops.slice(1),
+  ];
   const baseTime = Date.now() - allProducts.length * 60000;
 
   for (const [idx, p] of allProducts.entries()) {
@@ -999,8 +1017,24 @@ async function seedReviews(products, users) {
   ];
   const RATINGS = [5, 5, 4, 5, 4, 3, 5, 4];
 
-  // Deterministic spread: one review on most products, a couple of hot products get more.
-  const hot = new Set(products.filter((p) => ['macbook-pro-m3', 'nvidia-geforce-rtx-4090-founders-edition', 'dell-ultrasharp-u2723qe'].includes(p.slug)).map((p) => p.id));
+  // Deterministic spread: one review on most products, flagship Apple & hero products get more.
+  const hotSlugs = new Set([
+    'macbook-pro-16-m5-max-2026',
+    'macbook-pro-14-m5-pro-max-2026',
+    'macbook-pro-14-m5-2025',
+    'macbook-air-13-m5-2026',
+    'macbook-air-15-m5-2026',
+    'macbook-neo-13-a18-pro-2026',
+    'macbook-pro-m3',
+    'apple-studio-display-xdr-27-5k-2026',
+    'apple-mac-studio-m5-max-ultra-2026',
+    'apple-mac-mini-m5-pro-2026',
+    'apple-magic-keyboard-touch-id-numeric-usbc',
+    'apple-airpods-max-usbc-2025',
+    'nvidia-geforce-rtx-4090-founders-edition',
+    'dell-ultrasharp-u2723qe',
+  ]);
+  const hot = new Set(products.filter((p) => hotSlugs.has(p.slug)).map((p) => p.id));
   const reviewers = [users.customer, users.customer2, users.admin];
 
   let idx = 0;

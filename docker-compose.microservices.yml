@@ -1,0 +1,28 @@
+# Microservices Architecture Override for AEVO E-Commerce
+# Runs API Gateway (:3001), Product Microservice (:3002), Order Microservice (:3003),
+# User Microservice (:3004), and Elasticsearch Search Node (:9200) communicating
+# asynchronously over the Redis Pub/Sub intermediary channel (`aevo:events:bus`).
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.microservices.yml up -d
+
+services:
+  product-service:
+    environment:
+      - SERVICE_ROLE=product-service
+      - INSTANCE_ID=product-service-ms
+
+  order-service:
+    environment:
+      - SERVICE_ROLE=order-service
+      - INSTANCE_ID=order-service-ms
+
+  user-service:
+    environment:
+      - SERVICE_ROLE=user-service
+      - INSTANCE_ID=user-service-ms
+
+  elasticsearch:
+    environment:
+      - SERVICE_ROLE=elasticsearch
+      - INSTANCE_ID=es-node-ms

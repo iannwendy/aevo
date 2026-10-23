@@ -17,7 +17,8 @@
     "db:seed": "npm run db:seed --workspace=apps/api",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "test:ux-ui": "node apps/api/test/ux-ui.e2e.js"
+    "test:ux-ui": "node apps/api/test/ux-ui.e2e.js",
+    "test:phase6": "node apps/api/test/phase6.e2e.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

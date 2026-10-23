@@ -84,6 +84,15 @@ npm run dev
 - Order management (view, update status)
 - Discount code management
 
+### Bonus Features Implemented (`+2.0 / 2.0 Points` — See [`Bonus/README.md`](./Bonus/README.md))
+1. **CI/CD Pipeline (GitHub Actions)**: Multi-stage workflow ([`.github/workflows/ci-cd.yml`](./.github/workflows/ci-cd.yml)) running schema validation, JavaScript compliance checks, PostgreSQL/Redis service containers, automated E2E tests on PR/push, Docker build verification, and automated production rollout on merge to `main`.
+2. **Microservices Architecture & Async Redis Communication**: In addition to `web` (Next.js) and `db` (PostgreSQL), deploys `api` (API Gateway `:3001`), `product-service` (`:3002`), `order-service` (`:3003`), `user-service` (`:3004`), `elasticsearch` (`:9200`), and `redis` (`:6379`) communicating asynchronously via Redis Pub/Sub (`aevo:events:bus`).
+3. **AI-Related Features**:
+   - **Smart Product Recommendation Chatbot** (`POST /api/ai/chat` + floating `AiAssistantWidget` on storefront) supporting bilingual (EN/VI) budget, workflow, and category queries.
+   - **Product Search by Image Upload** (`POST /api/ai/image-search` + Visual Search modal on `/products`).
+   - **Sentiment Analysis for Reviews & Feedback** (`POST /api/ai/sentiment` + live AI Sentiment Summary & per-review badges on `/products/[slug]`).
+4. **Elasticsearch Product Search Integration**: Inverted-index BM25 ranking (`GET /api/search/elasticsearch`), Levenshtein fuzzy typo tolerance, instant autocomplete (`GET /api/search/suggest`), and live Elasticsearch vs PostgreSQL performance benchmark (`GET /api/search/benchmark`).
+
 ## Environment Variables
 
 ### API (.env)

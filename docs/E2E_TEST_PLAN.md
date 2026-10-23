@@ -906,38 +906,90 @@ curl http://localhost:3001/api/discounts/validate/SAVE10
 ## Task 6.1: CI/CD Pipeline
 
 ### Checklist
-- [ ] GitHub Actions workflow
-- [ ] Run tests on PR
-- [ ] Build verification
-- [ ] Auto deploy on merge
+- [x] GitHub Actions workflow (`.github/workflows/ci-cd.yml`)
+- [x] Run tests on PR (`test-and-verify` job with PostgreSQL & Redis service containers)
+- [x] Build verification (`lint-and-validate` + `docker-build` jobs)
+- [x] Auto deploy on merge (`deploy` job gated on `main` branch push)
+
+### Test Cases
+
+| TC ID | Mô tả | Steps | Expected Result |
+|-------|-------|-------|----------------|
+| CICD-01 | Workflow config | Check `.github/workflows/ci-cd.yml` | Triggers on `push` & `pull_request` |
+| CICD-02 | PR test runner | Check service containers & E2E step | PostgreSQL + Redis + E2E test suites |
+| CICD-03 | Compose validation | Run `docker compose config -q` | Standard, Scale & Microservices configs valid |
+| CICD-04 | Auto deploy | Check `deploy` job conditions | Runs on `main` merge after tests pass |
 
 ---
 
 ## Task 6.2: Microservices Architecture
 
 ### Checklist
-- [ ] 3+ services (product, order, user)
-- [ ] Async communication (RabbitMQ/Redis)
-- [ ] Service separation
-- [ ] API Gateway
+- [x] 3+ services (`product-service:3002`, `order-service:3003`, `user-service:3004`, `api-gateway:3001`, `elasticsearch:9200`)
+- [x] Async communication (Redis Pub/Sub `aevo:events:bus` & `aevo:events:acks`)
+- [x] Service separation (isolated routes, ports & domain event consumers)
+- [x] API Gateway (`/api/gateway/proxy/:service/*` & `/api/microservices/status`)
+
+### Test Cases
+
+| TC ID | Mô tả | Steps | Expected Result |
+|-------|-------|-------|----------------|
+| MS-01 | Topology check | GET `/api/microservices/status` | 3+ backend services active |
+| MS-02 | Service separation | Check routes & health per service | `product`, `order`, `user` healthy & isolated |
+| MS-03 | API Gateway proxy | GET `/api/gateway/proxy/:service/health` | Routed with `X-Gateway-Routed-To` header |
+| MS-04 | Async Redis Pub/Sub | POST `/api/microservices/events/publish` | Event published & ACKed by target service |
+| MS-05 | Event history ledger | GET `/api/microservices/events/history` | Processed receipts stored in Redis |
 
 ---
 
 ## Task 6.3: AI Features (Optional)
 
 ### Checklist
-- [ ] Product recommendation chatbot
-- [ ] Image search
-- [ ] Sentiment analysis for reviews
+- [x] Product recommendation chatbot (`POST /api/ai/chat` + floating `AiAssistantWidget`)
+- [x] Image search (`POST /api/ai/image-search` + Catalog Visual Search Modal)
+- [x] Sentiment analysis for reviews (`POST /api/ai/sentiment` + Product Detail AI Sentiment Summary & Badges)
+
+### Test Cases
+
+| TC ID | Mô tả | Steps | Expected Result |
+|-------|-------|-------|----------------|
+| AI-01 | AI Chatbot API | POST `/api/ai/chat` (VI & EN) | Returns budget/category matched products |
+| AI-02 | Image Search API | POST `/api/ai/image-search` | Detects category, brand & visual matches |
+| AI-03 | Sentiment Analysis API | POST `/api/ai/sentiment` | Classifies Positive/Negative/Neutral & aspects |
+| AI-04 | Chatbot UI (Playwright) | Open widget -> Send prompt | Renders clickable product recommendation cards |
+| AI-05 | Image Search UI | Open modal -> Select/upload image | Displays visual matches & filters catalog |
+| AI-06 | Sentiment UI | Visit `/products/[slug]` | Shows AI Sentiment Summary & review badges |
 
 ---
 
 ## Task 6.4: Elasticsearch Integration
 
 ### Checklist
-- [ ] Elasticsearch setup
-- [ ] Product search with Elasticsearch
-- [ ] Performance comparison
+- [x] Elasticsearch setup (`elasticsearch:9200` node + `aevo_products` index)
+- [x] Product search with Elasticsearch (`GET /api/search/elasticsearch` with BM25, fuzzy typo tolerance & facets)
+- [x] Performance comparison (`GET /api/search/benchmark` comparing Elasticsearch vs PostgreSQL `ILIKE`)
+
+### Test Cases
+
+| TC ID | Mô tả | Steps | Expected Result |
+|-------|-------|-------|----------------|
+| ES-01 | Cluster & reindex | POST `/api/search/reindex` & GET `/api/search/health` | Status `green`, 129 products indexed |
+| ES-02 | BM25 search & facets | GET `/api/search/elasticsearch?q=MacBook+Pro` | Ranked hits with `_score` & aggregations |
+| ES-03 | Fuzzy typo tolerance | GET `/api/search/elasticsearch?q=macbok&fuzzy=true` | Corrects typo to `macbook` & returns hits |
+| ES-04 | Instant autocomplete | GET `/api/search/suggest?q=rtx` | Fast prefix suggestions returned |
+| ES-05 | Performance benchmark | GET `/api/search/benchmark` | Elasticsearch faster than PostgreSQL `ILIKE` |
+
+---
+
+## Phase 6 Completion Criteria
+
+| Criteria | Status |
+|----------|--------|
+| Task 6.1: CI/CD Pipeline hoàn chỉnh | ✅ |
+| Task 6.2: Microservices & Redis Pub/Sub hoạt động | ✅ |
+| Task 6.3: AI Chatbot, Image Search & Sentiment hoàn chỉnh | ✅ |
+| Task 6.4: Elasticsearch Search & Benchmark hoàn chỉnh | ✅ |
+| Full Phase 6 E2E test suite (`phase6.e2e.js`) pass | ✅ |
 
 ---
 

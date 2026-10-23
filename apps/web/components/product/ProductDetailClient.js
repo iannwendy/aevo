@@ -42,6 +42,46 @@ function computeReviewStatsClient(reviews = []) {
   };
 }
 
+function resolveReviewSentiment(rev) {
+  if (rev?.sentiment?.label) return rev.sentiment;
+  const text = String(rev?.comment || '').toLowerCase();
+  const posPattern =
+    /(excellent|great|good|solid|fast|smooth|quiet|cool|crisp|worth|recommend|love|best|tuyệt vời|xuất sắc|rất tốt|đáng tiền|hài lòng|mượt|nhanh|mát|êm|sắc nét|đẹp|chắc chắn|tốt|ngon)/i;
+  const negPattern =
+    /(terrible|awful|worst|defective|broken|overheat|noisy|slow|lag|disappointed|bad|poor|thất vọng|tệ|kém|lỗi|hỏng|quá nóng|ồn|giật|chậm|không đáng)/i;
+  if (negPattern.test(text) || (typeof rev?.rating === 'number' && rev.rating <= 2)) {
+    return { label: 'NEGATIVE', score: -0.6 };
+  }
+  if (posPattern.test(text) || (typeof rev?.rating === 'number' && rev.rating >= 4)) {
+    return { label: 'POSITIVE', score: 0.75 };
+  }
+  return { label: 'NEUTRAL', score: 0 };
+}
+
+function computeSentimentSummaryClient(reviews = []) {
+  if (!reviews.length) {
+    return { positiveRate: 0, neutralRate: 0, negativeRate: 0, positiveCount: 0, neutralCount: 0, negativeCount: 0 };
+  }
+  let pos = 0;
+  let neu = 0;
+  let neg = 0;
+  for (const r of reviews) {
+    const s = resolveReviewSentiment(r);
+    if (s.label === 'POSITIVE') pos += 1;
+    else if (s.label === 'NEGATIVE') neg += 1;
+    else neu += 1;
+  }
+  const total = reviews.length;
+  return {
+    positiveCount: pos,
+    neutralCount: neu,
+    negativeCount: neg,
+    positiveRate: Math.round((pos / total) * 100),
+    neutralRate: Math.round((neu / total) * 100),
+    negativeRate: Math.round((neg / total) * 100),
+  };
+}
+
 export default function ProductDetailClient({
   slug,
   initialProduct,
@@ -846,6 +886,56 @@ export default function ProductDetailClient({
                     );
                   })}
                 </div>
+
+                {/* AI Review Sentiment Analysis Breakdown */}
+                {(() => {
+                  const sSummary = computeSentimentSummaryClient(reviews);
+                  return (
+                    <div
+                      data-testid="ai-sentiment-summary"
+                      className="mt-5 pt-4 border-t border-border"
+                    >
+                      <div className="text-[11px] font-mono uppercase tracking-wider text-secondary mb-2">
+                        {t('ai.sentimentSummaryTitle')}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div className="p-2 rounded-xl bg-canvas border border-border">
+                          <div
+                            data-testid="sentiment-positive-rate"
+                            className="text-small font-mono font-medium text-ink"
+                          >
+                            {sSummary.positiveRate}%
+                          </div>
+                          <div className="text-[10px] text-secondary">
+                            {t('ai.sentimentPositive')} ({sSummary.positiveCount})
+                          </div>
+                        </div>
+                        <div className="p-2 rounded-xl bg-canvas border border-border">
+                          <div
+                            data-testid="sentiment-neutral-rate"
+                            className="text-small font-mono font-medium text-ink"
+                          >
+                            {sSummary.neutralRate}%
+                          </div>
+                          <div className="text-[10px] text-secondary">
+                            {t('ai.sentimentNeutral')} ({sSummary.neutralCount})
+                          </div>
+                        </div>
+                        <div className="p-2 rounded-xl bg-canvas border border-border">
+                          <div
+                            data-testid="sentiment-negative-rate"
+                            className="text-small font-mono font-medium text-ink"
+                          >
+                            {sSummary.negativeRate}%
+                          </div>
+                          <div className="text-[10px] text-secondary">
+                            {t('ai.sentimentNegative')} ({sSummary.negativeCount})
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Write a Comment / Rating Form */}
@@ -1028,6 +1118,24 @@ export default function ProductDetailClient({
                                   ? t('productDetail.memberBadge')
                                   : t('productDetail.guestBadge')}
                               </span>
+                              {(() => {
+                                const sent = resolveReviewSentiment(rev);
+                                const labelText =
+                                  sent.label === 'POSITIVE'
+                                    ? t('ai.sentimentPositive')
+                                    : sent.label === 'NEGATIVE'
+                                    ? t('ai.sentimentNegative')
+                                    : t('ai.sentimentNeutral');
+                                return (
+                                  <span
+                                    data-testid="review-sentiment-badge"
+                                    data-sentiment={sent.label}
+                                    className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-canvas border border-border text-secondary"
+                                  >
+                                    AI: {labelText}
+                                  </span>
+                                );
+                              })()}
                             </div>
 
                             {typeof rev.rating === 'number' && rev.rating >= 1 && (

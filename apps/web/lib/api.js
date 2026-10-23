@@ -128,3 +128,28 @@ export const analyticsApi = {
   getSimpleDashboard: () => apiClient.get('/analytics/simple'),
   getAdvancedDashboard: (params) => apiClient.get('/analytics/advanced', { params }),
 };
+
+// Elasticsearch Search API (Phase 6 Bonus)
+export const searchApi = {
+  search: (params) => apiClient.get('/search/elasticsearch', { params }),
+  suggest: (q, limit = 6) => apiClient.get('/search/suggest', { params: { q, limit } }),
+  health: () => apiClient.get('/search/health'),
+  reindex: () => apiClient.post('/search/reindex'),
+  benchmark: (params) => apiClient.get('/search/benchmark', { params }),
+};
+
+// AI Features API (Phase 6 Bonus)
+export const aiApi = {
+  chat: (data) => apiClient.post('/ai/chat', data),
+  imageSearch: (data) => apiClient.post('/ai/image-search', data),
+  analyzeSentiment: (data) => apiClient.post('/ai/sentiment', data),
+  getProductSentiment: (productId) => apiClient.get(`/ai/sentiment/product/${productId}`),
+};
+
+// Microservices & Gateway API (Phase 6 Bonus)
+export const microservicesApi = {
+  getStatus: () => apiClient.get('/microservices/status'),
+  publishEvent: (data) => apiClient.post('/microservices/events/publish', data),
+  getEventHistory: (limit = 25) =>
+    apiClient.get('/microservices/events/history', { params: { limit } }),
+};

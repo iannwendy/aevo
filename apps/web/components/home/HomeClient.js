@@ -210,10 +210,70 @@ export default function HomeClient({ initialData }) {
                   <ArrowRight size={20} className="transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
                 <Link
+                  href="/products?brand=Apple"
+                  data-testid="hero-apple-cta"
+                  className="inline-flex items-center gap-2 bg-surface border border-ink/20 text-ink px-5 py-3.5 rounded-lg font-medium hover:border-ink hover:bg-canvas btn-interactive"
+                >
+                  <span></span>
+                  <span>{t('home.shopAppleBtn')}</span>
+                </Link>
+                <Link
                   href="/products?sort=best-selling"
                   className="inline-flex items-center gap-2 bg-surface border border-border text-ink px-6 py-3.5 rounded-lg font-medium hover:bg-canvas btn-interactive"
                 >
                   {t('home.bestSellersBtn')}
+                </Link>
+              </div>
+
+              {/* Apple 2026 Ecosystem Quick Navigation Pills */}
+              <div className="mt-7 pt-6 border-t border-border/70 flex flex-wrap items-center gap-2 animate-slide-up stagger-3">
+                <Link
+                  href="/products?category=laptops&brand=Apple&tag=m5"
+                  className="px-3 py-1.5 rounded-full bg-surface border border-border text-caption font-medium text-ink hover:border-ink transition-colors"
+                >
+                   MacBook Pro M5 / M5 Max
+                </Link>
+                <Link
+                  href="/products?category=laptops&brand=Apple&tag=macbook-air"
+                  className="px-3 py-1.5 rounded-full bg-surface border border-border text-caption font-medium text-ink hover:border-ink transition-colors"
+                >
+                   MacBook Air M5
+                </Link>
+                <Link
+                  href="/products?category=laptops&brand=Apple&tag=macbook-neo"
+                  className="px-3 py-1.5 rounded-full bg-surface border border-border text-caption font-medium text-ink hover:border-ink transition-colors"
+                >
+                   MacBook Neo A18 Pro
+                </Link>
+                <Link
+                  href="/products?category=components&brand=Apple"
+                  className="px-3 py-1.5 rounded-full bg-surface border border-border text-caption font-medium text-ink hover:border-ink transition-colors"
+                >
+                   Mac Studio & Mac mini M5
+                </Link>
+                <Link
+                  href="/products?category=monitors&brand=Apple"
+                  className="px-3 py-1.5 rounded-full bg-surface border border-border text-caption font-medium text-ink hover:border-ink transition-colors"
+                >
+                   Studio Display XDR
+                </Link>
+                <Link
+                  href="/products?category=peripherals&brand=Apple"
+                  className="px-3 py-1.5 rounded-full bg-surface border border-border text-caption font-medium text-ink hover:border-ink transition-colors"
+                >
+                   Magic & AirPods
+                </Link>
+                <Link
+                  href="/products?category=storage&brand=Apple"
+                  className="px-3 py-1.5 rounded-full bg-surface border border-border text-caption font-medium text-ink hover:border-ink transition-colors"
+                >
+                   Mac SSD & RAID
+                </Link>
+                <Link
+                  href="/products?category=accessories&brand=Apple"
+                  className="px-3 py-1.5 rounded-full bg-surface border border-border text-caption font-medium text-ink hover:border-ink transition-colors"
+                >
+                   MagSafe & TB5
                 </Link>
               </div>
             </div>
@@ -221,7 +281,7 @@ export default function HomeClient({ initialData }) {
             <div className="lg:col-span-5 animate-scale-in stagger-2">
               <div className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-white p-6 shadow-sm transition-all duration-500 hover:shadow-xl hover:border-ink/30">
                 <img
-                  src="https://m.media-amazon.com/images/I/51Zuib0V6uL._AC_SL1200_.jpg"
+                  src="https://macone.vn/wp-content/uploads/2025/09/MacBook_Pro_14-in_M5_Pro_Space_Black_PDP_Image_Position_1__VN-VI-768x768.jpg"
                   alt="AEVO Flagship Computing Setup"
                   onError={handleImageError}
                   className="w-full h-full object-contain pb-12 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
@@ -236,7 +296,7 @@ export default function HomeClient({ initialData }) {
                     </span>
                   </div>
                   <Link
-                    href="/products/macbook-pro-m3"
+                    href="/products/macbook-pro-16-m5-max-2026"
                     className="group/link text-caption font-medium text-ink hover:text-secondary inline-flex items-center gap-1 transition-colors"
                   >
                     {t('home.configure')}

@@ -72,8 +72,9 @@ export default function OrderDetailPage({ params }) {
     <main className="min-h-screen flex flex-col justify-between bg-canvas">
       <SiteHeader />
 
-      <div className="pt-[72px] container-main py-10 md:py-14 flex-1" data-testid="order-detail-page">
-        <div className="mb-6">
+      <div className="w-full container-main pt-[72px] flex-1" data-testid="order-detail-page">
+        <div className="pt-6 pb-12 md:pb-16">
+          <div className="mb-6">
           <Link
             href="/account/orders"
             className="inline-flex items-center gap-1.5 text-small text-secondary hover:text-ink transition-colors"
@@ -351,6 +352,7 @@ export default function OrderDetailPage({ params }) {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       <SiteFooter />

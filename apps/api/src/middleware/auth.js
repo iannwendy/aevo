@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const prisma = require('../utils/prisma');
 
@@ -99,10 +100,14 @@ const signSessionToken = (user) =>
   );
 
 const signResetToken = (user) =>
-  jwt.sign({ id: user.id, purpose: 'password_reset' }, RESET_TOKEN_SECRET, {
-    algorithm: 'HS256',
-    expiresIn: '1h',
-  });
+  jwt.sign(
+    { id: user.id, purpose: 'password_reset', jti: crypto.randomUUID() },
+    RESET_TOKEN_SECRET,
+    {
+      algorithm: 'HS256',
+      expiresIn: '1h',
+    }
+  );
 
 module.exports = {
   authMiddleware,

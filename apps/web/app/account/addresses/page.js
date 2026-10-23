@@ -9,7 +9,6 @@ import {
   Trash2,
   Check,
   Star,
-  ArrowLeft,
 } from 'lucide-react';
 import SiteHeader from '../../../components/SiteHeader';
 import SiteFooter from '../../../components/SiteFooter';
@@ -154,38 +153,32 @@ export default function AddressesPage() {
     <main className="min-h-screen flex flex-col justify-between bg-canvas">
       <SiteHeader />
 
-      <div className="pt-[72px] container-main py-10 md:py-14 flex-1" data-testid="addresses-page">
-        <div className="mb-6">
-          <Link
-            href="/account/profile"
-            className="inline-flex items-center gap-1.5 text-small text-secondary hover:text-ink transition-colors"
+      <div className="w-full container-main pt-[72px] flex-1" data-testid="addresses-page">
+        <div className="pt-6 pb-12 md:pb-16">
+          {/* Account Navigation Tabs */}
+          <div
+            data-testid="account-nav-tabs"
+            className="flex flex-wrap items-center gap-2 pb-6 mb-8 border-b border-border"
           >
-            <ArrowLeft size={16} />
-            <span>{t('addresses.backToAccount')}</span>
-          </Link>
-        </div>
-
-        {/* Account Navigation Tabs */}
-        <div className="flex flex-wrap items-center gap-2 pb-6 mb-8 border-b border-border">
-          <Link
-            href="/account/profile"
-            className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink btn-interactive"
-          >
-            {t('addresses.tabProfileSecurity')}
-          </Link>
-          <Link
-            href="/account/addresses"
-            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-small font-medium btn-interactive"
-          >
-            {t('addresses.tabDeliveryAddresses')}
-          </Link>
-          <Link
-            href="/account/orders"
-            className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink btn-interactive"
-          >
-            {t('addresses.tabOrderHistory')}
-          </Link>
-        </div>
+            <Link
+              href="/account/profile"
+              className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink transition-colors"
+            >
+              {t('addresses.tabProfileSecurity')}
+            </Link>
+            <Link
+              href="/account/addresses"
+              className="px-4 py-2 rounded-xl border border-primary bg-primary text-primary-foreground text-small font-medium transition-colors"
+            >
+              {t('addresses.tabDeliveryAddresses')}
+            </Link>
+            <Link
+              href="/account/orders"
+              className="px-4 py-2 rounded-xl border border-border bg-surface text-small font-medium text-secondary hover:text-ink transition-colors"
+            >
+              {t('addresses.tabOrderHistory')}
+            </Link>
+          </div>
 
         {authStatus === 'signed-out' ? (
           <div className="bg-surface border border-border rounded-2xl p-10 max-w-xl">
@@ -503,6 +496,7 @@ export default function AddressesPage() {
             )}
           </div>
         )}
+        </div>
       </div>
 
       <SiteFooter />

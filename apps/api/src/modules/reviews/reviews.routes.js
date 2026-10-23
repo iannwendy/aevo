@@ -4,6 +4,11 @@ const prisma = require('../../utils/prisma');
 const { optionalAuth } = require('../../middleware/auth');
 const { rateLimit } = require('../../middleware/rateLimit');
 const { publishSocketEvent } = require('../../utils/redis');
+const { publishDomainEvent } = require('../../utils/eventBus');
+const {
+  enrichReviewWithSentiment,
+  computeSentimentSummary,
+} = require('../../utils/sentiment');
 
 function buildReviewStats(reviews = []) {
   const ratings = reviews.filter((r) => typeof r.rating === 'number' && r.rating >= 1 && r.rating <= 5);
@@ -38,11 +43,14 @@ router.get('/product/:productId', async (req, res) => {
       orderBy: { createdAt: 'desc' },
     });
 
-    const stats = buildReviewStats(reviews);
+    const enrichedReviews = reviews.map(enrichReviewWithSentiment);
+    const stats = buildReviewStats(enrichedReviews);
+    const sentimentSummary = computeSentimentSummary(enrichedReviews);
 
     res.json({
-      reviews,
+      reviews: enrichedReviews,
       ...stats,
+      sentimentSummary,
     });
   } catch (error) {
     console.error('Get reviews error:', error);
@@ -126,14 +134,23 @@ router.post(
       },
     });
 
+    const enrichedReview = enrichReviewWithSentiment(review);
+
     // Emit realtime event via Socket.IO and broadcast across instances via Redis Pub/Sub
     const io = req.app.get('io');
     if (io) {
-      io.to(`product-${productId}`).emit('new-review', review);
+      io.to(`product-${productId}`).emit('new-review', enrichedReview);
     }
-    publishSocketEvent('new-review', `product-${productId}`, review).catch(() => {});
+    publishSocketEvent('new-review', `product-${productId}`, enrichedReview).catch(() => {});
+    publishDomainEvent('REVIEW_SUBMITTED', {
+      reviewId: enrichedReview.id,
+      productId,
+      rating: enrichedReview.rating,
+      comment: enrichedReview.comment,
+      sentiment: enrichedReview.sentiment?.label,
+    }).catch(() => {});
 
-    res.status(201).json(review);
+    res.status(201).json(enrichedReview);
   } catch (error) {
     console.error('Create review error:', error);
     res.status(500).json({ error: 'Failed to create review' });

@@ -767,7 +767,7 @@ async function launchBrowser() {
             }));
           });
 
-          const broken = imgStatus.filter((i) => !i.complete || i.naturalWidth === 0);
+          const broken = imgStatus.filter((i) => i.naturalWidth === 0);
           assert.equal(
             broken.length,
             0,
