@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { INSTANCE_ID, getRedisStatus } = require('../../utils/redis');
+const { rateLimit } = require('../../middleware/rateLimit');
 const {
   EVENT_CHANNEL,
   ACK_CHANNEL,
@@ -150,12 +151,22 @@ router.get('/status', async (req, res) => {
 });
 
 // POST /api/microservices/events/publish
-router.post('/events/publish', async (req, res) => {
+router.post(
+  '/events/publish',
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 60,
+    message: 'Too many event publish requests, please try again later',
+  }),
+  async (req, res) => {
   try {
     const { type = 'INVENTORY_SYNC', payload = {}, awaitAck = true } = req.body || {};
     const cleanType = String(type).trim().toUpperCase();
-    if (!cleanType) {
-      return res.status(400).json({ error: 'Event type is required' });
+    if (!cleanType || !/^[A-Z0-9_.:-]{2,64}$/.test(cleanType)) {
+      return res.status(400).json({ error: 'Valid event type is required' });
+    }
+    if (typeof payload !== 'object' || payload === null || Array.isArray(payload)) {
+      return res.status(400).json({ error: 'Event payload must be a JSON object' });
     }
 
     if (awaitAck) {
@@ -201,15 +212,32 @@ router.get('/proxy/:service/*', async (req, res) => {
     return res.status(404).json({ error: `Unknown microservice: ${serviceName}` });
   }
 
-  const subPath = req.params[0] || 'health';
+  const rawSubPath = String(req.params[0] || 'health').replace(/^\/+/, '');
+  if (
+    !rawSubPath ||
+    rawSubPath.length > 200 ||
+    rawSubPath.includes('..') ||
+    rawSubPath.includes('//') ||
+    rawSubPath.includes('\\') ||
+    rawSubPath.includes('@') ||
+    !/^[a-zA-Z0-9/_-]+$/.test(rawSubPath)
+  ) {
+    return res.status(400).json({ error: 'Invalid proxy target path' });
+  }
+
   const qs = new URLSearchParams(req.query).toString();
-  const targetPath = `/${subPath}${qs ? `?${qs}` : ''}`;
+  const targetPath = `/${rawSubPath}${qs ? `?${qs}` : ''}`;
 
   for (const baseUrl of svc.urls) {
     try {
+      const parsedBase = new URL(baseUrl);
+      const parsedTarget = new URL(targetPath, parsedBase);
+      if (parsedTarget.origin !== parsedBase.origin) {
+        continue;
+      }
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 2000);
-      const upstream = await fetch(`${baseUrl}${targetPath}`, {
+      const upstream = await fetch(parsedTarget.toString(), {
         signal: controller.signal,
       });
       clearTimeout(timer);

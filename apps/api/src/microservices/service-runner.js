@@ -9,8 +9,12 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const prisma = require('../utils/prisma');
+const { isAllowedOrigin } = require('../config/origins');
+const { sanitizeRequest } = require('../utils/security');
+const { errorHandler, notFoundHandler } = require('../middleware/errorHandler');
 const { INSTANCE_ID, getRedisStatus } = require('../utils/redis');
 const { EVENT_CHANNEL, getEventHistory } = require('../utils/eventBus');
 const { registerAllDomainConsumers } = require('./domain-consumers');
@@ -34,8 +38,15 @@ const PORT = Number(process.env.PORT || DEFAULT_PORTS[SERVICE_ROLE] || 3002);
 async function startElasticsearchNode() {
   const app = express();
   app.disable('x-powered-by');
-  app.use(cors());
-  app.use(express.json({ limit: '10mb' }));
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+  app.use(
+    cors({
+      origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
+      credentials: true,
+    })
+  );
+  app.use(express.json({ limit: '2mb' }));
+  app.use(sanitizeRequest);
 
   // Initial sync from PostgreSQL on startup
   syncAllProductsToElasticsearch().catch(() => {});
@@ -87,7 +98,7 @@ async function startElasticsearchNode() {
   });
 
   app.post('/:index/_bulk_sync', (req, res) => {
-    const docs = Array.isArray(req.body?.documents) ? req.body.documents : [];
+    const docs = Array.isArray(req.body?.documents) ? req.body.documents.slice(0, 1000) : [];
     localIndex.clear();
     const result = localIndex.bulkIndex(docs);
     res.json({ errors: false, ...result });
@@ -122,6 +133,9 @@ async function startElasticsearchNode() {
     res.json(result);
   });
 
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+
   app.listen(PORT, () => {
     console.log(`[elasticsearch] Search engine node listening on port ${PORT}`);
   });
@@ -130,9 +144,17 @@ async function startElasticsearchNode() {
 async function startDomainMicroservice() {
   const app = express();
   app.disable('x-powered-by');
-  app.use(cors({ origin: true, credentials: true }));
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+  app.use(
+    cors({
+      origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
+      credentials: true,
+    })
+  );
   app.use(express.json({ limit: '100kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100kb' }));
   app.use(cookieParser());
+  app.use(sanitizeRequest);
 
   app.use((req, res, next) => {
     res.setHeader('X-Microservice-Name', SERVICE_ROLE);
@@ -189,6 +211,9 @@ async function startDomainMicroservice() {
       timestamp: new Date().toISOString(),
     });
   });
+
+  app.use(notFoundHandler);
+  app.use(errorHandler);
 
   app.listen(PORT, () => {
     console.log(`[microservice:${SERVICE_ROLE}] running on port ${PORT} (instance: ${INSTANCE_ID})`);
