@@ -105,7 +105,9 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/aevo
       REDIS_URL: redis://localhost:6379
       ELASTICSEARCH_URL: http://localhost:9200
-      PORT: '3001'
+      PRODUCT_SERVICE_URL: http://localhost:3002
+      ORDER_SERVICE_URL: http://localhost:3003
+      USER_SERVICE_URL: http://localhost:3004
       CLIENT_URL: http://localhost:3000
       NEXT_PUBLIC_API_URL: http://localhost:3001
       INTERNAL_API_URL: http://localhost:3001
@@ -141,24 +143,21 @@ jobs:
       - name: Install Playwright Chromium for E2E Browser Tests
         run: npx playwright install --with-deps chromium
 
-      - name: Start Microservices, Elasticsearch, API & Web Servers
+      - name: Start Servers & Run Automated E2E Test Suites (Phases 1 - 6 & Security)
         run: |
           SERVICE_ROLE=elasticsearch PORT=9200 node apps/api/src/microservices/service-runner.js &
           SERVICE_ROLE=product-service PORT=3002 node apps/api/src/microservices/service-runner.js &
           SERVICE_ROLE=order-service PORT=3003 node apps/api/src/microservices/service-runner.js &
           SERVICE_ROLE=user-service PORT=3004 node apps/api/src/microservices/service-runner.js &
-          npm run start --workspace=apps/api &
-          npm run start --workspace=apps/web &
-          for i in $(seq 1 30); do
+          PORT=3001 npm run start --workspace=apps/api &
+          PORT=3000 npm run start --workspace=apps/web &
+          for i in $(seq 1 45); do
             if curl -sf http://localhost:3001/health > /dev/null && curl -sf http://localhost:3000 > /dev/null; then
               echo "Both API (3001) and Web (3000) servers are healthy!"
               break
             fi
             sleep 1
           done
-
-      - name: Run Automated E2E Test Suites (Phases 1 - 6 & Security)
-        run: |
           node apps/api/test/phase1.e2e.js
           node apps/api/test/phase2.e2e.js
           node apps/api/test/phase3.e2e.js
