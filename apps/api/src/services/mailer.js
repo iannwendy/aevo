@@ -161,12 +161,19 @@ function renderAevoEmailLayout({
 </html>`;
 }
 
+function sanitizeRecipientEmail(rawTo) {
+  const firstToken = String(rawTo || '')
+    .trim()
+    .split(/[\r\n,;\s]+/)[0];
+  return stripCrLf(firstToken);
+}
+
 async function sendMail({ to, subject, html, text }) {
   const defaultFrom = process.env.SMTP_USER
     ? `AEVO <${process.env.SMTP_USER}>`
     : 'AEVO <no-reply@aevo.io.vn>';
   const from = stripCrLf(process.env.SMTP_FROM || defaultFrom);
-  const safeTo = stripCrLf(to);
+  const safeTo = sanitizeRecipientEmail(to);
   const safeSubject = stripCrLf(subject);
   const mail = {
     from,
@@ -177,7 +184,10 @@ async function sendMail({ to, subject, html, text }) {
   };
 
   const activeTransporter = getTransporter();
-  const isReservedTestAddress = /@(example\.com|example\.org|example\.net|test\.local)$/i.test(safeTo);
+  const isReservedTestAddress =
+    !safeTo ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safeTo) ||
+    /@(example\.com|example\.org|example\.net|test\.local|aevo\.local|evil\.com)$/i.test(safeTo);
 
   if (!usingSmtp || isReservedTestAddress) {
     console.log(
@@ -204,7 +214,7 @@ async function sendMail({ to, subject, html, text }) {
 async function sendPasswordResetEmail(to, fullName, link) {
   const subject = 'Reset your AEVO password';
   const safeName = escapeHtml(fullName || 'Customer');
-  const safeEmail = escapeHtml(stripCrLf(to || ''));
+  const safeEmail = escapeHtml(sanitizeRecipientEmail(to));
   const safeLink = escapeHtml(link || '');
   const siteUrl = getPublicSiteUrl();
   const safeLoginUrl = escapeHtml(`${siteUrl}/login`);
@@ -287,7 +297,7 @@ async function sendPasswordResetEmail(to, fullName, link) {
 async function sendWelcomeAccountEmail({ to, fullName, temporaryPassword, resetUrl }) {
   const subject = 'Welcome to AEVO — Your Account & Password Details';
   const safeName = escapeHtml(fullName || 'Customer');
-  const safeEmail = escapeHtml(to || '');
+  const safeEmail = escapeHtml(sanitizeRecipientEmail(to));
   const safePassword = escapeHtml(temporaryPassword || '');
   const safeLink = escapeHtml(resetUrl || '');
   const siteUrl = getPublicSiteUrl();
