@@ -1,6 +1,22 @@
+import { cookies } from 'next/headers';
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
 import HomeClient from '../components/home/HomeClient';
+import {
+  LOCALE_COOKIE_NAME,
+  normalizeLocale,
+  translate,
+  formatAevoTitle,
+} from '../lib/i18n/dictionaries';
+
+export async function generateMetadata() {
+  const cookieStore = cookies();
+  const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
+  return {
+    title: formatAevoTitle(translate(locale, 'pageTitles.home')),
+    description: 'Discover exceptional hardware for everything you create.',
+  };
+}
 
 const API_URL =
   process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';

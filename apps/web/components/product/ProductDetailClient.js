@@ -21,6 +21,7 @@ import { API_URL, productsApi, cartApi, reviewsApi } from '../../lib/api';
 import { fetchProfile } from '../../lib/auth-client';
 import { FALLBACK_PRODUCT_IMAGE, formatPrice, handleImageError } from '../../lib/utils';
 import { useI18n } from '../../lib/i18n';
+import { formatAevoTitle } from '../../lib/i18n/dictionaries';
 
 function computeReviewStatsClient(reviews = []) {
   const rated = reviews.filter(
@@ -93,6 +94,17 @@ export default function ProductDetailClient({
   const [product, setProduct] = useState(initialProduct || null);
   const [loading, setLoading] = useState(!initialProduct && !initialNotFound);
   const [notFoundError, setNotFoundError] = useState(Boolean(initialNotFound));
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (product?.name) {
+      document.title = formatAevoTitle(product.name);
+    } else if (notFoundError) {
+      document.title = formatAevoTitle(t('pageTitles.productNotFound'));
+    } else {
+      document.title = formatAevoTitle(t('pageTitles.productDetails'));
+    }
+  }, [product?.name, notFoundError, locale, t]);
 
   // Gallery state
   const [activeImageIndex, setActiveImageIndex] = useState(0);

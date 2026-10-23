@@ -2,17 +2,26 @@ import './globals.css';
 import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
 import { I18nProvider } from '../lib/i18n';
-import { LOCALE_COOKIE_NAME, normalizeLocale } from '../lib/i18n/dictionaries';
+import {
+  LOCALE_COOKIE_NAME,
+  normalizeLocale,
+  translate,
+  formatAevoTitle,
+} from '../lib/i18n/dictionaries';
 import { ThemeProvider } from '../components/providers/theme-provider';
 import PageTransition from '../components/PageTransition';
 import AiAssistantWidget from '../components/ai/AiAssistantWidget';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'] });
 
-export const metadata = {
-  title: 'AEVO',
-  description: 'Discover exceptional hardware for everything you create.',
-};
+export async function generateMetadata() {
+  const cookieStore = cookies();
+  const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
+  return {
+    title: formatAevoTitle(translate(locale, 'pageTitles.home')),
+    description: 'Discover exceptional hardware for everything you create.',
+  };
+}
 
 export default function RootLayout({ children }) {
   const cookieStore = cookies();

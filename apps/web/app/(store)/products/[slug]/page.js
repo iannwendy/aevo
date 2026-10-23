@@ -1,6 +1,13 @@
+import { cookies } from 'next/headers';
 import SiteHeader from '../../../../components/SiteHeader';
 import SiteFooter from '../../../../components/SiteFooter';
 import ProductDetailClient from '../../../../components/product/ProductDetailClient';
+import {
+  LOCALE_COOKIE_NAME,
+  normalizeLocale,
+  translate,
+  formatAevoTitle,
+} from '../../../../lib/i18n/dictionaries';
 
 const API_URL =
   process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -19,15 +26,21 @@ async function fetchProductBySlugSafe(slug) {
 }
 
 export async function generateMetadata({ params }) {
+  const cookieStore = cookies();
+  const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
   const slug = params?.slug;
-  const { product } = slug ? await fetchProductBySlugSafe(slug) : { product: null };
+  const { product, notFound } = slug
+    ? await fetchProductBySlugSafe(slug)
+    : { product: null, notFound: false };
   if (!product) {
     return {
-      title: 'AEVO',
+      title: formatAevoTitle(
+        translate(locale, notFound ? 'pageTitles.productNotFound' : 'pageTitles.productDetails')
+      ),
     };
   }
   return {
-    title: 'AEVO',
+    title: formatAevoTitle(product.name),
     description: product.description?.split('\n')?.[0] || 'Built for your workflow.',
   };
 }

@@ -17,6 +17,7 @@ import {
   LOCALE_COOKIE_NAME,
   normalizeLocale,
   translate,
+  formatAevoTitle,
 } from '../../../../lib/i18n/dictionaries';
 
 const API_URL =
@@ -61,10 +62,14 @@ async function fetchOrderDetails(searchParams) {
   }
 }
 
-export const metadata = {
-  title: 'AEVO',
-  description: 'Your precision hardware order has been received and confirmed.',
-};
+export async function generateMetadata() {
+  const cookieStore = cookies();
+  const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
+  return {
+    title: formatAevoTitle(translate(locale, 'pageTitles.checkoutSuccess')),
+    description: 'Your precision hardware order has been received and confirmed.',
+  };
+}
 
 export default async function CheckoutSuccessPage({ searchParams }) {
   const cookieStore = cookies();

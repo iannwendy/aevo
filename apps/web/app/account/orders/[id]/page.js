@@ -15,6 +15,7 @@ import SiteFooter from '../../../../components/SiteFooter';
 import { ordersApi } from '../../../../lib/api';
 import { formatPrice } from '../../../../lib/utils';
 import { useI18n } from '../../../../lib/i18n';
+import { formatAevoTitle } from '../../../../lib/i18n/dictionaries';
 
 function getStatusBadgeClass(status) {
   switch (status) {
@@ -32,11 +33,20 @@ function getStatusBadgeClass(status) {
 }
 
 export default function OrderDetailPage({ params }) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const orderId = params?.id;
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (order?.orderNumber) {
+      document.title = formatAevoTitle(t('pageTitles.orderNumber', { number: order.orderNumber }));
+    } else {
+      document.title = formatAevoTitle(t('pageTitles.orderDetail'));
+    }
+  }, [order?.orderNumber, locale, t]);
 
   useEffect(() => {
     let active = true;

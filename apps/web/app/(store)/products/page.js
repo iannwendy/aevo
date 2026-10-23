@@ -1,7 +1,15 @@
 import { Suspense } from 'react';
+import { cookies } from 'next/headers';
 import SiteHeader from '../../../components/SiteHeader';
 import SiteFooter from '../../../components/SiteFooter';
 import CatalogClient from '../../../components/product/CatalogClient';
+import {
+  LOCALE_COOKIE_NAME,
+  normalizeLocale,
+  translate,
+  localizeCategoryName,
+  formatAevoTitle,
+} from '../../../lib/i18n/dictionaries';
 
 const API_URL =
   process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -16,10 +24,19 @@ async function fetchJsonSafe(path) {
   }
 }
 
-export const metadata = {
-  title: 'AEVO',
-  description: 'Explore curated computing essentials, workstations, components, and displays.',
-};
+export async function generateMetadata({ searchParams = {} }) {
+  const cookieStore = cookies();
+  const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
+  const rawCategory = searchParams?.category;
+  const category = Array.isArray(rawCategory) ? rawCategory[0] : rawCategory;
+  const pageName = category
+    ? localizeCategoryName(category, locale)
+    : translate(locale, 'pageTitles.shop');
+  return {
+    title: formatAevoTitle(pageName),
+    description: 'Explore curated computing essentials, workstations, components, and displays.',
+  };
+}
 
 export default async function ProductsCatalogPage({ searchParams = {} }) {
   const qs = new URLSearchParams();

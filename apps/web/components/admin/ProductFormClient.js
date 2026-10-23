@@ -15,6 +15,7 @@ import {
 import AdminShell from './AdminShell';
 import { productsApi, categoriesApi } from '../../lib/api';
 import { useI18n } from '../../lib/i18n';
+import { formatAevoTitle } from '../../lib/i18n/dictionaries';
 
 const DEFAULT_IMAGES = [
   'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=1000',
@@ -41,7 +42,7 @@ const DEFAULT_VARIANTS = [
 
 export default function ProductFormClient({ productId = null }) {
   const router = useRouter();
-  const { t, catName } = useI18n();
+  const { locale, t, catName } = useI18n();
   const isEdit = Boolean(productId);
 
   const [categories, setCategories] = useState([]);
@@ -51,6 +52,20 @@ export default function ProductFormClient({ productId = null }) {
   const [success, setSuccess] = useState('');
 
   const [name, setName] = useState('');
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (isEdit) {
+      const trimmed = name.trim();
+      document.title = formatAevoTitle(
+        trimmed
+          ? t('pageTitles.adminEditProductNamed', { name: trimmed })
+          : t('pageTitles.adminEditProduct')
+      );
+    } else {
+      document.title = formatAevoTitle(t('pageTitles.adminNewProduct'));
+    }
+  }, [isEdit, name, locale, t]);
   const [brand, setBrand] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [description, setDescription] = useState('');

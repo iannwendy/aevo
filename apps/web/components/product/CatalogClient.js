@@ -20,6 +20,7 @@ import Pagination from './Pagination';
 import { productsApi, categoriesApi, aiApi } from '../../lib/api';
 import { FALLBACK_PRODUCT_IMAGE, formatPrice, handleImageError } from '../../lib/utils';
 import { useI18n } from '../../lib/i18n';
+import { formatAevoTitle } from '../../lib/i18n/dictionaries';
 
 const SORT_OPTIONS = [
   { value: 'newest', key: 'catalog.sortNewest' },
@@ -88,7 +89,7 @@ function buildQueryString(filters) {
 }
 
 export default function CatalogClient({ initialData, initialQuery = {} }) {
-  const { t, catName } = useI18n();
+  const { locale, t, catName } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -97,6 +98,14 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
     () => parseQueryToState(searchParams, initialQuery),
     [searchParams, initialQuery]
   );
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const pageName = currentFilters.category
+      ? catName(currentFilters.category)
+      : t('pageTitles.shop');
+    document.title = formatAevoTitle(pageName);
+  }, [currentFilters.category, locale, t, catName]);
 
   // Local input states for controlled search & price inputs
   const [searchInput, setSearchInput] = useState(currentFilters.search);

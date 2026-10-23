@@ -847,6 +847,34 @@ export const dictionaries = {
       sentimentNegative: 'Negative',
       esBadge: 'Elasticsearch BM25',
     },
+    pageTitles: {
+      home: 'Home',
+      shop: 'Shop',
+      productDetails: 'Product Details',
+      productNotFound: 'Product Not Found',
+      cart: 'Cart',
+      checkout: 'Checkout',
+      checkoutSuccess: 'Order Confirmed',
+      login: 'Sign In',
+      register: 'Create Account',
+      forgotPassword: 'Reset Password',
+      resetPassword: 'Set New Password',
+      logout: 'Sign Out',
+      profile: 'Profile & Security',
+      addresses: 'Delivery Addresses',
+      orders: 'Order History',
+      orderDetail: 'Order Details',
+      orderNumber: 'Order {number}',
+      adminDashboard: 'Dashboard',
+      adminProducts: 'Product Management',
+      adminNewProduct: 'Add Product',
+      adminEditProduct: 'Edit Product',
+      adminEditProductNamed: 'Edit {name}',
+      adminOrders: 'Order Management',
+      adminOrderDetail: 'Order Details',
+      adminUsers: 'User Management',
+      adminDiscounts: 'Discount Management',
+    },
   },
   vi: {
     header: {
@@ -1597,8 +1625,41 @@ export const dictionaries = {
       sentimentNegative: 'Tiêu cực',
       esBadge: 'Elasticsearch BM25',
     },
+    pageTitles: {
+      home: 'Trang chủ',
+      shop: 'Cửa hàng',
+      productDetails: 'Chi tiết sản phẩm',
+      productNotFound: 'Không tìm thấy sản phẩm',
+      cart: 'Giỏ hàng',
+      checkout: 'Thanh toán',
+      checkoutSuccess: 'Đặt hàng thành công',
+      login: 'Đăng nhập',
+      register: 'Tạo tài khoản',
+      forgotPassword: 'Đặt lại mật khẩu',
+      resetPassword: 'Chọn mật khẩu mới',
+      logout: 'Đăng xuất',
+      profile: 'Hồ sơ & Bảo mật',
+      addresses: 'Địa chỉ giao hàng',
+      orders: 'Lịch sử đơn hàng',
+      orderDetail: 'Chi tiết đơn hàng',
+      orderNumber: 'Đơn hàng {number}',
+      adminDashboard: 'Bảng điều khiển',
+      adminProducts: 'Quản lý Sản phẩm',
+      adminNewProduct: 'Thêm sản phẩm',
+      adminEditProduct: 'Chỉnh sửa sản phẩm',
+      adminEditProductNamed: 'Chỉnh sửa {name}',
+      adminOrders: 'Quản lý Đơn hàng',
+      adminOrderDetail: 'Chi tiết đơn hàng',
+      adminUsers: 'Quản lý Người dùng',
+      adminDiscounts: 'Quản lý Mã giảm giá',
+    },
   },
 };
+
+export function formatAevoTitle(pageName) {
+  const clean = typeof pageName === 'string' ? pageName.trim() : '';
+  return clean ? `AEVO - ${clean}` : 'AEVO';
+}
 
 function getByPath(obj, path) {
   if (!obj || !path) return undefined;

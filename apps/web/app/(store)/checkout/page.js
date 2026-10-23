@@ -2,6 +2,12 @@ import { cookies, headers } from 'next/headers';
 import SiteHeader from '../../../components/SiteHeader';
 import SiteFooter from '../../../components/SiteFooter';
 import CheckoutClient from '../../../components/checkout/CheckoutClient';
+import {
+  LOCALE_COOKIE_NAME,
+  normalizeLocale,
+  translate,
+  formatAevoTitle,
+} from '../../../lib/i18n/dictionaries';
 
 const API_URL =
   process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -44,10 +50,14 @@ async function fetchInitialCheckoutData() {
   }
 }
 
-export const metadata = {
-  title: 'AEVO',
-  description: 'Complete your precision hardware acquisition with multi-step verification.',
-};
+export async function generateMetadata() {
+  const cookieStore = cookies();
+  const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
+  return {
+    title: formatAevoTitle(translate(locale, 'pageTitles.checkout')),
+    description: 'Complete your precision hardware acquisition with multi-step verification.',
+  };
+}
 
 export default async function CheckoutPage() {
   const { initialUser, initialCart } = await fetchInitialCheckoutData();

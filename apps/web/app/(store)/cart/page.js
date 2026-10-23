@@ -2,6 +2,12 @@ import { cookies } from 'next/headers';
 import SiteHeader from '../../../components/SiteHeader';
 import SiteFooter from '../../../components/SiteFooter';
 import CartClient from '../../../components/cart/CartClient';
+import {
+  LOCALE_COOKIE_NAME,
+  normalizeLocale,
+  translate,
+  formatAevoTitle,
+} from '../../../lib/i18n/dictionaries';
 
 const API_URL =
   process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -27,10 +33,14 @@ async function fetchInitialCart() {
   }
 }
 
-export const metadata = {
-  title: 'AEVO',
-  description: 'Review your selected computing hardware and proceed to checkout.',
-};
+export async function generateMetadata() {
+  const cookieStore = cookies();
+  const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
+  return {
+    title: formatAevoTitle(translate(locale, 'pageTitles.cart')),
+    description: 'Review your selected computing hardware and proceed to checkout.',
+  };
+}
 
 export default async function CartPage() {
   const initialCart = await fetchInitialCart();

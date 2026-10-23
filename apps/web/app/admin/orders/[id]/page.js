@@ -17,6 +17,7 @@ import AdminShell from '../../../../components/admin/AdminShell';
 import { ordersApi } from '../../../../lib/api';
 import { formatPrice } from '../../../../lib/utils';
 import { useI18n } from '../../../../lib/i18n';
+import { formatAevoTitle } from '../../../../lib/i18n/dictionaries';
 
 const ORDER_STATUSES = ['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'];
 
@@ -45,6 +46,15 @@ export default function AdminOrderDetailPage({ params }) {
   const [statusNote, setStatusNote] = useState('');
   const [updating, setUpdating] = useState(false);
   const [feedback, setFeedback] = useState(null);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (order?.orderNumber) {
+      document.title = formatAevoTitle(t('pageTitles.orderNumber', { number: order.orderNumber }));
+    } else {
+      document.title = formatAevoTitle(t('pageTitles.adminOrderDetail'));
+    }
+  }, [order?.orderNumber, locale, t]);
 
   const loadOrder = useCallback(async () => {
     if (!orderId) return;
