@@ -828,8 +828,8 @@ const CATEGORIES = [
   { name: 'Components', slug: 'components', description: 'Apple Mac Studio, Mac mini, iMac 24", Mac Pro & flagship desktop hardware.', image: 'https://macone.vn/wp-content/uploads/2026/08/Mac_Studio_M5_Max_Aug26_PDP_Image_Position_1__VN-VI-768x768.jpg' },
   { name: 'Monitors', slug: 'monitors', description: 'Apple Studio Display XDR, Pro Display XDR & colour-accurate 5K/6K studio displays.', image: 'https://macone.vn/wp-content/uploads/2026/03/Studio_Display_XDR_PDP_Image_Position_1__VN-VI-768x768.jpg' },
   { name: 'Storage', slug: 'storage', description: 'Apple Mac Pro & Mac Studio SSD upgrade kits, Thunderbolt 5 NVMe & studio RAID.', image: 'https://macone.vn/wp-content/uploads/2026/08/Mac_Studio_M5_Ultra_Aug26_PDP_Image_Position_1__VN-VI-768x768.jpg' },
-  { name: 'Peripherals', slug: 'peripherals', description: 'Apple Magic Keyboard Touch ID, Magic Trackpad, Magic Mouse, AirPods Max & desk gear.', image: 'https://macone.vn/wp-content/uploads/2024/12/MXK83_AV1.jpeg' },
-  { name: 'Accessories', slug: 'accessories', description: 'Apple Thunderbolt 5 Pro cables, MagSafe 3 chargers, USB-C adapters & workspace stands.', image: 'https://macone.vn/wp-content/uploads/2023/12/MU2G3.jpeg' },
+  { name: 'Peripherals', slug: 'peripherals', description: 'Apple Magic Keyboard Touch ID, Magic Trackpad, Magic Mouse & studio desk gear.', image: 'https://macone.vn/wp-content/uploads/2024/12/MXK83_AV1.jpeg' },
+  { name: 'Accessories', slug: 'accessories', description: 'Apple Thunderbolt 5 Pro docks, braided cables, USB-C hubs & workspace stands.', image: 'https://macone.vn/wp-content/uploads/2023/12/MU2G3.jpeg' },
 ];
 
 const DISCOUNTS = [
@@ -1030,7 +1030,7 @@ async function seedReviews(products, users) {
     'apple-mac-studio-m5-max-ultra-2026',
     'apple-mac-mini-m5-pro-2026',
     'apple-magic-keyboard-touch-id-numeric-usbc',
-    'apple-airpods-max-usbc-2025',
+    'apple-magic-desktop-studio-kit-usbc',
     'nvidia-geforce-rtx-4090-founders-edition',
     'dell-ultrasharp-u2723qe',
   ]);

@@ -261,7 +261,7 @@ export default function HomeClient({ initialData }) {
                   href="/products?category=peripherals&brand=Apple"
                   className="px-3 py-1.5 rounded-full bg-surface border border-border text-caption font-medium text-ink hover:border-ink transition-colors"
                 >
-                   Magic & AirPods
+                   Magic Keyboards & Mice
                 </Link>
                 <Link
                   href="/products?category=storage&brand=Apple"

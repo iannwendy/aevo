@@ -46,53 +46,46 @@
     ]
   },
   {
-    "name": "Apple USB-C Power Adapter for MacBook (70W / 96W / 140W GaN)",
-    "slug": "apple-usbc-power-adapter-70w-96w-140w",
+    "name": "Apple Thunderbolt 5 Pro Docking Station (12-Port Mac Studio Hub)",
+    "slug": "apple-thunderbolt-5-pro-docking-station",
     "brand": "Apple",
     "category": "accessories",
-    "isNewArrival": false,
+    "isNewArrival": true,
     "isBestSeller": true,
     "images": [
-      "https://macone.vn/wp-content/uploads/2022/11/adapter-sac-apple-type-c-140w-650x650-1.jpeg",
-      "https://macone.vn/wp-content/uploads/2022/11/adapter-sac-apple-type-c-140w-1-1-650x650-1.jpeg",
-      "https://macone.vn/wp-content/uploads/2022/11/adapter-sac-apple-type-c-140w-2-1-650x650-1.jpeg",
-      "https://macone.vn/wp-content/uploads/2020/12/96w-usb-c-power-apple-mx0j2-02-650x650-1.jpeg"
+      "https://macone.vn/wp-content/uploads/2023/04/MJ1M2.jpeg",
+      "https://macone.vn/wp-content/uploads/2023/12/MU2G3.jpeg",
+      "https://macone.vn/wp-content/uploads/2025/11/MW5J3.jpeg",
+      "https://macone.vn/wp-content/uploads/2025/11/MW5J3_AV1.jpeg"
     ],
-    "description": "Genuine Apple USB-C power adapter family engineered for MacBook Air and MacBook Pro fast charging.\nThe 140W Gallium Nitride (GaN) architecture delivers high-density power in a compact travel footprint.\nFast-charges MacBook Air M5 and MacBook Pro M5 from 0% to 50% battery in approximately 30 minutes.\nFeatures intelligent USB Power Delivery 3.1 voltage regulation to protect battery health over time.\nModular duckhead AC plug design allows easy swapping with the Apple World Travel Adapter Kit.\nPairs seamlessly with USB-C to MagSafe 3 or 240W USB-C Charge Cables across the Apple ecosystem.",
+    "description": "Apple Store Exclusive 12-port Thunderbolt 5 desktop docking station engineered for MacBook Pro and Mac Studio.\nDelivers up to 120Gb/s Bandwidth Boost throughput for dual 6K Studio Display XDR setups and PCIe NVMe arrays.\nEquipped with three downstream Thunderbolt 5 ports, 2.5GbE RJ-45 Ethernet, UHS-II SD 4.0, and three 10Gb/s USB-A ports.\nProvides up to 140W upstream USB Power Delivery 3.1 to sustain peak M5 Max performance over a single cable.\nCNC-machined anodized aluminum unibody enclosure acts as a silent passive heatsink on studio desks.\nPlug-and-play macOS integration with native Apple Silicon sleep/wake display synchronization.",
     "variants": [
       {
-        "name": "35W Dual USB-C Port Compact Power Adapter (MNWP3)",
-        "sku": "APL-PWR-35W-DUAL",
-        "price": 1690000,
-        "comparePrice": 1890000,
+        "name": "8-Port Thunderbolt 4 Compact Mac Hub · Space Black",
+        "sku": "APL-TB4-HUB-8P",
+        "price": 4990000,
+        "comparePrice": 5490000,
         "inventory": 75
       },
       {
-        "name": "70W USB-C Power Adapter — MacBook Air / 14\" Pro (MQLN3)",
-        "sku": "APL-PWR-70W",
-        "price": 1790000,
-        "comparePrice": 1990000,
-        "inventory": 90
-      },
-      {
-        "name": "96W USB-C Power Adapter — 14\" MacBook Pro Fast Charge (MX0J2)",
-        "sku": "APL-PWR-96W",
-        "price": 2190000,
-        "comparePrice": 2490000,
+        "name": "12-Port Thunderbolt 5 Pro Dock · Silver Aluminum (140W PD)",
+        "sku": "APL-TB5-DOCK-12P-SLV",
+        "price": 8490000,
+        "comparePrice": 9290000,
         "inventory": 64
       },
       {
-        "name": "140W USB-C GaN Power Adapter — 16\" MacBook Pro Fast Charge (MLYU3)",
-        "sku": "APL-PWR-140W-GAN",
-        "price": 2690000,
-        "comparePrice": 2990000,
+        "name": "12-Port Thunderbolt 5 Pro Dock · Space Black (140W PD)",
+        "sku": "APL-TB5-DOCK-12P-BLK",
+        "price": 8990000,
+        "comparePrice": 9790000,
         "inventory": 52
       }
     ],
     "tags": [
       "apple",
-      "charger",
-      "magsafe",
+      "thunderbolt-5",
+      "dock",
       "usbc",
       "accessories",
       "2026"
@@ -170,7 +163,7 @@
       "https://macone.vn/wp-content/uploads/2025/11/MW5J3_AV1.jpeg",
       "https://macone.vn/wp-content/uploads/2023/12/MU2G3.jpeg"
     ],
-    "description": "Official Apple USB-C Digital AV Multiport Adapter expands a single Thunderbolt or USB-C port into three essential connections.\nMirrors or extends your Mac or iPad Pro display to an HDMI-enabled 4K 60Hz HDR10 / Dolby Vision monitor or TV.\nIncludes a standard USB-A 3.1 Gen 1 port for connecting flash drives, cameras, and legacy studio peripherals.\nDedicated USB-C pass-through port delivers fast charging to your system while external displays remain active.\nPlug-and-play macOS integration requires zero third-party drivers or firmware configuration.\nCompact anodized white and aluminum enclosure slips easily into any workstation sleeve.",
+    "description": "Official Apple USB-C Digital AV Multiport Adapter expands a single Thunderbolt or USB-C port into three essential connections.\nMirrors or extends your MacBook Pro, MacBook Air, or Mac mini display to an HDMI-enabled 4K 60Hz HDR10 studio monitor.\nIncludes a standard USB-A 3.1 Gen 1 port for connecting flash drives, external SSDs, and legacy workstation peripherals.\nDedicated USB-C pass-through port delivers fast power delivery to your Mac while external displays remain active.\nPlug-and-play macOS integration requires zero third-party drivers or firmware configuration.\nCompact anodized white and aluminum enclosure slips easily into any workstation sleeve.",
     "variants": [
       {
         "name": "Apple USB-C Digital AV Multiport Adapter (MUF82)",
@@ -397,7 +390,7 @@
       "https://macone.vn/wp-content/uploads/2025/11/MW5J3_AV1.jpeg",
       "https://macone.vn/wp-content/uploads/2023/12/MU2G3_AV1.jpeg"
     ],
-    "description": "Apple Store Exclusive portable NVMe SSD crafted in Space Black and Silver aluminum to match Apple Silicon Macs.\nPre-formatted in APFS out of the box for instant macOS Time Machine backups and Final Cut Pro libraries.\nHigh-bandwidth USB4 / Thunderbolt interface sustains up to 3,800 MB/s read and 3,500 MB/s write speeds.\nHardware AES-256 encryption integrates with macOS Keychain for seamless password protection.\nBeveled diamond-cut aluminum chassis acts as a silent passive heatsink during direct ProRes 4K120 recording.\nIncludes a braided USB4 Type-C cable compatible with Mac, iPad Pro M4/M5, and iPhone Pro.",
+    "description": "Apple Store Exclusive portable NVMe SSD crafted in Space Black and Silver aluminum to match Apple Silicon Macs.\nPre-formatted in APFS out of the box for instant macOS Time Machine backups and Final Cut Pro libraries.\nHigh-bandwidth USB4 / Thunderbolt interface sustains up to 3,800 MB/s read and 3,500 MB/s write speeds.\nHardware AES-256 encryption integrates with macOS Keychain for seamless password protection.\nBeveled diamond-cut aluminum chassis acts as a silent passive heatsink during direct ProRes 4K120 recording.\nIncludes a braided USB4 Type-C cable compatible with MacBook Pro, Mac Studio, Mac mini, and Mac Pro.",
     "variants": [
       {
         "name": "1TB · Space Black Aluminum · USB4 / Thunderbolt",
@@ -636,100 +629,92 @@
     ]
   },
   {
-    "name": "Apple AirPods Max (USB-C Lossless Studio Edition)",
-    "slug": "apple-airpods-max-usbc-lossless",
+    "name": "Apple Magic Keyboard with Numeric Keypad (Silver & Space Grey USB-C)",
+    "slug": "apple-magic-keyboard-numeric-silver-usbc",
     "brand": "Apple",
     "category": "peripherals",
     "isNewArrival": true,
     "isBestSeller": true,
     "images": [
-      "https://macone.vn/wp-content/uploads/2021/11/airpods-max-select-202409-midnight_FV1.jpeg",
-      "https://macone.vn/wp-content/uploads/2021/11/airpods-max-select-202409-starlight_FV1.jpeg",
-      "https://macone.vn/wp-content/uploads/2021/11/airpods-max-select-202409-blue_FV1.jpeg",
-      "https://macone.vn/wp-content/uploads/2021/11/airpods-max-select-202409-purple_FV1.jpeg",
-      "https://macone.vn/wp-content/uploads/2021/11/airpods-max-select-202409-orange_FV1.jpeg"
+      "https://macone.vn/wp-content/uploads/2024/12/MXK73_AV1-1.jpeg",
+      "https://macone.vn/wp-content/uploads/2024/12/MXK73_AV4.jpeg",
+      "https://macone.vn/wp-content/uploads/2024/12/MXK83_AV1.jpeg",
+      "https://macone.vn/wp-content/uploads/2024/12/MXK83_AV3.jpeg"
     ],
-    "description": "Apple over-ear studio headphones updated with USB-C charging and 24-bit/48kHz lossless wired digital audio.\nSupports ultra-low-latency audio monitoring for Logic Pro music production and Final Cut Pro editing on Mac.\nApple-designed dynamic driver and dual H1 acoustic chips deliver high-fidelity sound with ultra-low distortion.\nPro-level Active Noise Cancellation counters external noise with eight microphones, paired with Transparency mode.\nPersonalized Spatial Audio with dynamic head tracking creates a theater-like 3D soundstage.\nBreathable knit-mesh canopy and acoustically engineered memory foam ear cushions in five anodized colors.",
+    "description": "Extended wireless Apple Magic Keyboard with full-size 109-key layout and precision numeric keypad for Mac workstations.\nEngineered with a low-profile scissor mechanism under each keycap for quiet, responsive 1mm keystroke travel.\nFull-size arrow keys and dedicated document navigation controls accelerate spreadsheet, coding, and CAD workflows.\nUpdated USB-C port pairs and charges seamlessly via the included woven USB-C cable connected to any Mac.\nInternal lithium-ion battery delivers over a month of wireless operation between charges.\nPrecision-milled anodized aluminum enclosure complements MacBook Pro, Mac Studio, and Studio Display.",
     "variants": [
       {
-        "name": "Midnight · USB-C Lossless Audio (MWW43)",
-        "sku": "APL-APM-C-MID",
-        "price": 13490000,
-        "comparePrice": 14490000,
-        "inventory": 42
+        "name": "US English Layout · White Keys · Silver Aluminum · USB-C",
+        "sku": "APL-MK-EXT-US-WHT",
+        "price": 3490000,
+        "comparePrice": 3890000,
+        "inventory": 58
       },
       {
-        "name": "Starlight · USB-C Lossless Audio (MWW53)",
-        "sku": "APL-APM-C-STR",
-        "price": 13490000,
-        "comparePrice": 14490000,
-        "inventory": 36
+        "name": "US English Layout · Black Keys · Space Grey Aluminum · USB-C",
+        "sku": "APL-MK-EXT-US-BLK",
+        "price": 3890000,
+        "comparePrice": 4290000,
+        "inventory": 46
       },
       {
-        "name": "Blue · USB-C Lossless Audio (MWW63)",
-        "sku": "APL-APM-C-BLU",
-        "price": 13490000,
-        "comparePrice": 14490000,
-        "inventory": 28
-      },
-      {
-        "name": "Purple · USB-C Lossless Audio (MWW73)",
-        "sku": "APL-APM-C-PRP",
-        "price": 13490000,
+        "name": "International JIS/ISO Developer Layout · Silver Aluminum · USB-C",
+        "sku": "APL-MK-EXT-DEV-SLV",
+        "price": 3690000,
         "comparePrice": null,
-        "inventory": 24
-      },
-      {
-        "name": "Orange · USB-C Lossless Audio (MWW83)",
-        "sku": "APL-APM-C-ORG",
-        "price": 13490000,
-        "comparePrice": null,
-        "inventory": 20
+        "inventory": 32
       }
     ],
     "tags": [
       "apple",
-      "headset",
-      "audio",
-      "airpods",
+      "keyboard",
+      "peripherals",
       "usbc",
       "2026"
     ]
   },
   {
-    "name": "Apple AirPods Pro 3 (H3 Chip & MagSafe USB-C Case, 2026)",
-    "slug": "apple-airpods-pro-3-h3-usbc-2026",
+    "name": "Apple Magic Desktop Studio Kit (Keyboard Touch ID + Trackpad + Mouse USB-C)",
+    "slug": "apple-magic-desktop-studio-kit-usbc",
     "brand": "Apple",
     "category": "peripherals",
     "isNewArrival": true,
     "isBestSeller": true,
     "images": [
-      "https://macone.vn/wp-content/uploads/2025/10/AirPods_Pro_3_Sep25_PDP_Image_Position_1__VN-VI-768x768.jpg",
-      "https://macone.vn/wp-content/uploads/2025/10/AirPods_Pro_3_Sep25_PDP_Image_Position_2__VN-VI-768x768.jpg",
-      "https://macone.vn/wp-content/uploads/2025/10/AirPods_Pro_3_Sep25_PDP_Image_Position_3__VN-VI-768x768.jpg",
-      "https://macone.vn/wp-content/uploads/2025/10/AirPods_Pro_3_Sep25_PDP_Image_Position_4__VN-VI-768x768.jpg"
+      "https://macone.vn/wp-content/uploads/2024/12/MXK83_AV1.jpeg",
+      "https://macone.vn/wp-content/uploads/2024/11/MXKA3.jpeg",
+      "https://macone.vn/wp-content/uploads/2024/11/MXK53_AV1.jpeg",
+      "https://macone.vn/wp-content/uploads/2024/12/MXK83_AV4.jpeg"
     ],
-    "description": "Next-generation Apple AirPods Pro 3 powered by the custom H3 audio silicon and low-distortion acoustic driver.\nDelivers up to 2x more Active Noise Cancellation than previous generations alongside Adaptive Audio and Conversation Awareness.\nSupports 20-bit/48kHz Lossless Audio with ultra-low latency when paired with Mac and Apple Vision Pro.\nIntegrated biometric ear-canal sensors provide real-time heart rate monitoring and clinical hearing health features.\nIP54 dust, sweat, and water-resistant earbuds and MagSafe USB-C Charging Case with built-in U2 Precision Finding.\nUp to 30 hours of total listening time with the case and instant iCloud device switching across Mac, iPhone, and iPad.",
+    "description": "Curated Apple Silicon desktop input bundle combining Magic Keyboard with Touch ID, Magic Trackpad, and Magic Mouse.\nColor-matched anodized aluminum and matte glass finishes create a unified, cable-free Mac Studio or MacBook desk setup.\nBiometric Touch ID sensor enables instant macOS unlock, sudo terminal authentication, and Passkey verification.\nForce Touch Magic Trackpad and Multi-Touch Magic Mouse support simultaneous dual-hand creative workflows in Final Cut Pro.\nAll included peripherals feature universal USB-C ports and braided color-matched USB-C pairing cables.\nAvailable in Space Black Edition or Classic Silver Edition for Apple Silicon Mac workstations.",
     "variants": [
       {
-        "name": "AirPods Pro 3 · MagSafe USB-C Case (2026 Standard)",
-        "sku": "APL-APP3-USBC",
-        "price": 6490000,
-        "comparePrice": 6990000,
-        "inventory": 110
+        "name": "Silver Edition · Magic Keyboard Touch ID + Magic Trackpad (USB-C)",
+        "sku": "APL-KIT-SLV-DUO",
+        "price": 7490000,
+        "comparePrice": 8280000,
+        "inventory": 45
       },
       {
-        "name": "AirPods Pro 3 · MagSafe USB-C Case + AppleCare+ (2 Years)",
-        "sku": "APL-APP3-USBC-AC",
-        "price": 7490000,
-        "comparePrice": 7990000,
-        "inventory": 55
+        "name": "Space Black Edition · Magic Keyboard Touch ID + Magic Trackpad (USB-C)",
+        "sku": "APL-KIT-BLK-DUO",
+        "price": 8290000,
+        "comparePrice": 9180000,
+        "inventory": 38
+      },
+      {
+        "name": "Complete Studio Trio · Keyboard Touch ID + Trackpad + Magic Mouse (Space Black)",
+        "sku": "APL-KIT-BLK-TRIO",
+        "price": 10690000,
+        "comparePrice": 11970000,
+        "inventory": 26
       }
     ],
     "tags": [
       "apple",
-      "airpods",
-      "audio",
+      "keyboard",
+      "trackpad",
+      "mouse",
       "peripherals",
       "usbc",
       "2026"

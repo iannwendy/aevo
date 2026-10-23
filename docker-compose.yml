@@ -43,19 +43,19 @@ services:
       - PRODUCT_SERVICE_URL=http://product-service:3002
       - ORDER_SERVICE_URL=http://order-service:3003
       - USER_SERVICE_URL=http://user-service:3004
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-AQ.Ab8RN6JUyM8clSYfyJEH5zWnnTgwjluDR-1xZLIcwZOooAwCkA}
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-flash-lite-latest}
       - JWT_SECRET=${JWT_SECRET:-aevo-dev-secret-key-change-in-production}
       - CLIENT_URL=${CLIENT_URL:-http://localhost:3000}
       - API_URL=${API_URL:-http://localhost:3001}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-699562916647-lhh1cqbt00qmu2qf44qr8kcdeitkmslb.apps.googleusercontent.com}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-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}
-      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
       - SMTP_PORT=${SMTP_PORT:-587}
       - SMTP_SECURE=${SMTP_SECURE:-false}
-      - SMTP_USER=${SMTP_USER:-}
-      - SMTP_PASS=${SMTP_PASS:-}
-      - SMTP_FROM=${SMTP_FROM:-AEVO <no-reply@aevo.io.vn>}
+      - SMTP_USER=${SMTP_USER:-baominh.internship@gmail.com}
+      - SMTP_PASS=${SMTP_PASS:-ewscrhryhmsndyxi}
+      - SMTP_FROM=${SMTP_FROM:-AEVO <baominh.internship@gmail.com>}
       - PORT=3001
     depends_on:
       db:
@@ -113,12 +113,12 @@ services:
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET:-aevo-dev-secret-key-change-in-production}
       - CLIENT_URL=${CLIENT_URL:-http://localhost:3000}
-      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
       - SMTP_PORT=${SMTP_PORT:-587}
       - SMTP_SECURE=${SMTP_SECURE:-false}
-      - SMTP_USER=${SMTP_USER:-}
-      - SMTP_PASS=${SMTP_PASS:-}
-      - SMTP_FROM=${SMTP_FROM:-AEVO <no-reply@aevo.io.vn>}
+      - SMTP_USER=${SMTP_USER:-baominh.internship@gmail.com}
+      - SMTP_PASS=${SMTP_PASS:-ewscrhryhmsndyxi}
+      - SMTP_FROM=${SMTP_FROM:-AEVO <baominh.internship@gmail.com>}
       - PORT=3003
     depends_on:
       api:
@@ -146,12 +146,12 @@ services:
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET:-aevo-dev-secret-key-change-in-production}
       - CLIENT_URL=${CLIENT_URL:-http://localhost:3000}
-      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
       - SMTP_PORT=${SMTP_PORT:-587}
       - SMTP_SECURE=${SMTP_SECURE:-false}
-      - SMTP_USER=${SMTP_USER:-}
-      - SMTP_PASS=${SMTP_PASS:-}
-      - SMTP_FROM=${SMTP_FROM:-AEVO <no-reply@aevo.io.vn>}
+      - SMTP_USER=${SMTP_USER:-baominh.internship@gmail.com}
+      - SMTP_PASS=${SMTP_PASS:-ewscrhryhmsndyxi}
+      - SMTP_FROM=${SMTP_FROM:-AEVO <baominh.internship@gmail.com>}
       - PORT=3004
     depends_on:
       api:
