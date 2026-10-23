@@ -10,6 +10,38 @@ const { sendOrderConfirmationEmail } = require('../../services/mailer');
 const { publishDomainEvent } = require('../../utils/eventBus');
 
 const guestCredentialsByOrderNumber = new Map();
+const GUEST_CREDENTIALS_TTL_MS = 15 * 60 * 1000;
+const GUEST_CREDENTIALS_MAX_ENTRIES = 500;
+
+function storeGuestCredentials(orderNumber, credentials) {
+  if (!orderNumber || !credentials) return;
+  const now = Date.now();
+  for (const [key, entry] of guestCredentialsByOrderNumber.entries()) {
+    if (!entry || entry.expiresAt <= now) {
+      guestCredentialsByOrderNumber.delete(key);
+    }
+  }
+  while (guestCredentialsByOrderNumber.size >= GUEST_CREDENTIALS_MAX_ENTRIES) {
+    const oldestKey = guestCredentialsByOrderNumber.keys().next().value;
+    if (!oldestKey) break;
+    guestCredentialsByOrderNumber.delete(oldestKey);
+  }
+  guestCredentialsByOrderNumber.set(orderNumber, {
+    credentials,
+    expiresAt: now + GUEST_CREDENTIALS_TTL_MS,
+  });
+}
+
+function getGuestCredentials(orderNumber) {
+  if (!orderNumber) return null;
+  const entry = guestCredentialsByOrderNumber.get(orderNumber);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    guestCredentialsByOrderNumber.delete(orderNumber);
+    return null;
+  }
+  return entry.credentials;
+}
 
 function generateGuestPassword() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -73,10 +105,11 @@ function enrichOrder(order, extra = {}) {
       : order.status === 'CANCELLED'
       ? 0
       : Math.floor((Number(order.totalAmount) || 0) / EARN_DIVISOR);
+  const includeGuestCredentials = Boolean(extra.includeGuestCredentials);
   const autoCreatedAccount =
     extra.autoCreatedAccount ||
     order.autoCreatedAccount ||
-    guestCredentialsByOrderNumber.get(order.orderNumber) ||
+    (includeGuestCredentials ? getGuestCredentials(order.orderNumber) : null) ||
     null;
 
   return {
@@ -509,7 +542,7 @@ router.post('/', optionalAuth, async (req, res) => {
     });
 
     if (autoAccountCredentials) {
-      guestCredentialsByOrderNumber.set(order.orderNumber, autoAccountCredentials);
+      storeGuestCredentials(order.orderNumber, autoAccountCredentials);
     }
 
     // Confirmation email (fire and forget)
@@ -590,18 +623,27 @@ router.get('/number/:orderNumber', optionalAuth, async (req, res) => {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    // If a non-admin logged-in user attempts to inspect a different user's non-guest order, reject
-    if (
+    // If a non-admin logged-in user attempts to inspect a different user's order (including guest orders), reject
+    const isAdmin = req.user?.role === 'ADMIN';
+    const isOwner =
       req.user &&
-      req.user.role !== 'ADMIN' &&
-      order.userId &&
-      order.userId !== req.user.id &&
-      !order.guestEmail
-    ) {
+      (order.userId === req.user.id ||
+        (order.guestEmail &&
+          req.user.email &&
+          order.guestEmail.toLowerCase() === req.user.email.toLowerCase()));
+
+    if (req.user && !isAdmin && !isOwner) {
       return res.status(403).json({ error: 'Not authorized to view this order' });
     }
+    if (!req.user && !order.guestEmail) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
 
-    res.json(enrichOrder(order));
+    res.json(
+      enrichOrder(order, {
+        includeGuestCredentials: !req.user || isOwner,
+      })
+    );
   } catch (error) {
     console.error('Lookup order by number error:', error);
     res.status(500).json({ error: 'Failed to fetch order' });
@@ -739,17 +781,27 @@ router.get('/:id', optionalAuth, async (req, res) => {
     }
 
     const isAdmin = req.user?.role === 'ADMIN';
-    const isOwner = req.user && order.userId === req.user.id;
+    const isOwner =
+      req.user &&
+      (order.userId === req.user.id ||
+        (order.guestEmail &&
+          req.user.email &&
+          order.guestEmail.toLowerCase() === req.user.email.toLowerCase()));
     const isGuestOrder = Boolean(order.guestEmail);
 
-    if (!isAdmin && !isOwner && !isGuestOrder) {
-      if (!req.user) {
-        return res.status(401).json({ error: 'Authentication required' });
-      }
+    if (req.user && !isAdmin && !isOwner) {
       return res.status(403).json({ error: 'Not authorized to view this order' });
     }
 
-    res.json(enrichOrder(order));
+    if (!req.user && !isGuestOrder) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    res.json(
+      enrichOrder(order, {
+        includeGuestCredentials: !req.user || isOwner,
+      })
+    );
   } catch (error) {
     console.error('Get order detail error:', error);
     res.status(500).json({ error: 'Failed to fetch order' });
