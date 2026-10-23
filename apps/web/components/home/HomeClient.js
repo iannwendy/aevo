@@ -197,7 +197,7 @@ export default function HomeClient({ initialData }) {
                 {t('home.heroSeries')}
               </span>
               <h1 className="text-display mb-6 animate-hero-reveal stagger-1">{t('home.heroTitle')}</h1>
-              <p className="text-xl text-secondary mb-8 max-w-xl animate-slide-up stagger-2">
+              <p className="text-[15px] sm:text-base lg:text-lg leading-relaxed text-secondary mb-7 sm:mb-8 max-w-xl animate-slide-up stagger-2">
                 {t('home.heroDescription')}
               </p>
               <div className="flex flex-wrap items-center gap-4 animate-slide-up stagger-3">
