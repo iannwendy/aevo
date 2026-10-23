@@ -362,7 +362,7 @@ export default function AdminOrdersPage() {
                             onChange={(e) =>
                               handleQuickStatusUpdate(order.id, e.target.value)
                             }
-                            className="h-8 px-2 rounded-lg border border-border bg-surface text-caption font-mono text-ink"
+                            className="h-8 pl-2.5 pr-8 rounded-lg border border-border bg-surface text-caption font-mono text-ink cursor-pointer"
                           >
                             {ORDER_STATUSES.map((st) => (
                               <option key={st} value={st}>

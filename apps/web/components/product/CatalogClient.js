@@ -809,7 +809,7 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
                     data-testid="catalog-sort-select"
                     value={currentFilters.sort}
                     onChange={(e) => applyFilterUpdate({ sort: e.target.value })}
-                    className="h-10 px-3 rounded-xl border border-border bg-canvas text-small font-medium text-ink focus-ring transition-colors"
+                    className="h-10 pl-3.5 pr-9 rounded-xl border border-border bg-canvas text-small font-medium text-ink focus-ring transition-colors cursor-pointer"
                   >
                     {SORT_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
