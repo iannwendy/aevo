@@ -45,7 +45,7 @@ async function fetchInitialCheckoutData() {
 }
 
 export const metadata = {
-  title: 'Checkout — AEVO Store',
+  title: 'AEVO',
   description: 'Complete your precision hardware acquisition with multi-step verification.',
 };
 

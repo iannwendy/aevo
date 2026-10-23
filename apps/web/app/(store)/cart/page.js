@@ -28,7 +28,7 @@ async function fetchInitialCart() {
 }
 
 export const metadata = {
-  title: 'Your Selection (Cart) — AEVO Store',
+  title: 'AEVO',
   description: 'Review your selected computing hardware and proceed to checkout.',
 };
 

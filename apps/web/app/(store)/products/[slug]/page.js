@@ -23,11 +23,11 @@ export async function generateMetadata({ params }) {
   const { product } = slug ? await fetchProductBySlugSafe(slug) : { product: null };
   if (!product) {
     return {
-      title: 'Product Details — AEVO Store',
+      title: 'AEVO',
     };
   }
   return {
-    title: `${product.name} — AEVO Store`,
+    title: 'AEVO',
     description: product.description?.split('\n')?.[0] || 'Built for your workflow.',
   };
 }

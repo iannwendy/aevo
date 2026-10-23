@@ -50,7 +50,7 @@ function forbiddenAdminResponse(request) {
     return new NextResponse(null, { status: 204 });
   }
   return new NextResponse(
-    `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>403 Forbidden — AEVO Control</title></head><body data-testid="admin-forbidden" style="font-family:sans-serif;padding:48px;background:#F5F5F3;color:#171717;"><h1>403 — Admin access required</h1><p>Your account does not have administrator privileges to access AEVO Control.</p><a href="/">Return to AEVO Store</a></body></html>`,
+    `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>AEVO</title></head><body data-testid="admin-forbidden" style="font-family:sans-serif;padding:48px;background:#F5F5F3;color:#171717;"><h1>403 — Admin access required</h1><p>Your account does not have administrator privileges to access AEVO Control.</p><a href="/">Return to AEVO Store</a></body></html>`,
     {
       status: 403,
       headers: {

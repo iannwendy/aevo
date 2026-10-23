@@ -1,7 +1,7 @@
 import ProductFormClient from '../../../../components/admin/ProductFormClient';
 
 export const metadata = {
-  title: 'Edit Product — AEVO Control',
+  title: 'AEVO',
   description: 'Update computing hardware product, variants, and inventory.',
 };
 

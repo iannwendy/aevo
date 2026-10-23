@@ -17,7 +17,7 @@ async function fetchJsonSafe(path) {
 }
 
 export const metadata = {
-  title: 'Shop Hardware — AEVO Store',
+  title: 'AEVO',
   description: 'Explore curated computing essentials, workstations, components, and displays.',
 };
 

@@ -62,7 +62,7 @@ async function fetchOrderDetails(searchParams) {
 }
 
 export const metadata = {
-  title: 'Order Confirmed — AEVO Store',
+  title: 'AEVO',
   description: 'Your precision hardware order has been received and confirmed.',
 };
 

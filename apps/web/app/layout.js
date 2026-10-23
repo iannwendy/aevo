@@ -10,7 +10,7 @@ import AiAssistantWidget from '../components/ai/AiAssistantWidget';
 const inter = Inter({ subsets: ['latin', 'vietnamese'] });
 
 export const metadata = {
-  title: 'AEVO — Premium Computing, Refined',
+  title: 'AEVO',
   description: 'Discover exceptional hardware for everything you create.',
 };
 
