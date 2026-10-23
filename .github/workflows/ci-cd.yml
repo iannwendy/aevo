@@ -141,7 +141,7 @@ jobs:
           npm run build --workspace=apps/api
 
       - name: Install Playwright Chromium for E2E Browser Tests
-        run: npx playwright install --with-deps chromium
+        run: npm install --no-save playwright && npx playwright install --with-deps chromium
 
       - name: Start Servers & Run Automated E2E Test Suites (Phases 1 - 6 & Security)
         run: |
