@@ -22,6 +22,12 @@
  * - SEC-18: SQL injection & malformed filter resilience across catalog, orders & users
  * - SEC-19: Security headers (Helmet + Next.js), CORS allowlist & 100kb payload limit (413)
  * - SEC-20: Brute-force rate limiting (429 Retry-After)
+ * - SEC-21: Cross-user Guest Order IDOR & credential leak prevention
+ * - SEC-22: Guest Cart Session Fixation & Redis key injection prevention
+ * - SEC-23: Microservices Gateway SSRF / Path Traversal & Event Bus payload validation
+ * - SEC-24: Review edit, profile & address field length bounds enforcement
+ * - SEC-25: AI & Elasticsearch DoS input bounding (batch sentiment, benchmark, query length)
+ * - SEC-26: Prior password reset token revocation upon new forgot-password request
  *
  * Run with both API (3001) and Web (3000) servers up:
  *   node apps/api/test/security.e2e.js
@@ -848,6 +854,211 @@ async function registerCustomer(tag = 'sec', extraBody = {}) {
     assert.equal(lastRes.status, 429, 'Expected 429 after exceeding per-account login limit');
     assert.ok(lastRes.headers.get('retry-after'), 'Expected Retry-After header on 429');
     return `status=429, Retry-After=${lastRes.headers.get('retry-after')}s`;
+  });
+
+  // -------------------------------------------------------------------------
+  // SEC-21: Cross-user Guest Order IDOR & credential leak prevention
+  // -------------------------------------------------------------------------
+  await test('SEC-21', 'Cross-user Guest Order IDOR blocked & autoCreatedAccount omitted from bulk lists', async () => {
+    const prodRes = await call('/api/products?limit=10');
+    const sec21Variant = prodRes.body.products
+      .flatMap((p) => p.variants || [])
+      .find((v) => v.inventory >= 5);
+    assert.ok(sec21Variant, 'Expected an in-stock variant for SEC-21');
+
+    const guestEmail = uniqueEmail('sec21.guest');
+    const guestOrdRes = await call('/api/orders', {
+      method: 'POST',
+      body: {
+        items: [{ variantId: sec21Variant.id, quantity: 1 }],
+        shippingAddress: {
+          email: guestEmail,
+          fullName: 'SEC-21 Guest Buyer',
+          phone: '0909555666',
+          address: '88 Dong Khoi',
+          city: 'Ho Chi Minh City',
+        },
+        paymentMethod: 'cod',
+      },
+    });
+    assert.equal(guestOrdRes.status, 201);
+    const gOrderId = guestOrdRes.body.id;
+    const gOrderNumber = guestOrdRes.body.orderNumber;
+
+    // Logged-in User B (different account) must NOT be able to view Guest's order by ID or orderNumber
+    const idorById = await call(`/api/orders/${gOrderId}`, { token: userB.token });
+    assert.equal(idorById.status, 403, `Expected 403 for User B on guest order ID, got ${idorById.status}`);
+
+    const idorByNumber = await call(`/api/orders/number/${gOrderNumber}`, { token: userB.token });
+    assert.equal(
+      idorByNumber.status,
+      403,
+      `Expected 403 for User B on guest orderNumber, got ${idorByNumber.status}`
+    );
+
+    // Admin order list must NOT expose plaintext temporaryPassword in autoCreatedAccount
+    const adminList = await call(`/api/orders/admin/all?search=${gOrderNumber}`, {
+      token: admin.token,
+    });
+    assert.equal(adminList.status, 200);
+    const listedOrder = (adminList.body.orders || []).find((o) => o.orderNumber === gOrderNumber);
+    assert.ok(listedOrder, 'Expected guest order in admin list');
+    assert.equal(
+      listedOrder.autoCreatedAccount,
+      undefined,
+      'Admin bulk order list must not leak autoCreatedAccount credentials'
+    );
+
+    return `UserB ID=${idorById.status}, Number=${idorByNumber.status}, adminList.autoCreatedAccount=undefined`;
+  });
+
+  // -------------------------------------------------------------------------
+  // SEC-22: Guest Cart Session Fixation & Redis key injection prevention
+  // -------------------------------------------------------------------------
+  await test('SEC-22', 'Guest cart rejects session fixation & Redis key injection in sessionId', async () => {
+    const injectedCookie = 'sessionId=auth:admin*;FLUSHALL';
+    const res1 = await call('/api/cart', { cookie: injectedCookie });
+    assert.equal(res1.status, 200);
+    assert.notEqual(res1.body.sessionId, 'auth:admin*;FLUSHALL');
+    assert.match(res1.body.sessionId, /^guest_\d+_[a-f0-9]{32}$/);
+
+    // Predictable/unissued valid-format sessionId must also be replaced with a fresh server-generated ID
+    const fixedSession = 'sessionId=attacker_fixed_session_12345';
+    const res2 = await call('/api/cart', { cookie: fixedSession });
+    assert.equal(res2.status, 200);
+    assert.notEqual(res2.body.sessionId, 'attacker_fixed_session_12345');
+    assert.match(res2.body.sessionId, /^guest_\d+_[a-f0-9]{32}$/);
+
+    return `Generated CSPRNG sessionId=${res2.body.sessionId}`;
+  });
+
+  // -------------------------------------------------------------------------
+  // SEC-23: Microservices Gateway SSRF / Path Traversal & Event Bus validation
+  // -------------------------------------------------------------------------
+  await test('SEC-23', 'Microservices Gateway proxy blocks path traversal/SSRF and validates event bus payloads', async () => {
+    const travRes = await call('/api/microservices/proxy/product-service/..%2f..%2fetc/passwd');
+    assert.equal(travRes.status, 400);
+
+    const ssrfRes = await call('/api/microservices/proxy/product-service/@evil.com/pwn');
+    assert.equal(ssrfRes.status, 400);
+
+    const badEventType = await call('/api/microservices/events/publish', {
+      method: 'POST',
+      body: { type: '<script>evil</script>', payload: {} },
+    });
+    assert.equal(badEventType.status, 400);
+
+    const badEventPayload = await call('/api/microservices/events/publish', {
+      method: 'POST',
+      body: { type: 'INVENTORY_SYNC', payload: ['not-an-object'] },
+    });
+    assert.equal(badEventPayload.status, 400);
+
+    return `traversal=${travRes.status}, ssrf=${ssrfRes.status}, badEvent=${badEventType.status}/${badEventPayload.status}`;
+  });
+
+  // -------------------------------------------------------------------------
+  // SEC-24: Review edit, profile & address field length bounds enforcement
+  // -------------------------------------------------------------------------
+  await test('SEC-24', 'Review PUT, Profile PUT, and Address POST enforce strict maximum field lengths', async () => {
+    const prodRes = await call('/api/products?limit=1');
+    const sec24ProductId = prodRes.body.products[0].id;
+
+    // Create a valid review as User A, then attempt to PUT >2000 chars
+    const revCreate = await call('/api/reviews', {
+      method: 'POST',
+      token: userA.token,
+      body: { productId: sec24ProductId, rating: 5, comment: 'Initial short review' },
+    });
+    assert.equal(revCreate.status, 201);
+
+    const revOversizedEdit = await call(`/api/reviews/${revCreate.body.id}`, {
+      method: 'PUT',
+      token: userA.token,
+      body: { comment: 'R'.repeat(2500) },
+    });
+    assert.equal(revOversizedEdit.status, 400, 'Expected 400 when editing review comment > 2000 chars');
+
+    const profileOversized = await call('/api/auth/profile', {
+      method: 'PUT',
+      token: userA.token,
+      body: { fullName: 'N'.repeat(200) },
+    });
+    assert.equal(profileOversized.status, 400, 'Expected 400 when fullName > 120 chars');
+
+    const addrOversized = await call('/api/users/addresses', {
+      method: 'POST',
+      token: userA.token,
+      body: {
+        fullName: 'Valid Name',
+        phone: '0909123456',
+        address: 'A'.repeat(400),
+        city: 'Ho Chi Minh City',
+      },
+    });
+    assert.equal(addrOversized.status, 400, 'Expected 400 when street address > 300 chars');
+
+    return `reviewEdit=${revOversizedEdit.status}, profile=${profileOversized.status}, address=${addrOversized.status}`;
+  });
+
+  // -------------------------------------------------------------------------
+  // SEC-25: AI & Elasticsearch DoS input bounding
+  // -------------------------------------------------------------------------
+  await test('SEC-25', 'AI & Elasticsearch endpoints reject oversized batch/query DoS payloads (400)', async () => {
+    const batchSentiment = await call('/api/ai/sentiment', {
+      method: 'POST',
+      body: {
+        reviews: Array.from({ length: 60 }, (_, i) => ({ comment: `Review ${i}`, rating: 5 })),
+      },
+    });
+    assert.equal(batchSentiment.status, 400);
+
+    const benchFlood = await call('/api/search/benchmark', {
+      method: 'POST',
+      body: {
+        queries: Array.from({ length: 20 }, (_, i) => `query-${i}`),
+      },
+    });
+    assert.equal(benchFlood.status, 400);
+
+    const longSearch = await call(`/api/search/elasticsearch?q=${'Q'.repeat(250)}`);
+    assert.equal(longSearch.status, 400);
+
+    return `batchSentiment=${batchSentiment.status}, benchFlood=${benchFlood.status}, longSearch=${longSearch.status}`;
+  });
+
+  // -------------------------------------------------------------------------
+  // SEC-26: Prior password reset token revocation upon new forgot-password request
+  // -------------------------------------------------------------------------
+  await test('SEC-26', 'Requesting a new password reset link revokes any prior unused reset tokens for that user', async () => {
+    const resetUser = await registerCustomer('sec26.reset');
+
+    await call('/api/auth/forgot-password', {
+      method: 'POST',
+      body: { email: resetUser.email },
+    });
+    const firstTokens = await prisma.passwordResetToken.findMany({
+      where: { userId: resetUser.user.id, usedAt: null },
+    });
+    assert.equal(firstTokens.length, 1, 'Expected 1 active reset token after first request');
+
+    // Wait 5ms so tokeniat/hash differs if needed and request a second reset link
+    await new Promise((r) => setTimeout(r, 1100));
+    await call('/api/auth/forgot-password', {
+      method: 'POST',
+      body: { email: resetUser.email },
+    });
+
+    const activeAfterSecond = await prisma.passwordResetToken.findMany({
+      where: { userId: resetUser.user.id, usedAt: null },
+    });
+    const revokedTokens = await prisma.passwordResetToken.findMany({
+      where: { userId: resetUser.user.id, usedAt: { not: null } },
+    });
+    assert.equal(activeAfterSecond.length, 1, 'Expected only 1 active reset token after second request');
+    assert.ok(revokedTokens.length >= 1, 'Expected prior reset token to be marked usedAt != null');
+
+    return `activeTokens=${activeAfterSecond.length}, revokedPriorTokens=${revokedTokens.length}`;
   });
 
   await prisma.$disconnect();
