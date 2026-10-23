@@ -40,6 +40,7 @@ const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
  * in, so the limit is enforced at the validator.
  */
 const PASSWORD_MAX = 72;
+const DUMMY_BCRYPT_HASH = bcrypt.hashSync('aevo-dummy-timing-shield', 10);
 
 function setAuthCookie(res, token) {
   const isSecure = Boolean(res.req?.secure || res.req?.headers?.['x-forwarded-proto'] === 'https');
@@ -206,6 +207,7 @@ router.post(
       // One generic message for both unknown email and wrong password so the
       // endpoint cannot be used to enumerate registered accounts.
       if (!user) {
+        await bcrypt.compare(password, DUMMY_BCRYPT_HASH);
         return res.status(401).json({ error: 'Invalid email or password' });
       }
 
@@ -462,6 +464,11 @@ router.post(
         .createHash('sha256')
         .update(token)
         .digest('hex');
+
+      await prisma.passwordResetToken.updateMany({
+        where: { userId: user.id, usedAt: null },
+        data: { usedAt: new Date() },
+      });
 
       await prisma.passwordResetToken.create({
         data: {
