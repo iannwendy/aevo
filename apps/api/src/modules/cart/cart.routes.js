@@ -79,7 +79,7 @@ function readCallerSessionId(req) {
   const raw = req.cookies?.sessionId || req.body?.sessionId || req.query?.sessionId;
   if (typeof raw !== 'string') return null;
   const trimmed = raw.trim();
-  return trimmed.length > 0 && trimmed.length <= 128 ? trimmed : null;
+  return /^[a-zA-Z0-9_-]{8,128}$/.test(trimmed) ? trimmed : null;
 }
 
 function isCallerCartOwner(req, cart) {
@@ -161,8 +161,8 @@ async function resolveOrCreateCart(req, res) {
   }
 
   if (!cart) {
-    sessionId =
-      sessionId || `guest_${Date.now()}_${crypto.randomBytes(16).toString('hex')}`;
+    // Always generate a fresh server-side CSPRNG sessionId to prevent session fixation
+    sessionId = `guest_${Date.now()}_${crypto.randomBytes(16).toString('hex')}`;
     cart = await prisma.cart.create({
       data: { sessionId },
       include: CART_INCLUDE,
@@ -204,7 +204,7 @@ router.post('/items', optionalAuth, async (req, res) => {
       return res.status(400).json({ error: 'Variant ID is required' });
     }
 
-    if (!Number.isInteger(parsedQty) || parsedQty < 1) {
+    if (!Number.isInteger(parsedQty) || parsedQty < 1 || parsedQty > 999) {
       return res.status(400).json({ error: 'Quantity must be a positive integer' });
     }
 
@@ -271,8 +271,8 @@ router.put('/items/:itemId', optionalAuth, async (req, res) => {
     const { quantity } = req.body;
     const parsedQty = Number(quantity);
 
-    if (quantity === undefined || Number.isNaN(parsedQty) || !Number.isFinite(parsedQty)) {
-      return res.status(400).json({ error: 'Valid quantity is required' });
+    if (quantity === undefined || !Number.isInteger(parsedQty) || parsedQty > 999) {
+      return res.status(400).json({ error: 'Valid integer quantity is required' });
     }
 
     const cartItem = await prisma.cartItem.findUnique({
