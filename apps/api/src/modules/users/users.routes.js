@@ -2,6 +2,20 @@ const express = require('express');
 const router = express.Router();
 const prisma = require('../../utils/prisma');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
+const { deleteSessionState } = require('../../utils/redis');
+
+const MAX_ADDRESSES_PER_USER = 25;
+
+function hasExcessiveAddressLength({ fullName, phone, address, ward, district, city }) {
+  return (
+    String(fullName || '').length > 120 ||
+    String(phone || '').length > 30 ||
+    String(address || '').length > 300 ||
+    String(ward || '').length > 120 ||
+    String(district || '').length > 120 ||
+    String(city || '').length > 120
+  );
+}
 
 // ====================================================================
 // Customer Delivery Addresses (/api/users/addresses)
@@ -42,9 +56,21 @@ router.post('/addresses', authMiddleware, async (req, res) => {
       });
     }
 
+    if (hasExcessiveAddressLength({ fullName, phone, address, ward, district, city })) {
+      return res.status(400).json({
+        error: 'One or more address fields exceed maximum length',
+      });
+    }
+
     const existingCount = await prisma.address.count({
       where: { userId: req.user.id },
     });
+
+    if (existingCount >= MAX_ADDRESSES_PER_USER) {
+      return res.status(400).json({
+        error: `Maximum of ${MAX_ADDRESSES_PER_USER} saved addresses allowed per account`,
+      });
+    }
 
     const shouldBeDefault = existingCount === 0 || Boolean(isDefault);
 
@@ -82,6 +108,12 @@ router.put('/addresses/:id', authMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
     const { fullName, phone, address, ward, district, city, isDefault } = req.body;
+
+    if (hasExcessiveAddressLength({ fullName, phone, address, ward, district, city })) {
+      return res.status(400).json({
+        error: 'One or more address fields exceed maximum length',
+      });
+    }
 
     const existing = await prisma.address.findFirst({
       where: { id, userId: req.user.id },
@@ -427,6 +459,8 @@ router.put('/:id/ban', authMiddleware, adminOnly, async (req, res) => {
         isActive: true,
       },
     });
+
+    deleteSessionState(`auth:${id}`).catch(() => {});
 
     res.json({ message: 'User banned', ...user, user });
   } catch (error) {

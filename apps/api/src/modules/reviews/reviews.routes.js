@@ -191,6 +191,9 @@ router.put('/:id', optionalAuth, async (req, res) => {
       if (!cleanComment) {
         return res.status(400).json({ error: 'Comment cannot be empty' });
       }
+      if (cleanComment.length > 2000) {
+        return res.status(400).json({ error: 'Comment must not exceed 2000 characters' });
+      }
       data.comment = cleanComment;
     }
 

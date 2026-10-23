@@ -307,7 +307,7 @@ router.get(
 router.put(
   '/profile',
   authMiddleware,
-  [body('fullName').trim().notEmpty()],
+  [body('fullName').isString().trim().isLength({ min: 1, max: 120 })],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -315,6 +315,14 @@ router.put(
     }
 
     const { fullName, phone, address, city } = req.body;
+
+    if (
+      (phone !== undefined && String(phone).length > 30) ||
+      (address !== undefined && String(address).length > 300) ||
+      (city !== undefined && String(city).length > 120)
+    ) {
+      return res.status(400).json({ error: 'Profile field exceeds maximum allowed length' });
+    }
 
     try {
       await prisma.user.update({
