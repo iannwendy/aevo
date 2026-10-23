@@ -9,6 +9,13 @@ const {
   ensureIndexSynced,
 } = require('../../utils/elasticsearch');
 const prisma = require('../../utils/prisma');
+const { rateLimit } = require('../../middleware/rateLimit');
+
+const aiRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: 'Too many AI assistant requests, please try again later',
+});
 
 const CATEGORY_HINTS = [
   {
@@ -262,7 +269,7 @@ router.get('/status', (req, res) => {
 // =============================================================================
 // 1. Smart Product Recommendation Chatbot: POST /api/ai/chat
 // =============================================================================
-router.post('/chat', async (req, res) => {
+router.post('/chat', aiRateLimiter, async (req, res) => {
   try {
     const { message, locale, category: explicitCategory, maxPrice: explicitMaxPrice } = req.body || {};
     const cleanMessage = String(message || '').trim();
@@ -488,7 +495,7 @@ function extractImageBinaryMetadata(imageBase64 = '') {
   };
 }
 
-router.post('/image-search', async (req, res) => {
+router.post('/image-search', aiRateLimiter, async (req, res) => {
   try {
     const {
       imageBase64,
@@ -501,6 +508,22 @@ router.post('/image-search', async (req, res) => {
     if (!imageBase64 && !fileName && !queryHint && !categoryHint) {
       return res.status(400).json({
         error: 'An uploaded image (imageBase64) or visual metadata is required',
+      });
+    }
+
+    if (imageBase64 && String(imageBase64).length > 95000) {
+      return res.status(400).json({
+        error: 'Uploaded image payload exceeds maximum allowed size',
+      });
+    }
+
+    if (
+      String(fileName || '').length > 200 ||
+      String(categoryHint || '').length > 100 ||
+      String(queryHint || '').length > 200
+    ) {
+      return res.status(400).json({
+        error: 'Image search metadata fields exceed maximum allowed length',
       });
     }
 
@@ -648,14 +671,22 @@ router.post('/image-search', async (req, res) => {
 // =============================================================================
 // 3. Review Sentiment Analysis: POST /api/ai/sentiment & GET /api/ai/sentiment/product/:productId
 // =============================================================================
-router.post('/sentiment', async (req, res) => {
+router.post('/sentiment', aiRateLimiter, async (req, res) => {
   try {
     const { comment, text, rating, reviews } = req.body || {};
 
     if (Array.isArray(reviews)) {
+      if (reviews.length > 50) {
+        return res.status(400).json({
+          error: 'Batch sentiment analysis cannot exceed 50 reviews per request',
+        });
+      }
       const analyzedReviews = reviews.map((r) => ({
         ...r,
-        sentiment: analyzeReviewSentiment(r?.comment || r?.text || '', r?.rating),
+        sentiment: analyzeReviewSentiment(
+          String(r?.comment || r?.text || '').slice(0, 2000),
+          r?.rating
+        ),
       }));
       const summary = computeSentimentSummary(analyzedReviews);
       return res.json({
@@ -667,6 +698,9 @@ router.post('/sentiment', async (req, res) => {
     const inputComment = String(comment ?? text ?? '').trim();
     if (!inputComment && (rating === undefined || rating === null)) {
       return res.status(400).json({ error: 'Comment text or rating is required' });
+    }
+    if (inputComment.length > 2000) {
+      return res.status(400).json({ error: 'Comment text must not exceed 2000 characters' });
     }
 
     const sentiment = analyzeReviewSentiment(

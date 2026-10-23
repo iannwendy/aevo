@@ -677,12 +677,19 @@ async function suggestProductsWithElasticsearch(prefix = '', limit = 6) {
 
 async function runSearchBenchmark({ queries, iterations = 8 } = {}) {
   await ensureIndexWarm();
-  const testQueries =
+  const rawQueries =
     Array.isArray(queries) && queries.length > 0
       ? queries
+          .slice(0, 10)
+          .map((q) => String(q || '').trim().slice(0, 100))
+          .filter(Boolean)
+      : [];
+  const testQueries =
+    rawQueries.length > 0
+      ? rawQueries
       : ['macbook pro', 'rtx 4080', 'oled monitor', 'ryzen', 'thunderbolt dock'];
 
-  const safeIterations = Math.max(1, Math.min(25, Number(iterations) || 8));
+  const safeIterations = Math.max(1, Math.min(15, Number(iterations) || 8));
   const esTimings = [];
   const pgTimings = [];
   const queryBreakdown = [];
