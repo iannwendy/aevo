@@ -199,9 +199,31 @@ jobs:
       - name: Trigger Production Deployment Rollout
         env:
           DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+          GCE_HOST: ${{ secrets.GCE_HOST }}
+          GCE_USER: ${{ secrets.GCE_USER }}
+          GCE_SSH_PRIVATE_KEY: ${{ secrets.GCE_SSH_PRIVATE_KEY }}
         run: |
-          echo "Deploying AEVO commit ${{ github.sha }} to production..."
-          if [ -n "$DEPLOY_WEBHOOK_URL" ]; then
+          echo "Deploying AEVO commit ${{ github.sha }} to production (https://aevo.io.vn)..."
+          if [ -n "$GCE_SSH_PRIVATE_KEY" ] && [ -n "$GCE_HOST" ] && [ -n "$GCE_USER" ]; then
+            mkdir -p ~/.ssh
+            echo "$GCE_SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+            chmod 600 ~/.ssh/id_ed25519
+            ssh-keyscan -H "$GCE_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+            ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no "$GCE_USER@$GCE_HOST" '
+              set -e
+              cd /opt/aevo
+              git fetch origin main
+              git reset --hard origin/main
+              sudo docker compose up -d --build
+              for i in $(seq 1 30); do
+                if curl -sf http://127.0.0.1:3001/health > /dev/null && curl -sf http://127.0.0.1:3000/icon.svg > /dev/null; then
+                  echo "Production containers healthy on https://aevo.io.vn!"
+                  break
+                fi
+                sleep 2
+              done
+            '
+          elif [ -n "$DEPLOY_WEBHOOK_URL" ]; then
             curl -fsSL -X POST "$DEPLOY_WEBHOOK_URL" \
               -H "Content-Type: application/json" \
               -d "{\"commit\":\"${{ github.sha }}\",\"ref\":\"${{ github.ref }}\"}"
