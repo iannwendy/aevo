@@ -213,10 +213,11 @@ jobs:
               cd /opt/aevo
               git fetch origin main
               git reset --hard origin/main
-              sudo docker compose up -d --build
+              sudo docker compose up -d --build --force-recreate api web product-service order-service user-service elasticsearch
               for i in $(seq 1 30); do
                 if curl -sf http://127.0.0.1:3001/health > /dev/null && curl -sf http://127.0.0.1:3000/icon.svg > /dev/null; then
                   echo "Production containers healthy on https://aevo.io.vn!"
+                  curl -sf -X POST http://127.0.0.1:3001/api/search/reindex > /dev/null || true
                   break
                 fi
                 sleep 2

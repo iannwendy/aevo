@@ -16,10 +16,23 @@ const prisma = new PrismaClient();
 Promise.all([
   prisma.product.count(),
   prisma.product.findUnique({ where: { slug: 'macbook-pro-16-m5-max-2026' } }),
+  prisma.product.findUnique({ where: { slug: 'apple-thunderbolt-5-pro-docking-station' } }),
+  prisma.product.findUnique({ where: { slug: 'nvidia-geforce-rtx-5090-founders-edition-32gb-gddr7' } }),
 ])
-  .then(([count, flagship]) => {
-    console.log('[entrypoint] Existing products in database:', count, '| Apple 2026 seeded:', Boolean(flagship));
-    process.exit(count > 0 && flagship ? 0 : 42);
+  .then(([count, flagship, tb5Dock, rtx5090]) => {
+    const isUpToDate =
+      count >= 187 &&
+      Boolean(flagship) &&
+      Boolean(tb5Dock) &&
+      Boolean(rtx5090) &&
+      Number(rtx5090.minPrice) === 62990000;
+    console.log(
+      '[entrypoint] Existing products in database:',
+      count,
+      '| Up-to-date catalog (Apple + 20 NVIDIA GPUs):',
+      isUpToDate
+    );
+    process.exit(isUpToDate ? 0 : 42);
   })
   .catch((err) => {
     console.error('[entrypoint] Seed check error:', err.message);
