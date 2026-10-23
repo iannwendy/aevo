@@ -19,7 +19,7 @@ const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID;
 const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
 
 const API_URL = process.env.API_URL || `http://localhost:${process.env.PORT || 3001}`;
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:3000';
+const CLIENT_URL = (process.env.CLIENT_URL || 'http://localhost:3000').split(',')[0].trim();
 
 const isGoogleConfigured = Boolean(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
 const isFacebookConfigured = Boolean(FACEBOOK_APP_ID && FACEBOOK_APP_SECRET);

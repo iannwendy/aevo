@@ -42,9 +42,10 @@ const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 const PASSWORD_MAX = 72;
 
 function setAuthCookie(res, token) {
+  const isSecure = Boolean(res.req?.secure || res.req?.headers?.['x-forwarded-proto'] === 'https');
   res.cookie('token', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isSecure,
     sameSite: 'lax',
     maxAge: COOKIE_MAX_AGE,
     path: '/',
@@ -575,13 +576,7 @@ router.get('/google/callback', (req, res, next) => {
       return res.redirect(`${CLIENT_URL}/login?error=oauth_failed`);
     }
     const token = signSessionToken(user);
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: COOKIE_MAX_AGE,
-      path: '/',
-    });
+    setAuthCookie(res, token);
     return res.redirect(`${CLIENT_URL}/account/profile?login=success`);
   })(req, res, next);
 });
@@ -611,13 +606,7 @@ router.get('/facebook/callback', (req, res, next) => {
       return res.redirect(`${CLIENT_URL}/login?error=oauth_failed`);
     }
     const token = signSessionToken(user);
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: COOKIE_MAX_AGE,
-      path: '/',
-    });
+    setAuthCookie(res, token);
     return res.redirect(`${CLIENT_URL}/account/profile?login=success`);
   })(req, res, next);
 });
