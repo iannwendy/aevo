@@ -52,6 +52,9 @@ async function upsertOAuthUser({ provider, providerId, email, fullName }) {
     : null;
 
   if (user) {
+    if (!user.isActive) {
+      return user;
+    }
     // Link the social account to the pre-existing local account.
     await prisma.oAuthAccount.create({
       data: { provider, providerId, userId: user.id },

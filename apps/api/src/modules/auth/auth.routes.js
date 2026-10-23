@@ -254,10 +254,11 @@ router.post('/logout', optionalAuth, (req, res) => {
   if (req.user?.id) {
     deleteSessionState(`auth:${req.user.id}`).catch(() => {});
   }
+  const isSecure = Boolean(req.secure || req.headers?.['x-forwarded-proto'] === 'https');
   res.clearCookie('token', {
     path: '/',
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isSecure,
     sameSite: 'lax',
   });
   res.json({ message: 'Logged out successfully' });
@@ -575,6 +576,9 @@ router.get('/google/callback', (req, res, next) => {
       );
       return res.redirect(`${CLIENT_URL}/login?error=oauth_failed`);
     }
+    if (!user.isActive) {
+      return res.redirect(`${CLIENT_URL}/login?error=account_banned`);
+    }
     const token = signSessionToken(user);
     setAuthCookie(res, token);
     return res.redirect(`${CLIENT_URL}/account/profile?login=success`);
@@ -604,6 +608,9 @@ router.get('/facebook/callback', (req, res, next) => {
         err ? `${err.name || 'Error'}: ${err.message}` : 'no user (consent denied or state mismatch)'
       );
       return res.redirect(`${CLIENT_URL}/login?error=oauth_failed`);
+    }
+    if (!user.isActive) {
+      return res.redirect(`${CLIENT_URL}/login?error=account_banned`);
     }
     const token = signSessionToken(user);
     setAuthCookie(res, token);
