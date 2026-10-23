@@ -279,25 +279,27 @@ export default function HomeClient({ initialData }) {
             </div>
 
             <div className="lg:col-span-5 animate-scale-in stagger-2">
-              <div className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-border bg-white p-6 shadow-sm transition-all duration-500 hover:shadow-xl hover:border-ink/30">
-                <img
-                  src="https://macone.vn/wp-content/uploads/2025/09/MacBook_Pro_14-in_M5_Pro_Space_Black_PDP_Image_Position_1__VN-VI-768x768.jpg"
-                  alt="AEVO Flagship Computing Setup"
-                  onError={handleImageError}
-                  className="w-full h-full object-contain pb-12 transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-                />
-                <div className="absolute bottom-4 left-4 right-4 bg-surface/90 backdrop-blur-md border border-border rounded-xl p-4 flex items-center justify-between shadow-sm animate-float">
-                  <div>
+              <div className="group relative flex flex-col justify-between rounded-2xl overflow-hidden border border-border bg-white p-4 sm:p-6 shadow-sm transition-all duration-500 hover:shadow-xl hover:border-ink/30">
+                <div className="relative w-full h-[220px] sm:h-[270px] lg:h-[290px] flex items-center justify-center overflow-hidden rounded-xl bg-white">
+                  <img
+                    src="https://macone.vn/wp-content/uploads/2025/09/MacBook_Pro_14-in_M5_Pro_Space_Black_PDP_Image_Position_1__VN-VI-768x768.jpg"
+                    alt="AEVO Flagship Computing Setup"
+                    onError={handleImageError}
+                    className="w-full h-full object-contain scale-[1.28] sm:scale-[1.22] transition-transform duration-500 ease-out group-hover:scale-[1.34]"
+                  />
+                </div>
+                <div className="relative z-10 mt-3 sm:mt-4 bg-surface/95 backdrop-blur-md border border-border rounded-xl p-3.5 sm:p-4 flex items-center justify-between gap-3 shadow-sm animate-float">
+                  <div className="min-w-0">
                     <span className="text-[11px] font-mono uppercase tracking-wider text-secondary block">
                       {t('home.featuredSystem')}
                     </span>
-                    <span className="text-small font-medium text-ink">
+                    <span className="text-small font-medium text-ink block leading-snug">
                       {t('home.featuredSystemName')}
                     </span>
                   </div>
                   <Link
                     href="/products/macbook-pro-16-m5-max-2026"
-                    className="group/link text-caption font-medium text-ink hover:text-secondary inline-flex items-center gap-1 transition-colors"
+                    className="group/link shrink-0 text-caption font-medium text-ink hover:text-secondary inline-flex items-center gap-1 transition-colors"
                   >
                     {t('home.configure')}
                     <ArrowRight size={14} className="transition-transform duration-200 group-hover/link:translate-x-1" />

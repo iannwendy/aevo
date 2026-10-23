@@ -618,11 +618,11 @@ export default function ProductDetailClient({
 
               {/* Quantity Stepper + Add to Cart CTA */}
               <div className="mt-8 pt-6 border-t border-border">
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                <div className="flex flex-row items-center gap-3 sm:gap-4">
                   {/* Quantity Stepper */}
                   <div
                     data-testid="quantity-stepper"
-                    className="inline-flex items-center justify-between rounded-xl border border-border bg-surface h-12 px-2 sm:w-36"
+                    className="inline-flex items-center justify-between rounded-xl border border-border bg-surface h-12 min-h-[48px] px-1.5 sm:px-2 w-[116px] sm:w-36 shrink-0"
                   >
                     <button
                       type="button"
@@ -661,10 +661,10 @@ export default function ProductDetailClient({
                     onClick={handleAddToCart}
                     disabled={addingToCart || currentStock <= 0}
                     data-testid="add-to-cart-button"
-                    className="flex-1 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 btn-interactive"
+                    className="flex-1 h-12 min-h-[48px] px-4 sm:px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 whitespace-nowrap btn-interactive"
                   >
-                    <ShoppingBag size={18} />
-                    <span>
+                    <ShoppingBag size={18} className="shrink-0" />
+                    <span className="truncate">
                       {currentStock <= 0
                         ? t('productDetail.outOfStock')
                         : addingToCart
