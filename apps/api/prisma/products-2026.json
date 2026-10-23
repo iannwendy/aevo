@@ -17,21 +17,21 @@
       {
         "name": "Standard Edition · Retail Box",
         "sku": "NV-GPU-2601-STD",
-        "price": 69730000,
-        "comparePrice": 76010000,
+        "price": 56900000,
+        "comparePrice": 62020000,
         "inventory": 18
       },
       {
         "name": "Factory OC Edition · Boost Clock Tuned",
         "sku": "NV-GPU-2601-OC",
-        "price": 73220000,
-        "comparePrice": 79490000,
+        "price": 59750000,
+        "comparePrice": 64870000,
         "inventory": 12
       },
       {
         "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
         "sku": "NV-GPU-2601-PRO",
-        "price": 76700000,
+        "price": 62590000,
         "comparePrice": null,
         "inventory": 8
       }
@@ -63,21 +63,21 @@
       {
         "name": "Standard Edition · Retail Box",
         "sku": "NV-GPU-2602-STD",
-        "price": 199000000,
-        "comparePrice": 215000000,
+        "price": 62990000,
+        "comparePrice": 68660000,
         "inventory": 19
       },
       {
         "name": "Factory OC Edition · Boost Clock Tuned",
         "sku": "NV-GPU-2602-OC",
-        "price": 209000000,
-        "comparePrice": 225000000,
+        "price": 66140000,
+        "comparePrice": 71810000,
         "inventory": 13
       },
       {
         "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
         "sku": "NV-GPU-2602-PRO",
-        "price": 219000000,
+        "price": 69290000,
         "comparePrice": null,
         "inventory": 9
       }
@@ -385,21 +385,21 @@
       {
         "name": "Standard Edition · Retail Box",
         "sku": "NV-GPU-2609-STD",
-        "price": 83500000,
-        "comparePrice": 91020000,
+        "price": 59900000,
+        "comparePrice": 65290000,
         "inventory": 26
       },
       {
         "name": "Factory OC Edition · Boost Clock Tuned",
         "sku": "NV-GPU-2609-OC",
-        "price": 87680000,
-        "comparePrice": 95190000,
+        "price": 62900000,
+        "comparePrice": 68290000,
         "inventory": 12
       },
       {
         "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
         "sku": "NV-GPU-2609-PRO",
-        "price": 91850000,
+        "price": 65890000,
         "comparePrice": null,
         "inventory": 10
       }
