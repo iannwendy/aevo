@@ -1,5 +1,925 @@
 [
   {
+    "name": "NVIDIA GeForce RTX 5080 SUPRIM DRACO EPIC EDITION (16GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5080-suprim-draco-epic-edition-16gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": true,
+    "isBestSeller": true,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5080-suprim-draco-epic-edition-16gb-gddr7-02.jpg?v=1791955126620",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5080-suprim-draco-epic-edition-16gb-gddr7-03.jpg?v=1791955128143",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5080-suprim-draco-epic-edition-16gb-gddr7-04.jpg?v=1791955129653",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5080-suprim-draco-epic-edition-16gb-gddr7-05.jpg?v=1791955130807"
+    ],
+    "description": "NVIDIA GeForce RTX 5080 SUPRIM DRACO EPIC EDITION (16GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2601-STD",
+        "price": 69730000,
+        "comparePrice": 76010000,
+        "inventory": 18
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2601-OC",
+        "price": 73220000,
+        "comparePrice": 79490000,
+        "inventory": 12
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2601-PRO",
+        "price": 76700000,
+        "comparePrice": null,
+        "inventory": 8
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5090 Founders Edition (32GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5090-founders-edition-32gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": true,
+    "isBestSeller": false,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5090-32g-ventus-3x-oc-02.jpg?v=1737630284570",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5090-32g-ventus-3x-oc-03.jpg?v=1737630284953",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5090-32g-ventus-3x-oc-04.jpg?v=1737630285530",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5090-32g-ventus-3x-oc-05.jpg?v=1737630286073"
+    ],
+    "description": "NVIDIA GeForce RTX 5090 Founders Edition (32GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2602-STD",
+        "price": 199000000,
+        "comparePrice": 215000000,
+        "inventory": 19
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2602-OC",
+        "price": 209000000,
+        "comparePrice": 225000000,
+        "inventory": 13
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2602-PRO",
+        "price": 219000000,
+        "comparePrice": null,
+        "inventory": 9
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5060 WINDFORCE OC (8GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5060-windforce-oc-8gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": true,
+    "isBestSeller": true,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-gigabyte-geforce-rtx-5060-winforce-oc-8gb-gddr7-02.jpg?v=1789023760040",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-gigabyte-geforce-rtx-5060-winforce-oc-8gb-gddr7-03.jpg?v=1789023760720",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-gigabyte-geforce-rtx-5060-winforce-oc-8gb-gddr7-04.jpg?v=1789023761910",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-gigabyte-geforce-rtx-5060-winforce-oc-8gb-gddr7-05.jpg?v=1789023763003"
+    ],
+    "description": "NVIDIA GeForce RTX 5060 WINDFORCE OC (8GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2603-STD",
+        "price": 12990000,
+        "comparePrice": 14160000,
+        "inventory": 20
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2603-OC",
+        "price": 13640000,
+        "comparePrice": 14810000,
+        "inventory": 14
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2603-PRO",
+        "price": 14290000,
+        "comparePrice": null,
+        "inventory": 10
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5060 VENTUS 2X OC V1 (8GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5060-ventus-2x-oc-v1-8gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": true,
+    "isBestSeller": false,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5060-ventus-2x-oc-v1-8gb-gddr7-02.jpg?v=1788860707123",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5060-ventus-2x-oc-v1-8gb-gddr7-03.jpg?v=1788860708230",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5060-ventus-2x-oc-v1-8gb-gddr7-04.jpg?v=1788860709387",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5060-ventus-2x-oc-v1-8gb-gddr7-05.jpg?v=1788860710283"
+    ],
+    "description": "NVIDIA GeForce RTX 5060 VENTUS 2X OC V1 (8GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2604-STD",
+        "price": 13150000,
+        "comparePrice": 14330000,
+        "inventory": 21
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2604-OC",
+        "price": 13810000,
+        "comparePrice": 14990000,
+        "inventory": 15
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2604-PRO",
+        "price": 14470000,
+        "comparePrice": null,
+        "inventory": 11
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5060 Ti T1 OC Edition (8GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5060-ti-t1-oc-edition-8gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": true,
+    "isBestSeller": true,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/7fabfcd8-7b1a-4bae-ac33-c0c3b6ef341a.jpg?v=1787729059923",
+      "https://bizweb.dktcdn.net/100/329/122/products/194e2bd0-a2b1-4f9e-902d-fdaebc3a8ec8.jpg?v=1787729059923",
+      "https://bizweb.dktcdn.net/100/329/122/products/4f6200bc-5fa6-4242-b453-cb065396494a.jpg?v=1787729059923",
+      "https://bizweb.dktcdn.net/100/329/122/products/dce6e5b4-fbc5-4814-8621-943a1b34654b.jpg?v=1787729059923"
+    ],
+    "description": "NVIDIA GeForce RTX 5060 Ti T1 OC Edition (8GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2605-STD",
+        "price": 16500000,
+        "comparePrice": 17990000,
+        "inventory": 22
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2605-OC",
+        "price": 17330000,
+        "comparePrice": 18810000,
+        "inventory": 16
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2605-PRO",
+        "price": 18150000,
+        "comparePrice": null,
+        "inventory": 12
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 3050 VENTUS 2X E OC (6GB GDDR6)",
+    "slug": "nvidia-geforce-rtx-3050-ventus-2x-e-oc-6gb-gddr6",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": true,
+    "isBestSeller": false,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/2-2d8d0a73-fbca-4b4d-8ff2-30d608749a1c-5b4ba62a-8b72-48c2-bafb-fc338f7eecd3.jpg?v=1785140347600",
+      "https://bizweb.dktcdn.net/100/329/122/products/3-a859c91e-ff06-4fff-921d-996d806df605-02d0acc6-b482-464f-af13-95a71ec46d3a.jpg?v=1785140347600",
+      "https://bizweb.dktcdn.net/100/329/122/products/4-301a31d6-e0fd-4c93-b92e-4526f41046f0-8eefbecc-5cc8-481f-b433-7035c48adeb3.jpg?v=1785140347600",
+      "https://bizweb.dktcdn.net/100/329/122/products/1-24fe503f-f097-48ce-8c59-49a39ff0d761-5ed19679-13a0-4166-a2e5-7c5ec7fd3892.jpg?v=1785140347600"
+    ],
+    "description": "NVIDIA GeForce RTX 3050 VENTUS 2X E OC (6GB GDDR6) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2606-STD",
+        "price": 5690000,
+        "comparePrice": 6200000,
+        "inventory": 23
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2606-OC",
+        "price": 5970000,
+        "comparePrice": 6490000,
+        "inventory": 17
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2606-PRO",
+        "price": 6260000,
+        "comparePrice": null,
+        "inventory": 13
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA RTX PRO 2000 Blackwell Workstation (16GB GDDR7 ECC)",
+    "slug": "nvidia-rtx-pro-2000-blackwell-workstation-16gb-gddr7-ecc",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": true,
+    "isBestSeller": true,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/nvidia-rtx-pro-2000-16gb-4.jpg?v=1776224380603",
+      "https://bizweb.dktcdn.net/100/329/122/products/nvidia-rtx-pro-2000-16gb-1.jpg?v=1776224380603",
+      "https://bizweb.dktcdn.net/100/329/122/products/nvidia-rtx-pro-2000-16gb-2.jpg?v=1776224380603",
+      "https://bizweb.dktcdn.net/100/329/122/products/nvidia-rtx-pro-2000-16gb-3.jpg?v=1776224380603"
+    ],
+    "description": "NVIDIA RTX PRO 2000 Blackwell Workstation (16GB GDDR7 ECC) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2607-STD",
+        "price": 38500000,
+        "comparePrice": 41970000,
+        "inventory": 24
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2607-OC",
+        "price": 40430000,
+        "comparePrice": 43890000,
+        "inventory": 18
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2607-PRO",
+        "price": 42350000,
+        "comparePrice": null,
+        "inventory": 8
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5070 Ti FRIEREN EDITION OC (16GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5070-ti-frieren-edition-oc-16gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": true,
+    "isBestSeller": false,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-ti-16g-frieren-edition-oc-16gb-gddr7-02.jpg?v=1775197701460",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-ti-16g-frieren-edition-oc-16gb-gddr7-03.jpg?v=1775197701460",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-ti-16g-frieren-edition-oc-16gb-gddr7-04.jpg?v=1775197701460",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-ti-16g-frieren-edition-oc-16gb-gddr7-05.jpg?v=1775197701460"
+    ],
+    "description": "NVIDIA GeForce RTX 5070 Ti FRIEREN EDITION OC (16GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2608-STD",
+        "price": 39000000,
+        "comparePrice": 42510000,
+        "inventory": 25
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2608-OC",
+        "price": 40950000,
+        "comparePrice": 44460000,
+        "inventory": 19
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2608-PRO",
+        "price": 42900000,
+        "comparePrice": null,
+        "inventory": 9
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA RTX PRO 4000 Blackwell Workstation (24GB GDDR7 ECC)",
+    "slug": "nvidia-rtx-pro-4000-blackwell-workstation-24gb-gddr7-ecc",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": true,
+    "isBestSeller": true,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-leadtek-nvidia-quadro-rtx-pro-4000-blackwell-24gb-gddr7-01.jpg?v=1774320961383",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-leadtek-nvidia-quadro-rtx-pro-4000-blackwell-24gb-gddr7-02.jpg?v=1774320962273",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-leadtek-nvidia-quadro-rtx-pro-4000-blackwell-24gb-gddr7-03.jpg?v=1774320963433",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-leadtek-nvidia-quadro-rtx-pro-4000-blackwell-24gb-gddr7-04.jpg?v=1774320964530"
+    ],
+    "description": "NVIDIA RTX PRO 4000 Blackwell Workstation (24GB GDDR7 ECC) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2609-STD",
+        "price": 83500000,
+        "comparePrice": 91020000,
+        "inventory": 26
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2609-OC",
+        "price": 87680000,
+        "comparePrice": 95190000,
+        "inventory": 12
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2609-PRO",
+        "price": 91850000,
+        "comparePrice": null,
+        "inventory": 10
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5060 Ti Dual OC Edition (16GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5060-ti-dual-oc-edition-16gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": true,
+    "isBestSeller": false,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-dual-geforce-rtx-5060-ti-oc-edition-16gb-gddr7-01.jpg?v=1766392708467",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-dual-geforce-rtx-5060-ti-oc-edition-16gb-gddr7-02.jpg?v=1766392708467",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-dual-geforce-rtx-5060-ti-oc-edition-16gb-gddr7-03.jpg?v=1766392708467",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-dual-geforce-rtx-5060-ti-oc-edition-16gb-gddr7-04.jpg?v=1766392708467"
+    ],
+    "description": "NVIDIA GeForce RTX 5060 Ti Dual OC Edition (16GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2610-STD",
+        "price": 21500000,
+        "comparePrice": 23440000,
+        "inventory": 27
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2610-OC",
+        "price": 22580000,
+        "comparePrice": 24510000,
+        "inventory": 13
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2610-PRO",
+        "price": 23650000,
+        "comparePrice": null,
+        "inventory": 11
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5080 Founders Edition (16GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5080-founders-edition-16gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": false,
+    "isBestSeller": true,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-rog-strix-geforce-rtx-5070-oc-edition-12gb-gddr7-02.jpg?v=1752656639850",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-rog-strix-geforce-rtx-5070-oc-edition-12gb-gddr7-03.jpg?v=1752656640523",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-rog-strix-geforce-rtx-5070-oc-edition-12gb-gddr7-04.jpg?v=1752656641207",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-rog-strix-geforce-rtx-5070-oc-edition-12gb-gddr7-05.jpg?v=1752656641910"
+    ],
+    "description": "NVIDIA GeForce RTX 5080 Founders Edition (16GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2611-STD",
+        "price": 52990000,
+        "comparePrice": 57760000,
+        "inventory": 28
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2611-OC",
+        "price": 55640000,
+        "comparePrice": 60410000,
+        "inventory": 14
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2611-PRO",
+        "price": 58290000,
+        "comparePrice": null,
+        "inventory": 12
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5060 Dual OC Edition (8GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5060-dual-oc-edition-8gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": false,
+    "isBestSeller": false,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-dual-geforce-rtx-5060-oc-edition-8gb-gddr7-dual-rtx5060-o8g-02.jpg?v=1750754221127",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-dual-geforce-rtx-5060-oc-edition-8gb-gddr7-dual-rtx5060-o8g-03.jpg?v=1750754221753",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-dual-geforce-rtx-5060-oc-edition-8gb-gddr7-dual-rtx5060-o8g-04.jpg?v=1750754222177",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-dual-geforce-rtx-5060-oc-edition-8gb-gddr7-dual-rtx5060-o8g-05.jpg?v=1750754222770"
+    ],
+    "description": "NVIDIA GeForce RTX 5060 Dual OC Edition (8GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2612-STD",
+        "price": 13300000,
+        "comparePrice": 14500000,
+        "inventory": 29
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2612-OC",
+        "price": 13970000,
+        "comparePrice": 15160000,
+        "inventory": 15
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2612-PRO",
+        "price": 14630000,
+        "comparePrice": null,
+        "inventory": 13
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5060 SHADOW 2X OC (8GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5060-shadow-2x-oc-8gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": false,
+    "isBestSeller": true,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5060-shadow-2x-oc-8gb-gddr7-02.jpg?v=1748333196483",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5060-shadow-2x-oc-8gb-gddr7-03.jpg?v=1748333197287",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5060-shadow-2x-oc-8gb-gddr7-04.jpg?v=1748333198057",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5060-shadow-2x-oc-8gb-gddr7-05.jpg?v=1748333198853"
+    ],
+    "description": "NVIDIA GeForce RTX 5060 SHADOW 2X OC (8GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2613-STD",
+        "price": 12990000,
+        "comparePrice": 14160000,
+        "inventory": 18
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2613-OC",
+        "price": 13640000,
+        "comparePrice": 14810000,
+        "inventory": 16
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2613-PRO",
+        "price": 14290000,
+        "comparePrice": null,
+        "inventory": 8
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5060 VENTUS 2X OC (8GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5060-ventus-2x-oc-8gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": false,
+    "isBestSeller": false,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5060-ventus-2x-8gb-gddr7-02.jpg?v=1747995714057",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5060-ventus-2x-8gb-gddr7-03.jpg?v=1747995714830",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5060-ventus-2x-8gb-gddr7-04.jpg?v=1747995715417",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5060-ventus-2x-8gb-gddr7-05.jpg?v=1747995716073"
+    ],
+    "description": "NVIDIA GeForce RTX 5060 VENTUS 2X OC (8GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2614-STD",
+        "price": 13150000,
+        "comparePrice": 14330000,
+        "inventory": 19
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2614-OC",
+        "price": 13810000,
+        "comparePrice": 14990000,
+        "inventory": 17
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2614-PRO",
+        "price": 14470000,
+        "comparePrice": null,
+        "inventory": 9
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5070 Ti SHADOW 3X OC (16GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5070-ti-shadow-3x-oc-16gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": false,
+    "isBestSeller": true,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-ti-16gb-shadow-3x-oc-gddr7-02.jpg?v=1744694944637",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-ti-16gb-shadow-3x-oc-gddr7-03.jpg?v=1744694945220",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-ti-16gb-shadow-3x-oc-gddr7-04.jpg?v=1744694946043",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-ti-16gb-shadow-3x-oc-gddr7-05.jpg?v=1744694946870"
+    ],
+    "description": "NVIDIA GeForce RTX 5070 Ti SHADOW 3X OC (16GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2615-STD",
+        "price": 39500000,
+        "comparePrice": 43060000,
+        "inventory": 20
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2615-OC",
+        "price": 41480000,
+        "comparePrice": 45030000,
+        "inventory": 18
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2615-PRO",
+        "price": 43450000,
+        "comparePrice": null,
+        "inventory": 10
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5070 TUF Gaming OC Edition (12GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5070-tuf-gaming-oc-edition-12gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": false,
+    "isBestSeller": false,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-tuf-gaming-geforce-rtx-5070-12gb-gddr7-oc-edition-tuf-rtx5070-o12g-gaming-02.jpg?v=1749402675427",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-tuf-gaming-geforce-rtx-5070-12gb-gddr7-oc-edition-tuf-rtx5070-o12g-gaming-03.jpg?v=1749402675427",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-tuf-gaming-geforce-rtx-5070-12gb-gddr7-oc-edition-tuf-rtx5070-o12g-gaming-04.jpg?v=1749402675427",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-asus-tuf-gaming-geforce-rtx-5070-12gb-gddr7-oc-edition-tuf-rtx5070-o12g-gaming-05.jpg?v=1749402675427"
+    ],
+    "description": "NVIDIA GeForce RTX 5070 TUF Gaming OC Edition (12GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2616-STD",
+        "price": 28900000,
+        "comparePrice": 31500000,
+        "inventory": 21
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2616-OC",
+        "price": 30350000,
+        "comparePrice": 32950000,
+        "inventory": 19
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2616-PRO",
+        "price": 31790000,
+        "comparePrice": null,
+        "inventory": 11
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5070 Ti Founders Edition (16GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5070-ti-founders-edition-16gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": false,
+    "isBestSeller": true,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-gigabyte-geforce-rtx-5080-windforce-oc-sff-16gb-gddr7-02.jpg?v=1741950403770",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-gigabyte-geforce-rtx-5080-windforce-oc-sff-16gb-gddr7-03.jpg?v=1741950404600",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-gigabyte-geforce-rtx-5080-windforce-oc-sff-16gb-gddr7-04.jpg?v=1741950405217",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-gigabyte-geforce-rtx-5080-windforce-oc-sff-16gb-gddr7-05.jpg?v=1741950405993"
+    ],
+    "description": "NVIDIA GeForce RTX 5070 Ti Founders Edition (16GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2617-STD",
+        "price": 38990000,
+        "comparePrice": 42500000,
+        "inventory": 22
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2617-OC",
+        "price": 40940000,
+        "comparePrice": 44450000,
+        "inventory": 12
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2617-PRO",
+        "price": 42890000,
+        "comparePrice": null,
+        "inventory": 12
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5070 Ti VENTUS 3X OC (16GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5070-ti-ventus-3x-oc-16gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": false,
+    "isBestSeller": false,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-ti-16g-ventus-3x-oc-plus-06-c4b7ebf1-0b11-4acb-b318-1c34c404f6cd.jpg?v=1741236301583",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-ti-16g-ventus-3x-oc-plus-05-93a2b0dd-35d9-4c52-81b5-16367dd5fe04.jpg?v=1741236301583",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-ti-16g-ventus-3x-oc-plus-04-c511bbe0-2924-4659-9997-54aa0bbb49d9.jpg?v=1741236301583",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-ti-16g-ventus-3x-oc-plus-03-d7656016-4cdc-478c-98e6-85e970dcbc73.jpg?v=1741236301583"
+    ],
+    "description": "NVIDIA GeForce RTX 5070 Ti VENTUS 3X OC (16GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2618-STD",
+        "price": 39900000,
+        "comparePrice": 43490000,
+        "inventory": 23
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2618-OC",
+        "price": 41900000,
+        "comparePrice": 45490000,
+        "inventory": 13
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2618-PRO",
+        "price": 43890000,
+        "comparePrice": null,
+        "inventory": 13
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5070 GAMING TRIO OC (12GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5070-gaming-trio-oc-12gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": false,
+    "isBestSeller": true,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-12g-gaming-trio-oc-02.jpg?v=1738653679347",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-12g-gaming-trio-oc-03.jpg?v=1738653679927",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-12g-gaming-trio-oc-04.jpg?v=1738653680723",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5070-12g-gaming-trio-oc-05.jpg?v=1738653681487"
+    ],
+    "description": "NVIDIA GeForce RTX 5070 GAMING TRIO OC (12GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2619-STD",
+        "price": 28500000,
+        "comparePrice": 31070000,
+        "inventory": 24
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2619-OC",
+        "price": 29930000,
+        "comparePrice": 32490000,
+        "inventory": 14
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2619-PRO",
+        "price": 31350000,
+        "comparePrice": null,
+        "inventory": 8
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
+    "name": "NVIDIA GeForce RTX 5070 Founders Edition (12GB GDDR7)",
+    "slug": "nvidia-geforce-rtx-5070-founders-edition-12gb-gddr7",
+    "brand": "NVIDIA",
+    "category": "components",
+    "isNewArrival": false,
+    "isBestSeller": false,
+    "images": [
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5090-32g-ventus-3x-oc-02.jpg?v=1737630284570",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5090-32g-ventus-3x-oc-03.jpg?v=1737630284953",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5090-32g-ventus-3x-oc-04.jpg?v=1737630285530",
+      "https://bizweb.dktcdn.net/100/329/122/products/vga-msi-geforce-rtx-5090-32g-ventus-3x-oc-05.jpg?v=1737630286073"
+    ],
+    "description": "NVIDIA GeForce RTX 5070 Founders Edition (12GB GDDR7) is powered by NVIDIA Blackwell and Ada Lovelace GPU architecture for extreme ray tracing and AI acceleration.\nEquipped with dedicated 5th-Gen Tensor Cores supporting NVIDIA DLSS 4 Multi Frame Generation and FP4/FP8 AI compute workloads.\n4th-Gen RT Cores deliver up to 2x ray-traced triangle intersection throughput for photorealistic 4K/8K rendering in Blender, Unreal Engine 5, and Cyberpunk.\nHigh-speed GDDR7 / GDDR6 VRAM subsystem and PCIe Gen 5 x16 host interface maximize memory bandwidth under heavy LLM and 3D scene loads.\nPrecision vapor-chamber heatsink, axial-tech fan array, and reinforced metal backplate maintain low acoustic and thermal profiles.\nStudio-ready display engine provides three DisplayPort 2.1b UHBR20 outputs and one HDMI 2.1b port with dual 9th-Gen NVENC AV1 encoders.",
+    "variants": [
+      {
+        "name": "Standard Edition · Retail Box",
+        "sku": "NV-GPU-2620-STD",
+        "price": 26990000,
+        "comparePrice": 29420000,
+        "inventory": 25
+      },
+      {
+        "name": "Factory OC Edition · Boost Clock Tuned",
+        "sku": "NV-GPU-2620-OC",
+        "price": 28340000,
+        "comparePrice": 30770000,
+        "inventory": 15
+      },
+      {
+        "name": "Workstation Studio Bundle · +16-Pin 12V-2x6 Braided Adapter",
+        "sku": "NV-GPU-2620-PRO",
+        "price": 29690000,
+        "comparePrice": null,
+        "inventory": 9
+      }
+    ],
+    "tags": [
+      "nvidia",
+      "geforce",
+      "rtx",
+      "gpu",
+      "components",
+      "2026"
+    ]
+  },
+  {
     "name": "GIGABYTE AI TOP 100 Z890 AT1I9N9-0005",
     "slug": "gigabyte-ai-top-100-z890-at1i9n9-0005",
     "brand": "GIGABYTE",
