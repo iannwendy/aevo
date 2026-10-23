@@ -14,7 +14,11 @@ export function formatPrice(amount) {
 
 export function generateOrderNumber() {
   const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const bytes = new Uint8Array(4);
+  globalThis.crypto.getRandomValues(bytes);
+  const random = Array.from(bytes, (b) => b.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase();
   return `AEVO-${timestamp}${random}`;
 }
 

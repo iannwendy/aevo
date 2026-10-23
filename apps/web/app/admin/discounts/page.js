@@ -20,9 +20,11 @@ import { useI18n } from '../../../lib/i18n';
 
 function generateRandom5CharCode() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const bytes = new Uint32Array(5);
+  globalThis.crypto.getRandomValues(bytes);
   let result = '';
   for (let i = 0; i < 5; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)];
+    result += chars[bytes[i] % chars.length];
   }
   return result;
 }

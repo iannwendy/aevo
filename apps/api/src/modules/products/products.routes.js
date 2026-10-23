@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const prisma = require('../../utils/prisma');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
@@ -80,7 +81,7 @@ async function generateUniqueSlug(name, excludeProductId = null) {
   if (!existing || existing.id === excludeProductId) {
     return base;
   }
-  const suffix = `${Date.now().toString(36).slice(-4)}${Math.floor(Math.random() * 100)}`;
+  const suffix = `${Date.now().toString(36).slice(-4)}${crypto.randomInt(0, 100)}`;
   return `${base}-${suffix}`;
 }
 
