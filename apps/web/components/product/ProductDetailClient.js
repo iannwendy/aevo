@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { io as createSocketClient } from 'socket.io-client';
 import {
@@ -14,6 +14,8 @@ import {
   Sparkles,
   MessageSquare,
   Radio,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { API_URL, productsApi, cartApi, reviewsApi } from '../../lib/api';
 import { fetchProfile } from '../../lib/auth-client';
@@ -251,6 +253,57 @@ export default function ProductDetailClient({
   }, [product?.images]);
 
   const activeImage = images[activeImageIndex] || images[0];
+  const touchStartRef = useRef({ x: 0, y: 0 });
+
+  const handlePrevImage = useCallback(() => {
+    if (!images.length) return;
+    setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  }, [images.length]);
+
+  const handleNextImage = useCallback(() => {
+    if (!images.length) return;
+    setActiveImageIndex((prev) => (prev + 1) % images.length);
+  }, [images.length]);
+
+  // Keyboard Left/Right arrow navigation
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const onKeyDown = (e) => {
+      const tag = e.target?.tagName?.toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target?.isContentEditable) {
+        return;
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handlePrevImage();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNextImage();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [images.length, handlePrevImage, handleNextImage]);
+
+  const handleTouchStart = (e) => {
+    const touch = e.touches?.[0];
+    if (!touch) return;
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (e) => {
+    const touch = e.changedTouches?.[0];
+    if (!touch || images.length <= 1) return;
+    const deltaX = touch.clientX - touchStartRef.current.x;
+    const deltaY = touch.clientY - touchStartRef.current.y;
+    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX < 0) {
+        handleNextImage();
+      } else {
+        handlePrevImage();
+      }
+    }
+  };
 
   const descriptionLines = useMemo(() => {
     if (!product?.description) return [];
@@ -419,15 +472,51 @@ export default function ProductDetailClient({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
           {/* Image Gallery (3+ images required by rubric) */}
           <div className="lg:col-span-7 animate-fade-in" data-testid="product-gallery">
-            <div className="group aspect-[4/3] rounded-2xl overflow-hidden bg-white p-6 border border-border mb-4 relative transition-shadow duration-300 hover:shadow-md">
+            <div
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              className="group aspect-[4/3] rounded-2xl overflow-hidden bg-white p-6 border border-border mb-4 relative select-none touch-pan-y transition-shadow duration-300 hover:shadow-md"
+            >
               <img
                 key={activeImageIndex}
                 src={activeImage?.url || FALLBACK_PRODUCT_IMAGE}
                 alt={`${product.name} — view ${activeImageIndex + 1}`}
                 onError={handleImageError}
+                draggable={false}
                 data-testid="product-gallery-main-image"
                 className="w-full h-full object-contain animate-fade-in transition-transform duration-500 ease-out group-hover:scale-[1.03]"
               />
+
+              {/* Left / Right Image Navigation Arrows */}
+              {images.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handlePrevImage}
+                    data-testid="gallery-prev-button"
+                    aria-label="Previous image"
+                    className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-surface/90 backdrop-blur-md border border-border text-ink shadow-md hover:bg-ink hover:text-primary-foreground hover:border-ink active:scale-95 transition-all duration-200 flex items-center justify-center"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNextImage}
+                    data-testid="gallery-next-button"
+                    aria-label="Next image"
+                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-surface/90 backdrop-blur-md border border-border text-ink shadow-md hover:bg-ink hover:text-primary-foreground hover:border-ink active:scale-95 transition-all duration-200 flex items-center justify-center"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                  <div
+                    data-testid="gallery-counter"
+                    className="absolute bottom-3 right-3 z-10 px-2.5 py-1 rounded-full bg-surface/85 backdrop-blur-md border border-border text-[11px] font-mono text-secondary pointer-events-none"
+                  >
+                    {activeImageIndex + 1} / {images.length}
+                  </div>
+                </>
+              )}
+
               <div className="absolute top-4 left-4 flex flex-wrap gap-2">
                 {product.isNewArrival && (
                   <span className="bg-primary text-primary-foreground text-caption font-mono uppercase tracking-wider px-3 py-1 rounded-full shadow-xs animate-scale-in">
