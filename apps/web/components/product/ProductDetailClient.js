@@ -618,11 +618,11 @@ export default function ProductDetailClient({
 
               {/* Quantity Stepper + Add to Cart CTA */}
               <div className="mt-8 pt-6 border-t border-border">
-                <div className="flex flex-row items-center gap-3 sm:gap-4">
+                <div className="flex flex-row items-center gap-2.5 sm:gap-4 w-full min-w-0">
                   {/* Quantity Stepper */}
                   <div
                     data-testid="quantity-stepper"
-                    className="inline-flex items-center justify-between rounded-xl border border-border bg-surface h-12 min-h-[48px] px-1.5 sm:px-2 w-[116px] sm:w-36 shrink-0"
+                    className="inline-flex items-center justify-between rounded-xl border border-border bg-surface h-12 min-h-[48px] px-1 sm:px-2 w-[96px] sm:w-32 shrink-0"
                   >
                     <button
                       type="button"
@@ -630,14 +630,14 @@ export default function ProductDetailClient({
                       disabled={quantity <= 1 || currentStock <= 0}
                       data-testid="quantity-decrease"
                       aria-label="Decrease quantity"
-                      className="w-9 h-9 rounded-lg inline-flex items-center justify-center text-ink hover:bg-canvas active:scale-90 transition-all duration-150 disabled:opacity-40 disabled:active:scale-100"
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg inline-flex items-center justify-center text-ink hover:bg-canvas active:scale-90 transition-all duration-150 disabled:opacity-40 disabled:active:scale-100"
                     >
-                      <Minus size={16} />
+                      <Minus size={15} />
                     </button>
                     <span
                       key={quantity}
                       data-testid="quantity-value"
-                      className="text-base font-mono font-medium text-ink animate-scale-in"
+                      className="text-small sm:text-base font-mono font-medium text-ink animate-scale-in"
                     >
                       {quantity}
                     </span>
@@ -649,9 +649,9 @@ export default function ProductDetailClient({
                       disabled={quantity >= currentStock || currentStock <= 0}
                       data-testid="quantity-increase"
                       aria-label="Increase quantity"
-                      className="w-9 h-9 rounded-lg inline-flex items-center justify-center text-ink hover:bg-canvas active:scale-90 transition-all duration-150 disabled:opacity-40 disabled:active:scale-100"
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg inline-flex items-center justify-center text-ink hover:bg-canvas active:scale-90 transition-all duration-150 disabled:opacity-40 disabled:active:scale-100"
                     >
-                      <Plus size={16} />
+                      <Plus size={15} />
                     </button>
                   </div>
 
@@ -661,9 +661,9 @@ export default function ProductDetailClient({
                     onClick={handleAddToCart}
                     disabled={addingToCart || currentStock <= 0}
                     data-testid="add-to-cart-button"
-                    className="flex-1 h-12 min-h-[48px] px-4 sm:px-6 rounded-xl bg-primary text-primary-foreground font-medium text-small hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 whitespace-nowrap btn-interactive"
+                    className="flex-1 min-w-0 h-12 min-h-[48px] px-3 sm:px-6 rounded-xl bg-primary text-primary-foreground font-medium text-[13px] sm:text-small hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5 sm:gap-2 btn-interactive"
                   >
-                    <ShoppingBag size={18} className="shrink-0" />
+                    <ShoppingBag size={16} className="shrink-0" />
                     <span className="truncate">
                       {currentStock <= 0
                         ? t('productDetail.outOfStock')
