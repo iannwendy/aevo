@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const prisma = require('../../utils/prisma');
 const { authMiddleware, optionalAuth, adminOnly, signResetToken } = require('../../middleware/auth');
+const { rateLimit } = require('../../middleware/rateLimit');
 const { CLIENT_URL } = require('../../config/passport');
 const { generateOrderNumber } = require('../../utils/helpers');
 const { sendOrderConfirmationEmail } = require('../../services/mailer');
@@ -53,6 +54,7 @@ function generateGuestPassword() {
 }
 
 const PAYMENT_METHODS = ['cod', 'bank_transfer', 'card', 'momo'];
+const SHIPPING_METHODS = ['standard', 'express'];
 const VALID_ORDER_STATUSES = ['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'];
 
 // Points are worth 1,000 VND each; 100 points = 100,000 VND.
@@ -122,7 +124,15 @@ function enrichOrder(order, extra = {}) {
 }
 
 // Create order (checkout — supports both logged-in user and guest checkout)
-router.post('/', optionalAuth, async (req, res) => {
+router.post(
+  '/',
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 120,
+    message: 'Too many checkout requests, please try again later',
+  }),
+  optionalAuth,
+  async (req, res) => {
   try {
     const {
       shippingAddress,
@@ -139,6 +149,14 @@ router.post('/', optionalAuth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid payment method' });
     }
 
+    if (shippingMethod && !SHIPPING_METHODS.includes(String(shippingMethod).toLowerCase())) {
+      return res.status(400).json({ error: 'Invalid shipping method' });
+    }
+
+    if (notes !== undefined && notes !== null && String(notes).length > 1000) {
+      return res.status(400).json({ error: 'Order notes cannot exceed 1000 characters' });
+    }
+
     const pointsToRedeem = Number(usedLoyaltyPoints) || 0;
     if (!Number.isInteger(pointsToRedeem) || pointsToRedeem < 0) {
       return res.status(400).json({ error: 'Invalid loyalty points' });
@@ -146,11 +164,24 @@ router.post('/', optionalAuth, async (req, res) => {
 
     if (
       !shippingAddress ||
-      !shippingAddress.fullName ||
-      !shippingAddress.phone ||
-      !shippingAddress.address
+      typeof shippingAddress !== 'object' ||
+      !String(shippingAddress.fullName || '').trim() ||
+      !String(shippingAddress.phone || '').trim() ||
+      !String(shippingAddress.address || '').trim()
     ) {
       return res.status(400).json({ error: 'Shipping address is required' });
+    }
+
+    if (
+      String(shippingAddress.fullName || '').length > 120 ||
+      String(shippingAddress.phone || '').length > 30 ||
+      String(shippingAddress.address || '').length > 300 ||
+      String(shippingAddress.ward || '').length > 120 ||
+      String(shippingAddress.district || '').length > 120 ||
+      String(shippingAddress.city || '').length > 120 ||
+      String(shippingAddress.email || '').length > 254
+    ) {
+      return res.status(400).json({ error: 'One or more shipping address fields exceed maximum length' });
     }
 
     if (!req.user) {
@@ -160,9 +191,15 @@ router.post('/', optionalAuth, async (req, res) => {
       }
     }
 
-    const sessionId = typeof (req.cookies?.sessionId || req.body?.sessionId) === 'string'
-      ? (req.cookies?.sessionId || req.body?.sessionId)
-      : null;
+    const rawSessionId = req.cookies?.sessionId || req.body?.sessionId;
+    const sessionId =
+      typeof rawSessionId === 'string' && /^[a-zA-Z0-9_-]{1,128}$/.test(rawSessionId.trim())
+        ? rawSessionId.trim()
+        : null;
+
+    if (Array.isArray(directItems) && directItems.length > 50) {
+      return res.status(400).json({ error: 'Cannot order more than 50 distinct line items at once' });
+    }
 
     // Resolve cart (user cart first, then guest session cart)
     let cart = null;
