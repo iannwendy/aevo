@@ -672,6 +672,23 @@ async function launchBrowser() {
       'ANIM-23',
       'Admin Dashboard (/admin) KPI cards have staggered slide-up entrance and hover-lift classes',
       async () => {
+        const loginRes = await fetch(`${API_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'admin@aevo.com', password: 'admin123' }),
+        });
+        const loginData = await loginRes.json();
+        if (loginData?.token) {
+          await context.addCookies([
+            {
+              name: 'token',
+              value: loginData.token,
+              url: WEB_URL,
+              httpOnly: true,
+              sameSite: 'Lax',
+            },
+          ]);
+        }
         await page.goto(`${WEB_URL}/admin`, { waitUntil: 'networkidle' });
         const kpiInfo = await page.evaluate(() => {
           const ids = [

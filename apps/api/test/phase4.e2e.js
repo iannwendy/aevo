@@ -756,6 +756,11 @@ async function registerCustomer(tag = 'phase4') {
   console.log('\n=== Task 4.7: Admin Frontend Pages ===');
 
   await test('FE-24', 'Visit /admin renders Dashboard overview (KPIs, Best Sellers, Advanced Analytics) and enforces 403 for non-admin', async () => {
+    // Unauthenticated user without token cookie should be redirected to /login?next=%2Fadmin
+    const unauthRes = await callWeb('/admin');
+    assert.equal(unauthRes.status, 307, 'Expected 307 redirect to /login when unauthenticated user visits /admin');
+    assert.match(unauthRes.headers.get('location') || '', /\/login\?next=%2Fadmin/);
+
     // Non-admin user cookie should be rejected with 403 by middleware
     const nonAdminRes = await callWeb('/admin', { cookie: customer.cookie });
     assert.equal(nonAdminRes.status, 403, 'Expected 403 when customer visits /admin');

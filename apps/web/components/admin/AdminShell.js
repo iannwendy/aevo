@@ -14,7 +14,7 @@ import {
   X,
   ShieldAlert,
 } from 'lucide-react';
-import { fetchProfile } from '../../lib/auth-client';
+import { fetchProfile, postLogout } from '../../lib/auth-client';
 import { useI18n } from '../../lib/i18n';
 import SettingsMenu from '../SettingsMenu';
 
@@ -64,12 +64,21 @@ export default function AdminShell({ children }) {
 
   useEffect(() => {
     let active = true;
-    fetchProfile().then((res) => {
+    fetchProfile().then(async (res) => {
       if (!active) return;
       if (res.status === 'ok' && res.user) {
         setAuthState({ status: 'authenticated', user: res.user });
       } else {
         setAuthState({ status: 'unauthenticated', user: null });
+        try {
+          await postLogout();
+        } catch {
+          // ignore
+        }
+        if (typeof window !== 'undefined') {
+          const nextTarget = `${window.location.pathname}${window.location.search}`;
+          window.location.replace(`/login?next=${encodeURIComponent(nextTarget || '/admin')}`);
+        }
       }
     });
     return () => {
@@ -211,7 +220,26 @@ export default function AdminShell({ children }) {
 
         {/* Page Content */}
         <main className="flex-1 p-4 sm:p-8 lg:p-10 min-w-0">
-          {authState.status === 'authenticated' && authState.user?.role !== 'ADMIN' && (
+          {authState.status === 'unauthenticated' ? (
+            <div
+              data-testid="admin-unauthenticated-warning"
+              className="p-6 rounded-xl border border-border bg-surface text-ink flex flex-wrap items-center justify-between gap-4"
+            >
+              <div className="flex items-center gap-3">
+                <ShieldAlert size={20} className="text-danger" />
+                <div>
+                  <p className="text-small font-medium">{t('admin.adminAccessRequired')}</p>
+                  <p className="text-caption text-secondary">{t('admin.adminAccessDesc')}</p>
+                </div>
+              </div>
+              <Link
+                href={`/login?next=${encodeURIComponent(pathname)}`}
+                className="btn-primary text-small px-4 py-2 h-auto"
+              >
+                {t('admin.signInAsAdmin')}
+              </Link>
+            </div>
+          ) : authState.status === 'authenticated' && authState.user?.role !== 'ADMIN' ? (
             <div
               data-testid="admin-access-warning"
               className="mb-6 p-4 rounded-xl border border-danger/40 bg-danger/10 text-danger flex flex-wrap items-center justify-between gap-4"
@@ -227,9 +255,9 @@ export default function AdminShell({ children }) {
                 {t('admin.signInAsAdmin')}
               </Link>
             </div>
+          ) : (
+            children
           )}
-
-          {children}
         </main>
       </div>
     </div>

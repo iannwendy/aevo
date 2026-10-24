@@ -41,12 +41,35 @@ async function verifyJwtHmacSha256(token, secret) {
   }
 }
 
-function forbiddenAdminResponse(request) {
-  if (
+function isPrefetchRequest(request) {
+  return (
     request?.headers?.get('next-router-prefetch') === '1' ||
     request?.headers?.get('purpose') === 'prefetch' ||
     request?.nextUrl?.searchParams?.has('_rsc')
-  ) {
+  );
+}
+
+function redirectToAdminLogin(request) {
+  if (isPrefetchRequest(request)) {
+    return new NextResponse(null, { status: 204 });
+  }
+  const { pathname, search } = request.nextUrl;
+  const nextTarget = `${pathname || '/admin'}${search || ''}`;
+  const forwardedProto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim();
+  const forwardedHost =
+    request.headers.get('x-forwarded-host')?.split(',')[0]?.trim() ||
+    request.headers.get('host')?.trim();
+  const baseOrigin = forwardedHost
+    ? `${forwardedProto || request.nextUrl.protocol.replace(':', '') || 'http'}://${forwardedHost}`
+    : request.url;
+  const loginUrl = new URL(`/login?next=${encodeURIComponent(nextTarget)}`, baseOrigin);
+  const response = NextResponse.redirect(loginUrl, 307);
+  response.headers.set('cache-control', 'no-store, must-revalidate');
+  return response;
+}
+
+function forbiddenAdminResponse(request) {
+  if (isPrefetchRequest(request)) {
     return new NextResponse(null, { status: 204 });
   }
   return new NextResponse(
@@ -74,33 +97,35 @@ export async function middleware(request) {
         : null;
     const token = cookieToken || bearerToken;
 
-    if (token) {
-      const parts = token.split('.');
-      if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) {
+    if (!token) {
+      return redirectToAdminLogin(request);
+    }
+
+    const parts = token.split('.');
+    if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) {
+      return forbiddenAdminResponse(request);
+    }
+
+    const header = decodeJwtPart(parts[0]);
+    const payload = decodeJwtPart(parts[1]);
+
+    // Reject alg: "none", non-HS256 tokens, password-reset tokens, expired tokens, or non-ADMIN roles
+    if (
+      !header ||
+      header.alg !== 'HS256' ||
+      !payload ||
+      payload.purpose ||
+      payload.role !== 'ADMIN' ||
+      (typeof payload.exp === 'number' && payload.exp * 1000 < Date.now())
+    ) {
+      return forbiddenAdminResponse(request);
+    }
+
+    const secret = process.env.JWT_SECRET;
+    if (secret) {
+      const validSig = await verifyJwtHmacSha256(token, secret);
+      if (!validSig) {
         return forbiddenAdminResponse(request);
-      }
-
-      const header = decodeJwtPart(parts[0]);
-      const payload = decodeJwtPart(parts[1]);
-
-      // Reject alg: "none", non-HS256 tokens, password-reset tokens, expired tokens, or non-ADMIN roles
-      if (
-        !header ||
-        header.alg !== 'HS256' ||
-        !payload ||
-        payload.purpose ||
-        payload.role !== 'ADMIN' ||
-        (typeof payload.exp === 'number' && payload.exp * 1000 < Date.now())
-      ) {
-        return forbiddenAdminResponse(request);
-      }
-
-      const secret = process.env.JWT_SECRET;
-      if (secret) {
-        const validSig = await verifyJwtHmacSha256(token, secret);
-        if (!validSig) {
-          return forbiddenAdminResponse(request);
-        }
       }
     }
   }

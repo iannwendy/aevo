@@ -153,6 +153,10 @@ async function registerCustomer(tag = 'sec', extraBody = {}) {
   // SEC-01: Admin route protection (Web /admin + API admin routes)
   // -------------------------------------------------------------------------
   await test('SEC-01', 'Admin route protection: non-admin receives 403 on /admin and all admin API routes', async () => {
+    const unauthWebRes = await callWeb('/admin');
+    assert.equal(unauthWebRes.status, 307, 'Expected unauthenticated /admin request to redirect (307) to /login');
+    assert.match(unauthWebRes.headers.get('location') || '', /\/login\?next=%2Fadmin/);
+
     const webRes = await callWeb('/admin', { cookie: userA.cookie });
     assert.equal(webRes.status, 403);
 

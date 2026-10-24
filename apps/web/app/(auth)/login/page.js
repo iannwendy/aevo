@@ -22,8 +22,9 @@ import SettingsMenu from '@/components/SettingsMenu';
  */
 
 // Only allow same-site relative targets from ?next (no open redirect or backslash tricks).
-function safeNext(value) {
-  if (typeof value !== 'string') return '/account/profile';
+function safeNext(value, role) {
+  const defaultTarget = role === 'ADMIN' ? '/admin' : '/account/profile';
+  if (typeof value !== 'string' || !value.trim()) return defaultTarget;
   const trimmed = value.trim();
   if (
     !trimmed.startsWith('/') ||
@@ -31,6 +32,9 @@ function safeNext(value) {
     trimmed.includes('\\') ||
     /[\u0000-\u001F]/.test(trimmed)
   ) {
+    return defaultTarget;
+  }
+  if (trimmed.startsWith('/admin') && role && role !== 'ADMIN') {
     return '/account/profile';
   }
   return trimmed;
@@ -123,7 +127,7 @@ function LoginView({ searchParams }) {
       .then((result) => {
         if (cancelled) return;
         if (result.status === 'ok') {
-          goTo(safeNext(getParam(searchParams, 'next')));
+          goTo(safeNext(getParam(searchParams, 'next'), result.user?.role));
           return;
         }
         setPhase('idle');
@@ -149,7 +153,7 @@ function LoginView({ searchParams }) {
       setGoogleLoading(false);
       const result = await fetchProfile();
       if (result.status === 'ok') {
-        goTo(safeNext(getParam(searchParams, 'next')));
+        goTo(safeNext(getParam(searchParams, 'next'), result.user?.role));
         return;
       }
       setNotice({
@@ -180,7 +184,7 @@ function LoginView({ searchParams }) {
 
     if (result.ok) {
       setNotice({ kind: 'success', message: t('auth.login.signedInRedirecting') });
-      goTo(safeNext(getParam(searchParams, 'next')));
+      goTo(safeNext(getParam(searchParams, 'next'), result.user?.role));
       return;
     }
 

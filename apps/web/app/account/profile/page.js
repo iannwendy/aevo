@@ -240,6 +240,15 @@ function ProfileView() {
         </div>
 
         <div className="flex items-center gap-3">
+          {user.role === 'ADMIN' && (
+            <Link
+              href="/admin"
+              data-testid="profile-admin-link"
+              className="btn-primary focus-ring inline-flex items-center gap-2 h-11 px-5 rounded-lg font-medium"
+            >
+              {t('footer.admin')}
+            </Link>
+          )}
           <button
             type="button"
             onClick={handleLogout}
