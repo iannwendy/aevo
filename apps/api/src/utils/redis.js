@@ -119,6 +119,70 @@ async function deleteSessionState(key) {
 }
 
 /**
+ * Lightweight read-through cache helpers with automatic TTL and memory fallback.
+ */
+async function getCacheValue(key) {
+  const fullKey = `aevo:cache:${key}`;
+
+  if (isRedisReady()) {
+    try {
+      const raw = await redisClient.get(fullKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      // Fall through to memory fallback
+    }
+  }
+
+  const entry = memoryStore.get(fullKey);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    memoryStore.delete(fullKey);
+    return null;
+  }
+  try {
+    return JSON.parse(entry.value);
+  } catch {
+    return null;
+  }
+}
+
+async function setCacheValue(key, value, ttlSeconds = 30) {
+  const fullKey = `aevo:cache:${key}`;
+  const serialized = JSON.stringify(value);
+
+  memoryStore.set(fullKey, {
+    value: serialized,
+    expiresAt: Date.now() + ttlSeconds * 1000,
+  });
+
+  if (isRedisReady()) {
+    try {
+      await redisClient.set(fullKey, serialized, 'EX', ttlSeconds);
+      return true;
+    } catch {
+      // Ignore Redis write error; memory fallback already populated
+    }
+  }
+  return false;
+}
+
+async function invalidateCacheKeys(keys = []) {
+  const list = Array.isArray(keys) ? keys : [keys];
+  if (list.length === 0) return;
+  const fullKeys = list.map((k) => `aevo:cache:${k}`);
+  for (const fk of fullKeys) {
+    memoryStore.delete(fk);
+  }
+  if (isRedisReady()) {
+    try {
+      await redisClient.del(...fullKeys);
+    } catch {
+      // Ignore
+    }
+  }
+}
+
+/**
  * Publish a Socket.IO event across all API instances via Redis Pub/Sub.
  */
 async function publishSocketEvent(event, room, payload) {
@@ -180,6 +244,9 @@ module.exports = {
   setSessionState,
   getSessionState,
   deleteSessionState,
+  getCacheValue,
+  setCacheValue,
+  invalidateCacheKeys,
   publishSocketEvent,
   initSocketRedisBridge,
 };

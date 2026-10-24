@@ -5,6 +5,7 @@ const prisma = require('../../utils/prisma');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
 const { isSafeImageUrl } = require('../../utils/security');
 const { publishDomainEvent } = require('../../utils/eventBus');
+const { getCacheValue, setCacheValue, invalidateCacheKeys } = require('../../utils/redis');
 const {
   searchProductsWithElasticsearch,
   syncSingleProductToElasticsearch,
@@ -429,10 +430,22 @@ router.get('/admin/all', authMiddleware, adminOnly, async (req, res) => {
 // Get available filter metadata (brands, tags, price bounds)
 router.get('/filters', async (req, res) => {
   try {
-    const [products, tags] = await Promise.all([
+    const cached = await getCacheValue('products:filters');
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      return res.json(cached);
+    }
+
+    const [brandRows, priceAgg, tags] = await Promise.all([
       prisma.product.findMany({
         where: { isActive: true },
-        select: { brand: true, minPrice: true },
+        distinct: ['brand'],
+        select: { brand: true },
+      }),
+      prisma.product.aggregate({
+        where: { isActive: true },
+        _min: { minPrice: true },
+        _max: { minPrice: true },
       }),
       prisma.productTag.findMany({
         orderBy: { name: 'asc' },
@@ -440,32 +453,31 @@ router.get('/filters', async (req, res) => {
     ]);
 
     const brandMap = new Map();
-    let min = Infinity;
-    let max = 0;
-
-    for (const p of products) {
+    for (const p of brandRows) {
       if (p.brand) {
         const key = p.brand.toLowerCase();
         if (!brandMap.has(key)) {
           brandMap.set(key, p.brand);
         }
       }
-      if (typeof p.minPrice === 'number') {
-        if (p.minPrice < min) min = p.minPrice;
-        if (p.minPrice > max) max = p.minPrice;
-      }
     }
 
     const brands = Array.from(brandMap.values()).sort((a, b) => a.localeCompare(b));
+    const min = priceAgg._min?.minPrice ?? 0;
+    const max = priceAgg._max?.minPrice ?? 0;
 
-    res.json({
+    const payload = {
       brands,
       tags,
       priceRange: {
-        min: min === Infinity ? 0 : min,
+        min,
         max,
       },
-    });
+    };
+
+    await setCacheValue('products:filters', payload, 30);
+    res.setHeader('X-Cache', 'MISS');
+    res.json(payload);
   } catch (error) {
     console.error('Get product filters error:', error);
     res.status(500).json({ error: 'Failed to fetch product filters' });
@@ -641,6 +653,7 @@ async function updateVariantInventoryOrFields(req, res) {
       return variant;
     });
 
+    await invalidateCacheKeys(['categories:all', 'products:filters']);
     res.json(updated);
   } catch (error) {
     console.error('Update variant error:', error);
@@ -671,6 +684,7 @@ router.delete('/variants/:variantId', authMiddleware, adminOnly, async (req, res
       return variant;
     });
 
+    await invalidateCacheKeys(['categories:all', 'products:filters']);
     res.json({ message: 'Variant removed', isActive: false, ...updated, variant: updated });
   } catch (error) {
     console.error('Delete variant error:', error);
@@ -850,6 +864,7 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
       });
     });
 
+    await invalidateCacheKeys(['categories:all', 'products:filters']);
     syncSingleProductToElasticsearch(product.id).catch(() => {});
     publishDomainEvent('PRODUCT_CREATED', {
       productId: product.id,
@@ -1055,6 +1070,7 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
       });
     });
 
+    await invalidateCacheKeys(['categories:all', 'products:filters']);
     syncSingleProductToElasticsearch(product.id).catch(() => {});
     publishDomainEvent('PRODUCT_UPDATED', {
       productId: product.id,
@@ -1109,6 +1125,7 @@ router.post('/:id/variants', authMiddleware, adminOnly, async (req, res) => {
       return variant;
     });
 
+    await invalidateCacheKeys(['categories:all', 'products:filters']);
     res.status(201).json(created);
   } catch (error) {
     console.error('Add variant error:', error);
@@ -1141,6 +1158,7 @@ router.delete('/:id/variants/:variantId', authMiddleware, adminOnly, async (req,
       return variant;
     });
 
+    await invalidateCacheKeys(['categories:all', 'products:filters']);
     res.json({ message: 'Variant removed', isActive: false, ...updated, variant: updated });
   } catch (error) {
     console.error('Delete product variant error:', error);
@@ -1158,6 +1176,7 @@ router.delete('/:id', authMiddleware, adminOnly, async (req, res) => {
       data: { isActive: false },
     });
 
+    await invalidateCacheKeys(['categories:all', 'products:filters']);
     syncSingleProductToElasticsearch(updated.id).catch(() => {});
     publishDomainEvent('PRODUCT_DELETED', {
       productId: updated.id,

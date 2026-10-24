@@ -71,6 +71,8 @@ model Address {
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders Order[]
+
+  @@index([userId, isDefault])
 }
 
 // Product categories
@@ -108,6 +110,13 @@ model Product {
   reviews    Review[]
   orderItems OrderItem[]
   tags       ProductTagOnProduct[]
+
+  @@index([isActive, categoryId])
+  @@index([isActive, brand])
+  @@index([isActive, minPrice])
+  @@index([isActive, isNewArrival, createdAt(sort: Desc)])
+  @@index([isActive, isBestSeller, createdAt(sort: Desc)])
+  @@index([isActive, createdAt(sort: Desc)])
 }
 
 // Product images
@@ -120,6 +129,8 @@ model ProductImage {
   createdAt DateTime @default(now())
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, position])
 }
 
 // Product variants - each with independent inventory
@@ -138,6 +149,8 @@ model ProductVariant {
   product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   cartItems  CartItem[]
   orderItems OrderItem[]
+
+  @@index([productId, isActive, price])
 }
 
 // Shopping cart
@@ -166,6 +179,9 @@ model CartItem {
 
   cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
   variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([cartId])
+  @@index([variantId])
 }
 
 // Orders
@@ -197,6 +213,10 @@ model Order {
   discountUsages      DiscountUsage[]
   loyaltyTransactions LoyaltyTransaction[]
   payments            Payment[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
 }
 
 // Payment transactions (one order can have several attempts)
@@ -238,6 +258,9 @@ model OrderItem {
   variant   ProductVariant @relation(fields: [variantId], references: [id])
   product   Product        @relation(fields: [productId], references: [id])
   productId String // Denormalized for easier queries
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 // Order status history
@@ -296,6 +319,9 @@ model Review {
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([productId, createdAt(sort: Desc)])
+  @@index([userId])
 }
 
 // Loyalty point transactions

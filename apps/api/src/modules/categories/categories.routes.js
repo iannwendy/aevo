@@ -3,10 +3,17 @@ const router = express.Router();
 const prisma = require('../../utils/prisma');
 const { authMiddleware, adminOnly } = require('../../middleware/auth');
 const { isSafeImageUrl } = require('../../utils/security');
+const { getCacheValue, setCacheValue, invalidateCacheKeys } = require('../../utils/redis');
 
 // Get all active categories
 router.get('/', async (req, res) => {
   try {
+    const cached = await getCacheValue('categories:all');
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      return res.json(cached);
+    }
+
     const categories = await prisma.category.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' },
@@ -17,12 +24,14 @@ router.get('/', async (req, res) => {
       },
     });
 
-    res.json(
-      categories.map((c) => ({
-        ...c,
-        productCount: c._count?.products ?? 0,
-      }))
-    );
+    const payload = categories.map((c) => ({
+      ...c,
+      productCount: c._count?.products ?? 0,
+    }));
+
+    await setCacheValue('categories:all', payload, 30);
+    res.setHeader('X-Cache', 'MISS');
+    res.json(payload);
   } catch (error) {
     console.error('Get categories error:', error);
     res.status(500).json({ error: 'Failed to fetch categories' });
@@ -110,6 +119,7 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
       },
     });
 
+    await invalidateCacheKeys(['categories:all', 'products:filters']);
     res.status(201).json(category);
   } catch (error) {
     if (error.code === 'P2002') {
@@ -151,6 +161,7 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
       data,
     });
 
+    await invalidateCacheKeys(['categories:all', 'products:filters']);
     res.json(category);
   } catch (error) {
     if (error.code === 'P2025') {
@@ -170,6 +181,7 @@ router.delete('/:id', authMiddleware, adminOnly, async (req, res) => {
       data: { isActive: false },
     });
 
+    await invalidateCacheKeys(['categories:all', 'products:filters']);
     res.json({ message: 'Category deleted' });
   } catch (error) {
     if (error.code === 'P2025') {

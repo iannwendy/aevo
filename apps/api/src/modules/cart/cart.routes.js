@@ -114,31 +114,41 @@ async function resolveOrCreateCart(req, res) {
       });
 
       if (guestCart && guestCart.id !== userCart.id && guestCart.items.length > 0) {
+        const variantIds = [...new Set(guestCart.items.map((gItem) => gItem.variantId))];
+        const variants = await prisma.productVariant.findMany({
+          where: { id: { in: variantIds } },
+        });
+        const variantMap = new Map(variants.map((v) => [v.id, v]));
+        const txOps = [];
+
         for (const gItem of guestCart.items) {
-          const variant = await prisma.productVariant.findUnique({
-            where: { id: gItem.variantId },
-          });
+          const variant = variantMap.get(gItem.variantId);
           if (!variant || variant.inventory <= 0) continue;
 
           const existing = userCart.items.find((i) => i.variantId === gItem.variantId);
           if (existing) {
             const mergedQty = Math.min(variant.inventory, existing.quantity + gItem.quantity);
-            await prisma.cartItem.update({
-              where: { id: existing.id },
-              data: { quantity: mergedQty },
-            });
+            txOps.push(
+              prisma.cartItem.update({
+                where: { id: existing.id },
+                data: { quantity: mergedQty },
+              })
+            );
           } else {
             const allowedQty = Math.min(variant.inventory, gItem.quantity);
-            await prisma.cartItem.create({
-              data: {
-                cartId: userCart.id,
-                variantId: gItem.variantId,
-                quantity: allowedQty,
-              },
-            });
+            txOps.push(
+              prisma.cartItem.create({
+                data: {
+                  cartId: userCart.id,
+                  variantId: gItem.variantId,
+                  quantity: allowedQty,
+                },
+              })
+            );
           }
         }
-        await prisma.cartItem.deleteMany({ where: { cartId: guestCart.id } });
+        txOps.push(prisma.cartItem.deleteMany({ where: { cartId: guestCart.id } }));
+        await prisma.$transaction(txOps);
         userCart = await prisma.cart.findUnique({
           where: { id: userCart.id },
           include: CART_INCLUDE,
