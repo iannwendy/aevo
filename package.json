@@ -18,7 +18,8 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "test:ux-ui": "node apps/api/test/ux-ui.e2e.js",
-    "test:phase6": "node apps/api/test/phase6.e2e.js"
+    "test:phase6": "node apps/api/test/phase6.e2e.js",
+    "test:perf-seo": "node apps/api/test/perf-seo.e2e.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
