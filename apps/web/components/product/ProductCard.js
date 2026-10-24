@@ -39,7 +39,10 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
           <img
             src={primaryImage}
             alt={product.name}
+            width={400}
+            height={300}
             loading="lazy"
+            decoding="async"
             onError={handleImageError}
             className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.06]"
           />
@@ -130,7 +133,10 @@ export default function ProductCard({ product, viewMode = 'grid' }) {
           <img
             src={primaryImage}
             alt={product.name}
+            width={400}
+            height={300}
             loading="lazy"
+            decoding="async"
             onError={handleImageError}
             className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.06]"
           />

@@ -113,14 +113,17 @@ export default function AddressesPage() {
     try {
       if (editingId) {
         await addressesApi.update(editingId, formData);
+        setShowForm(false);
+        setEditingId(null);
+        await loadAddresses();
         setFeedback({ type: 'success', message: t('addresses.updatedSuccess') });
       } else {
         await addressesApi.create(formData);
+        setShowForm(false);
+        setEditingId(null);
+        await loadAddresses();
         setFeedback({ type: 'success', message: t('addresses.addedSuccess') });
       }
-      setShowForm(false);
-      setEditingId(null);
-      await loadAddresses();
     } catch (err) {
       const msg = err?.response?.data?.error || t('addresses.saveError');
       setFeedback({ type: 'error', message: msg });

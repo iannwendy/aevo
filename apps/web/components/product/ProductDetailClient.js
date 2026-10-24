@@ -152,6 +152,9 @@ export default function ProductDetailClient({
 
   // Fetch product by slug if not already hydrated or to refresh latest data
   useEffect(() => {
+    if ((initialProduct && initialProduct.slug === slug) || initialNotFound) {
+      return;
+    }
     let active = true;
     async function loadProduct() {
       try {
@@ -493,6 +496,11 @@ export default function ProductDetailClient({
                 key={activeImageIndex}
                 src={activeImage?.url || FALLBACK_PRODUCT_IMAGE}
                 alt={`${product.name} — view ${activeImageIndex + 1}`}
+                width={800}
+                height={600}
+                fetchPriority="high"
+                loading="eager"
+                decoding="async"
                 onError={handleImageError}
                 draggable={false}
                 data-testid="product-gallery-main-image"

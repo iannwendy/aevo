@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
@@ -139,6 +139,17 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const isInitialMountRef = useRef(true);
+
+  // Sync server-provided initialData when soft navigation updates RSC props
+  useEffect(() => {
+    if (Array.isArray(initialData?.products)) {
+      setProducts(initialData.products);
+    }
+    if (initialData?.pagination) {
+      setPagination(initialData.pagination);
+    }
+  }, [initialData]);
 
   // Sync controlled inputs when URL changes externally
   useEffect(() => {
@@ -149,6 +160,9 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
 
   // Load categories & filter metadata once if not present
   useEffect(() => {
+    if (initialData?.categories?.length > 0 && initialData?.filterMeta) {
+      return;
+    }
     let active = true;
     async function loadMeta() {
       try {
@@ -167,14 +181,21 @@ export default function CatalogClient({ initialData, initialQuery = {} }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [initialData]);
 
   // Fetch products whenever URL query parameters change
   useEffect(() => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      if (initialData?.products?.length > 0) {
+        return;
+      }
+    }
+
     let active = true;
     async function fetchCatalog() {
       try {
-        setLoading(true);
+        if (products.length === 0) setLoading(true);
         const apiParams = {
           page: currentFilters.page,
           limit: 12,

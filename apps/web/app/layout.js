@@ -8,9 +8,11 @@ import {
   translate,
   formatAevoTitle,
 } from '../lib/i18n/dictionaries';
+import dynamic from 'next/dynamic';
 import { ThemeProvider } from '../components/providers/theme-provider';
 import PageTransition from '../components/PageTransition';
-import AiAssistantWidget from '../components/ai/AiAssistantWidget';
+
+const AiAssistantWidget = dynamic(() => import('../components/ai/AiAssistantWidget'));
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'] });
 const SITE_URL =
@@ -58,6 +60,10 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://macone.vn" crossOrigin="anonymous" />
+      </head>
       <body className={inter.className}>
         <ThemeProvider>
           <I18nProvider initialLocale={locale}>

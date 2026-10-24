@@ -77,6 +77,14 @@ export default function HomeClient({ initialData }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (
+      initialData?.newArrivals?.length > 0 &&
+      initialData?.bestSellers?.length > 0 &&
+      initialData?.categories?.length > 0
+    ) {
+      return;
+    }
+
     let active = true;
 
     async function loadHomepageData() {
@@ -284,6 +292,11 @@ export default function HomeClient({ initialData }) {
                   <img
                     src="https://macone.vn/wp-content/uploads/2025/09/MacBook_Pro_14-in_M5_Pro_Space_Black_PDP_Image_Position_1__VN-VI-768x768.jpg"
                     alt="AEVO Flagship Computing Setup"
+                    width={768}
+                    height={768}
+                    fetchPriority="high"
+                    loading="eager"
+                    decoding="async"
                     onError={handleImageError}
                     className="w-full h-full object-contain scale-[1.28] sm:scale-[1.22] transition-transform duration-500 ease-out group-hover:scale-[1.34]"
                   />
