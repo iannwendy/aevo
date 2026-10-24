@@ -13,13 +13,41 @@ import PageTransition from '../components/PageTransition';
 import AiAssistantWidget from '../components/ai/AiAssistantWidget';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'] });
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || process.env.CLIENT_URL || 'http://localhost:3000';
 
 export async function generateMetadata() {
   const cookieStore = cookies();
   const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
+  const title = formatAevoTitle(translate(locale, 'pageTitles.home'));
+  const description = 'Discover exceptional hardware for everything you create.';
   return {
-    title: formatAevoTitle(translate(locale, 'pageTitles.home')),
-    description: 'Discover exceptional hardware for everything you create.',
+    metadataBase: new URL(SITE_URL),
+    title,
+    description,
+    keywords: [
+      'AEVO',
+      'computer store',
+      'laptops',
+      'PC components',
+      'monitors',
+      'workstation',
+      'NVIDIA RTX',
+      'MacBook Pro',
+    ],
+    openGraph: {
+      title,
+      description,
+      url: SITE_URL,
+      siteName: 'AEVO',
+      locale: locale === 'vi' ? 'vi_VN' : 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
   };
 }
 

@@ -39,6 +39,10 @@ export async function generateMetadata() {
   return {
     title: formatAevoTitle(translate(locale, 'pageTitles.cart')),
     description: 'Review your selected computing hardware and proceed to checkout.',
+    robots: {
+      index: false,
+      follow: false,
+    },
   };
 }
 

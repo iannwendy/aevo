@@ -11,6 +11,8 @@ import {
   formatAevoTitle,
 } from '../../../lib/i18n/dictionaries';
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || process.env.CLIENT_URL || 'http://localhost:3000';
 const API_URL =
   process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -32,9 +34,41 @@ export async function generateMetadata({ searchParams = {} }) {
   const pageName = category
     ? localizeCategoryName(category, locale)
     : translate(locale, 'pageTitles.shop');
+  const title = formatAevoTitle(pageName);
+  const description =
+    'Explore curated computing essentials, workstations, components, and displays.';
+  const canonicalPath = category
+    ? `/products?category=${encodeURIComponent(category)}`
+    : '/products';
   return {
-    title: formatAevoTitle(pageName),
-    description: 'Explore curated computing essentials, workstations, components, and displays.',
+    title,
+    description,
+    keywords: [
+      'AEVO',
+      pageName,
+      category || 'hardware',
+      'laptops',
+      'components',
+      'monitors',
+      'peripherals',
+      'storage',
+    ],
+    alternates: {
+      canonical: canonicalPath,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SITE_URL}${canonicalPath}`,
+      siteName: 'AEVO',
+      locale: locale === 'vi' ? 'vi_VN' : 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
   };
 }
 
@@ -67,8 +101,40 @@ export default async function ProductsCatalogPage({ searchParams = {} }) {
     filterMeta: filterMetaData || null,
   };
 
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'AEVO Hardware Catalog',
+      url: `${SITE_URL}/products`,
+      description: 'Explore curated computing essentials, workstations, components, and displays.',
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: `${SITE_URL}/`,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Store',
+          item: `${SITE_URL}/products`,
+        },
+      ],
+    },
+  ];
+
   return (
     <main className="min-h-screen flex flex-col justify-between">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <SiteHeader />
       <Suspense
         fallback={

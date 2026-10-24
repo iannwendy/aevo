@@ -56,6 +56,10 @@ export async function generateMetadata() {
   return {
     title: formatAevoTitle(translate(locale, 'pageTitles.checkout')),
     description: 'Complete your precision hardware acquisition with multi-step verification.',
+    robots: {
+      index: false,
+      follow: false,
+    },
   };
 }
 

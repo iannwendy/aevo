@@ -9,12 +9,33 @@ import {
   formatAevoTitle,
 } from '../lib/i18n/dictionaries';
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || process.env.CLIENT_URL || 'http://localhost:3000';
+
 export async function generateMetadata() {
   const cookieStore = cookies();
   const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value);
+  const title = formatAevoTitle(translate(locale, 'pageTitles.home'));
+  const description = 'Discover exceptional hardware for everything you create.';
   return {
-    title: formatAevoTitle(translate(locale, 'pageTitles.home')),
-    description: 'Discover exceptional hardware for everything you create.',
+    title,
+    description,
+    alternates: {
+      canonical: '/',
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${SITE_URL}/`,
+      siteName: 'AEVO',
+      locale: locale === 'vi' ? 'vi_VN' : 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
   };
 }
 
@@ -53,8 +74,35 @@ export default async function HomePage() {
     },
   };
 
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'AEVO',
+      url: SITE_URL,
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: `${SITE_URL}/products?search={search_term_string}`,
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ComputerStore',
+      name: 'AEVO',
+      url: SITE_URL,
+      description: 'Discover exceptional hardware for everything you create.',
+      currenciesAccepted: 'VND',
+      priceRange: '₫₫₫',
+    },
+  ];
+
   return (
     <main className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <SiteHeader />
       <HomeClient initialData={initialData} />
       <SiteFooter />
