@@ -336,7 +336,7 @@ function ProfileView() {
                   <div>
                     <p className="font-medium">{address.fullName}</p>
                     <p className="text-small text-secondary mt-1">
-                      {[address.phone, address.address, address.city]
+                      {[address.phone, address.address, address.ward, address.city]
                         .filter(Boolean)
                         .join(' · ')}
                     </p>

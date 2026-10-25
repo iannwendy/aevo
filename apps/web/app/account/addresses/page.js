@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import SiteHeader from '../../../components/SiteHeader';
 import SiteFooter from '../../../components/SiteFooter';
+import VnAddressSelector from '../../../components/address/VnAddressSelector';
 import { fetchProfile } from '../../../lib/auth-client';
 import { addressesApi } from '../../../lib/api';
 import { useI18n } from '../../../lib/i18n';
@@ -20,9 +21,9 @@ const EMPTY_FORM = {
   fullName: '',
   phone: '',
   address: '',
-  ward: '',
+  ward: 'Phường Bến Thành',
   district: '',
-  city: 'Ho Chi Minh City',
+  city: 'Thành phố Hồ Chí Minh',
   isDefault: false,
 };
 
@@ -89,8 +90,8 @@ export default function AddressesPage() {
       phone: addr.phone || '',
       address: addr.address || '',
       ward: addr.ward || '',
-      district: addr.district || '',
-      city: addr.city || 'Ho Chi Minh City',
+      district: '',
+      city: addr.city || 'Thành phố Hồ Chí Minh',
       isDefault: Boolean(addr.isDefault),
     });
     setShowForm(true);
@@ -302,61 +303,20 @@ export default function AddressesPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label
-                      htmlFor="address-ward-input"
-                      className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
-                    >
-                      {t('addresses.wardLabel')}
-                    </label>
-                    <input
-                      id="address-ward-input"
-                      type="text"
-                      value={formData.ward}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, ward: e.target.value }))
-                      }
-                      className="w-full h-11 px-3.5 rounded-xl border border-border bg-canvas text-small text-ink focus-ring"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="address-district-input"
-                      className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
-                    >
-                      {t('addresses.districtLabel')}
-                    </label>
-                    <input
-                      id="address-district-input"
-                      type="text"
-                      value={formData.district}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, district: e.target.value }))
-                      }
-                      className="w-full h-11 px-3.5 rounded-xl border border-border bg-canvas text-small text-ink focus-ring"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="address-city-input"
-                      className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5"
-                    >
-                      {t('addresses.cityLabel')}
-                    </label>
-                    <input
-                      id="address-city-input"
-                      type="text"
-                      required
-                      value={formData.city}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, city: e.target.value }))
-                      }
-                      data-testid="address-city-input"
-                      className="w-full h-11 px-3.5 rounded-xl border border-border bg-canvas text-small text-ink focus-ring"
-                    />
-                  </div>
-                </div>
+                <VnAddressSelector
+                  city={formData.city}
+                  ward={formData.ward}
+                  cityTestId="address-city-input"
+                  wardTestId="address-ward-input"
+                  onChange={({ city: nextCity, ward: nextWard }) =>
+                    setFormData((p) => ({
+                      ...p,
+                      city: nextCity,
+                      ward: nextWard,
+                      district: '',
+                    }))
+                  }
+                />
 
                 <label className="flex items-center gap-2.5 cursor-pointer text-small text-ink pt-1">
                   <input

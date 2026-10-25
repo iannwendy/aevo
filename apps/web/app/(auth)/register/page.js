@@ -8,6 +8,7 @@ import { GOOGLE_AUTH_URL, fetchProfile } from '../../../lib/auth-client';
 import { register } from '../../../lib/account-client';
 import { useI18n } from '../../../lib/i18n';
 import SettingsMenu from '../../../components/SettingsMenu';
+import VnAddressSelector from '../../../components/address/VnAddressSelector';
 
 /**
  * /register
@@ -28,7 +29,13 @@ export default function RegisterPage() {
   // null | { kind: 'error' | 'success', message }
   const [notice, setNotice] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
-  const [form, setForm] = useState({ fullName: '', email: '', address: '' });
+  const [form, setForm] = useState({
+    fullName: '',
+    email: '',
+    address: '',
+    ward: 'Phường Bến Thành',
+    city: 'Thành phố Hồ Chí Minh',
+  });
 
   // Already signed in? Skip the form (same pattern as /login).
   useEffect(() => {
@@ -73,7 +80,13 @@ export default function RegisterPage() {
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0
-      ? { fullName, email, address }
+      ? {
+          fullName,
+          email,
+          address,
+          ward: form.ward,
+          city: form.city || 'Thành phố Hồ Chí Minh',
+        }
       : null;
   }
 
@@ -207,16 +220,34 @@ export default function RegisterPage() {
             />
             <Field
               id="address"
-              label={t('auth.shippingAddressLabel')}
+              label={t('addresses.streetAddressLabel')}
               type="text"
               autoComplete="street-address"
-              placeholder={t('auth.register.shippingAddressPlaceholder')}
+              placeholder={t('addresses.streetAddressPlaceholder')}
               value={form.address}
               onChange={update('address')}
               error={fieldErrors.address}
               disabled={isBusy}
-              hint={t('auth.register.autoPasswordHint')}
             />
+
+            <VnAddressSelector
+              city={form.city}
+              ward={form.ward}
+              cityTestId="register-city-input"
+              wardTestId="register-ward-input"
+              disabled={isBusy}
+              onChange={({ city: nextCity, ward: nextWard }) =>
+                setForm((prev) => ({
+                  ...prev,
+                  city: nextCity,
+                  ward: nextWard,
+                }))
+              }
+            />
+
+            <p className="text-small text-secondary">
+              {t('auth.register.autoPasswordHint')}
+            </p>
 
             <button
               type="submit"

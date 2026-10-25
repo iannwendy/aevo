@@ -77,9 +77,11 @@ export function resetPassword({ token, newPassword }) {
   return request('/auth/reset-password', { method: 'POST', body: { token, newPassword } });
 }
 
-/** POST /api/auth/register { email, fullName, address, password? } */
-export function register({ email, fullName, address, password }) {
+/** POST /api/auth/register { email, fullName, address, ward?, city?, password? } */
+export function register({ email, fullName, address, ward, city, password }) {
   const body = { email, fullName, address };
+  if (ward !== undefined) body.ward = ward;
+  if (city !== undefined) body.city = city;
   if (password) body.password = password;
   return request('/auth/register', { method: 'POST', body });
 }

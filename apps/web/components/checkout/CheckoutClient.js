@@ -19,6 +19,7 @@ import { cartApi, discountsApi, ordersApi } from '../../lib/api';
 import { fetchProfile } from '../../lib/auth-client';
 import { formatPrice } from '../../lib/utils';
 import { useI18n } from '../../lib/i18n';
+import VnAddressSelector from '../address/VnAddressSelector';
 
 const STEPS = [
   { id: 1, key: 'information', labelKey: 'checkout.step1Tab' },
@@ -80,9 +81,9 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
 
   const [selectedAddressId, setSelectedAddressId] = useState(defaultAddr?.id || '');
   const [address, setAddress] = useState(defaultAddr?.address || '');
-  const [ward, setWard] = useState(defaultAddr?.ward || '');
-  const [district, setDistrict] = useState(defaultAddr?.district || '');
-  const [city, setCity] = useState(defaultAddr?.city || 'Ho Chi Minh City');
+  const [ward, setWard] = useState(defaultAddr?.ward || 'Phường Bến Thành');
+  const [district, setDistrict] = useState('');
+  const [city, setCity] = useState(defaultAddr?.city || 'Thành phố Hồ Chí Minh');
 
   // Step 3: Shipping Method
   const [shippingMethod, setShippingMethod] = useState('standard');
@@ -124,9 +125,9 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
             setSelectedAddressId((prev) => prev || def.id);
             setPhone((prev) => prev || def.phone || '');
             setAddress((prev) => prev || def.address || '');
-            setWard((prev) => prev || def.ward || '');
-            setDistrict((prev) => prev || def.district || '');
-            setCity((prev) => prev || def.city || 'Ho Chi Minh City');
+            setWard((prev) => def.ward || prev || 'Phường Bến Thành');
+            setDistrict('');
+            setCity((prev) => def.city || prev || 'Thành phố Hồ Chí Minh');
           }
         }
 
@@ -151,8 +152,8 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
     setPhone(addr.phone || '');
     setAddress(addr.address || '');
     setWard(addr.ward || '');
-    setDistrict(addr.district || '');
-    setCity(addr.city || 'Ho Chi Minh City');
+    setDistrict('');
+    setCity(addr.city || 'Thành phố Hồ Chí Minh');
   };
 
   // Financial calculations
@@ -548,7 +549,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                               )}
                             </div>
                             <p className="text-caption text-secondary mt-1 truncate">
-                              {addr.address}, {addr.city}
+                              {[addr.address, addr.ward, addr.city].filter(Boolean).join(', ')}
                             </p>
                           </button>
                         );
@@ -580,48 +581,18 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                        {t('checkout.wardLabel')}
-                      </label>
-                      <input
-                        type="text"
-                        value={ward}
-                        onChange={(e) => setWard(e.target.value)}
-                        placeholder="Ben Thanh"
-                        data-testid="checkout-ward-input"
-                        className="w-full h-12 px-4 rounded-xl border border-border bg-canvas text-base text-ink focus-ring"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                        {t('checkout.districtLabel')}
-                      </label>
-                      <input
-                        type="text"
-                        value={district}
-                        onChange={(e) => setDistrict(e.target.value)}
-                        placeholder="District 1"
-                        data-testid="checkout-district-input"
-                        className="w-full h-12 px-4 rounded-xl border border-border bg-canvas text-base text-ink focus-ring"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
-                        {t('checkout.cityLabel')}
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        placeholder="Ho Chi Minh City"
-                        data-testid="checkout-city-input"
-                        className="w-full h-12 px-4 rounded-xl border border-border bg-canvas text-base text-ink focus-ring"
-                      />
-                    </div>
-                  </div>
+                  <VnAddressSelector
+                    city={city}
+                    ward={ward}
+                    cityTestId="checkout-city-input"
+                    wardTestId="checkout-ward-input"
+                    onChange={({ city: nextCity, ward: nextWard }) => {
+                      setCity(nextCity);
+                      setWard(nextWard);
+                      setDistrict('');
+                      setSelectedAddressId('');
+                    }}
+                  />
                 </div>
 
                 <div className="pt-4 flex items-center justify-between gap-4">

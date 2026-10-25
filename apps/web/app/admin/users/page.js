@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import AdminShell from '../../../components/admin/AdminShell';
 import Pagination from '../../../components/product/Pagination';
+import VnAddressSelector from '../../../components/address/VnAddressSelector';
 import { usersApi } from '../../../lib/api';
 import { formatPrice } from '../../../lib/utils';
 import { useI18n } from '../../../lib/i18n';
@@ -39,6 +40,8 @@ export default function AdminUsersPage() {
   const [editFullName, setEditFullName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editAddress, setEditAddress] = useState('');
+  const [editWard, setEditWard] = useState('Phường Bến Thành');
+  const [editCity, setEditCity] = useState('Thành phố Hồ Chí Minh');
   const [editLoyaltyPoints, setEditLoyaltyPoints] = useState('0');
   const [feedback, setFeedback] = useState(null);
 
@@ -108,6 +111,8 @@ export default function AdminUsersPage() {
     setEditFullName(user.fullName || '');
     setEditPhone(defAddr?.phone || '');
     setEditAddress(defAddr?.address || '');
+    setEditWard(defAddr?.ward || 'Phường Bến Thành');
+    setEditCity(defAddr?.city || 'Thành phố Hồ Chí Minh');
     setEditLoyaltyPoints(String(user.loyaltyPoints ?? 0));
     setSelectedUser(user);
     try {
@@ -118,6 +123,8 @@ export default function AdminUsersPage() {
         setEditFullName(res.data.fullName || '');
         setEditPhone(dAddr?.phone || '');
         setEditAddress(dAddr?.address || '');
+        setEditWard(dAddr?.ward || 'Phường Bến Thành');
+        setEditCity(dAddr?.city || 'Thành phố Hồ Chí Minh');
         setEditLoyaltyPoints(String(res.data.loyaltyPoints ?? 0));
       }
     } catch {
@@ -134,6 +141,8 @@ export default function AdminUsersPage() {
         fullName: editFullName.trim(),
         phone: editPhone.trim(),
         address: editAddress.trim(),
+        ward: editWard,
+        city: editCity,
         loyaltyPoints: Math.max(0, parseInt(editLoyaltyPoints, 10) || 0),
       });
       setFeedback({
@@ -409,14 +418,14 @@ export default function AdminUsersPage() {
                   htmlFor="edit-user-address-input"
                   className="block text-caption font-mono uppercase text-secondary mb-1.5"
                 >
-                  {t('auth.shippingAddressLabel')}
+                  {t('addresses.streetAddressLabel')}
                 </label>
                 <input
                   id="edit-user-address-input"
                   type="text"
                   value={editAddress}
                   onChange={(e) => setEditAddress(e.target.value)}
-                  placeholder="123 Nguyen Hue, District 1"
+                  placeholder={t('addresses.streetAddressPlaceholder')}
                   className="input-field h-10 text-small"
                 />
               </div>
@@ -435,6 +444,19 @@ export default function AdminUsersPage() {
                   value={editLoyaltyPoints}
                   onChange={(e) => setEditLoyaltyPoints(e.target.value)}
                   className="input-field h-10 text-small font-mono"
+                />
+              </div>
+
+              <div className="md:col-span-2 lg:col-span-4">
+                <VnAddressSelector
+                  city={editCity}
+                  ward={editWard}
+                  cityTestId="admin-edit-user-city-input"
+                  wardTestId="admin-edit-user-ward-input"
+                  onChange={({ city: nextCity, ward: nextWard }) => {
+                    setEditCity(nextCity);
+                    setEditWard(nextWard);
+                  }}
                 />
               </div>
 

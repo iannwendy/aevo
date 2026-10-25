@@ -327,7 +327,7 @@ router.get('/:id', authMiddleware, adminOnly, async (req, res) => {
 router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
-    const { fullName, email, role, isActive, loyaltyPoints, phone, address, city } = req.body;
+    const { fullName, email, role, isActive, loyaltyPoints, phone, address, ward, city } = req.body;
 
     const existingUser = await prisma.user.findUnique({
       where: { id },
@@ -383,9 +383,10 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
 
     const cleanPhone = typeof phone === 'string' ? phone.trim() : undefined;
     const cleanAddress = typeof address === 'string' ? address.trim() : undefined;
+    const cleanWard = typeof ward === 'string' && ward.trim() ? ward.trim() : undefined;
     const cleanCity = typeof city === 'string' && city.trim() ? city.trim() : undefined;
 
-    if (cleanPhone !== undefined || cleanAddress !== undefined) {
+    if (cleanPhone !== undefined || cleanAddress !== undefined || cleanWard !== undefined || cleanCity !== undefined) {
       const defaultAddr =
         existingUser.addresses.find((a) => a.isDefault) || existingUser.addresses[0];
       if (defaultAddr) {
@@ -395,6 +396,7 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
             fullName: updatedFullName,
             ...(cleanPhone !== undefined && { phone: cleanPhone }),
             ...(cleanAddress !== undefined && cleanAddress && { address: cleanAddress }),
+            ...(cleanWard !== undefined && { ward: cleanWard, district: null }),
             ...(cleanCity !== undefined && { city: cleanCity }),
             isDefault: true,
           },
@@ -405,8 +407,10 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
             userId: id,
             fullName: updatedFullName,
             phone: cleanPhone || '',
-            address: cleanAddress || 'Ho Chi Minh City',
-            city: cleanCity || 'Ho Chi Minh City',
+            address: cleanAddress || 'Thành phố Hồ Chí Minh',
+            ward: cleanWard || null,
+            district: null,
+            city: cleanCity || 'Thành phố Hồ Chí Minh',
             isDefault: true,
           },
         });
