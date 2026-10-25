@@ -19,7 +19,11 @@ import { cartApi, discountsApi, ordersApi } from '../../lib/api';
 import { fetchProfile } from '../../lib/auth-client';
 import { formatPrice } from '../../lib/utils';
 import { useI18n } from '../../lib/i18n';
-import VnAddressSelector from '../address/VnAddressSelector';
+import VnAddressSelector, {
+  findMatchingProvince,
+  findMatchingWard,
+  formatVnAddress,
+} from '../address/VnAddressSelector';
 
 const STEPS = [
   { id: 1, key: 'information', labelKey: 'checkout.step1Tab' },
@@ -122,12 +126,14 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
           setEmail((prev) => prev || u.email || '');
           setFullName((prev) => prev || def?.fullName || u.fullName || '');
           if (def) {
+            const matchedProv = findMatchingProvince(def.city || 'Thành phố Hồ Chí Minh');
+            const matchedW = findMatchingWard(matchedProv, def.ward);
             setSelectedAddressId((prev) => prev || def.id);
             setPhone((prev) => prev || def.phone || '');
             setAddress((prev) => prev || def.address || '');
-            setWard((prev) => def.ward || prev || 'Phường Bến Thành');
+            setWard((prev) => (matchedW ? matchedW.name : prev || 'Phường Bến Thành'));
             setDistrict('');
-            setCity((prev) => def.city || prev || 'Thành phố Hồ Chí Minh');
+            setCity((prev) => (matchedProv ? matchedProv.name : prev || 'Thành phố Hồ Chí Minh'));
           }
         }
 
@@ -147,13 +153,15 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
   }, []);
 
   const handleSelectSavedAddress = (addr) => {
+    const matchedProv = findMatchingProvince(addr.city || 'Thành phố Hồ Chí Minh');
+    const matchedW = findMatchingWard(matchedProv, addr.ward);
     setSelectedAddressId(addr.id);
     setFullName(addr.fullName || user?.fullName || '');
     setPhone(addr.phone || '');
     setAddress(addr.address || '');
-    setWard(addr.ward || '');
+    setWard(matchedW ? matchedW.name : 'Phường Bến Thành');
     setDistrict('');
-    setCity(addr.city || 'Thành phố Hồ Chí Minh');
+    setCity(matchedProv ? matchedProv.name : 'Thành phố Hồ Chí Minh');
   };
 
   // Financial calculations
@@ -508,7 +516,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
             {step === 2 && (
               <section
                 data-testid="checkout-step-2"
-                className="bg-surface border border-border rounded-2xl p-6 md:p-8 space-y-5 animate-slide-up"
+                className="relative z-30 bg-surface border border-border rounded-2xl p-6 md:p-8 space-y-5 animate-slide-up"
               >
                 <div>
                   <span className="text-caption font-mono uppercase tracking-wider text-secondary">
@@ -549,7 +557,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                               )}
                             </div>
                             <p className="text-caption text-secondary mt-1 truncate">
-                              {[addr.address, addr.ward, addr.city].filter(Boolean).join(', ')}
+                              {formatVnAddress(addr)}
                             </p>
                           </button>
                         );
@@ -837,7 +845,7 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
                       </button>
                     </div>
                     <p className="font-medium text-ink">
-                      {[address, ward, district, city].filter(Boolean).join(', ')}
+                      {formatVnAddress({ address, ward, city })}
                     </p>
                     <p className="text-secondary mt-1 uppercase font-mono text-caption">
                       {t('checkout.paymentSummaryLine', {

@@ -13,7 +13,10 @@ import {
 } from 'lucide-react';
 import AdminShell from '../../../components/admin/AdminShell';
 import Pagination from '../../../components/product/Pagination';
-import VnAddressSelector from '../../../components/address/VnAddressSelector';
+import VnAddressSelector, {
+  findMatchingProvince,
+  findMatchingWard,
+} from '../../../components/address/VnAddressSelector';
 import { usersApi } from '../../../lib/api';
 import { formatPrice } from '../../../lib/utils';
 import { useI18n } from '../../../lib/i18n';
@@ -108,23 +111,27 @@ export default function AdminUsersPage() {
 
   const handleOpenEditUser = async (user) => {
     const defAddr = (user.addresses || []).find((a) => a.isDefault) || user.addresses?.[0];
+    const mProv = findMatchingProvince(defAddr?.city || 'Thành phố Hồ Chí Minh');
+    const mWard = findMatchingWard(mProv, defAddr?.ward);
     setEditFullName(user.fullName || '');
     setEditPhone(defAddr?.phone || '');
     setEditAddress(defAddr?.address || '');
-    setEditWard(defAddr?.ward || 'Phường Bến Thành');
-    setEditCity(defAddr?.city || 'Thành phố Hồ Chí Minh');
+    setEditWard(mWard ? mWard.name : 'Phường Bến Thành');
+    setEditCity(mProv ? mProv.name : 'Thành phố Hồ Chí Minh');
     setEditLoyaltyPoints(String(user.loyaltyPoints ?? 0));
     setSelectedUser(user);
     try {
       const res = await usersApi.getById(user.id);
       if (res.data) {
         const dAddr = (res.data.addresses || []).find((a) => a.isDefault) || res.data.addresses?.[0];
+        const dProv = findMatchingProvince(dAddr?.city || 'Thành phố Hồ Chí Minh');
+        const dWard = findMatchingWard(dProv, dAddr?.ward);
         setSelectedUser(res.data);
         setEditFullName(res.data.fullName || '');
         setEditPhone(dAddr?.phone || '');
         setEditAddress(dAddr?.address || '');
-        setEditWard(dAddr?.ward || 'Phường Bến Thành');
-        setEditCity(dAddr?.city || 'Thành phố Hồ Chí Minh');
+        setEditWard(dWard ? dWard.name : 'Phường Bến Thành');
+        setEditCity(dProv ? dProv.name : 'Thành phố Hồ Chí Minh');
         setEditLoyaltyPoints(String(res.data.loyaltyPoints ?? 0));
       }
     } catch {
@@ -356,7 +363,7 @@ export default function AdminUsersPage() {
 
         {/* User Edit / Detail Drawer Card */}
         {selectedUser && (
-          <div className="surface-card p-6 space-y-5 animate-slide-up" data-testid="admin-user-detail-panel">
+          <div className="relative z-30 surface-card p-6 space-y-5 animate-slide-up" data-testid="admin-user-detail-panel">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
                 <p className="text-caption font-mono uppercase text-secondary">

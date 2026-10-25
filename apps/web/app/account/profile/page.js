@@ -8,6 +8,7 @@ import { fetchProfile, postLogout } from '@/lib/auth-client';
 import { updateProfile, changePassword } from '@/lib/account-client';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
+import { formatVnAddress } from '@/components/address/VnAddressSelector';
 import { useI18n } from '@/lib/i18n';
 
 /**
@@ -336,7 +337,7 @@ function ProfileView() {
                   <div>
                     <p className="font-medium">{address.fullName}</p>
                     <p className="text-small text-secondary mt-1">
-                      {[address.phone, address.address, address.ward, address.city]
+                      {[address.phone, formatVnAddress(address)]
                         .filter(Boolean)
                         .join(' · ')}
                     </p>

@@ -16,6 +16,7 @@ import { ordersApi } from '../../../../lib/api';
 import { formatPrice } from '../../../../lib/utils';
 import { useI18n } from '../../../../lib/i18n';
 import { formatAevoTitle } from '../../../../lib/i18n/dictionaries';
+import { formatVnAddress } from '../../../../components/address/VnAddressSelector';
 
 function getStatusBadgeClass(status) {
   switch (status) {
@@ -242,14 +243,7 @@ export default function OrderDetailPage({ params }) {
                           {order.shippingAddress.phone}
                         </p>
                         <p className="text-secondary">
-                          {[
-                            order.shippingAddress.address,
-                            order.shippingAddress.ward,
-                            order.shippingAddress.district,
-                            order.shippingAddress.city,
-                          ]
-                            .filter(Boolean)
-                            .join(', ')}
+                          {formatVnAddress(order.shippingAddress)}
                         </p>
                       </div>
                     ) : (

@@ -12,7 +12,11 @@ import {
 } from 'lucide-react';
 import SiteHeader from '../../../components/SiteHeader';
 import SiteFooter from '../../../components/SiteFooter';
-import VnAddressSelector from '../../../components/address/VnAddressSelector';
+import VnAddressSelector, {
+  findMatchingProvince,
+  findMatchingWard,
+  formatVnAddress,
+} from '../../../components/address/VnAddressSelector';
 import { fetchProfile } from '../../../lib/auth-client';
 import { addressesApi } from '../../../lib/api';
 import { useI18n } from '../../../lib/i18n';
@@ -84,14 +88,21 @@ export default function AddressesPage() {
   };
 
   const handleOpenEdit = (addr) => {
+    const matchedProvince = findMatchingProvince(addr.city || 'Thành phố Hồ Chí Minh');
+    const matchedWard = findMatchingWard(matchedProvince, addr.ward);
+    const defaultWardForProvince =
+      matchedProvince?.code === '79'
+        ? 'Phường Bến Thành'
+        : matchedProvince?.wards?.[0]?.name || 'Phường Bến Thành';
+
     setEditingId(addr.id);
     setFormData({
       fullName: addr.fullName || '',
       phone: addr.phone || '',
       address: addr.address || '',
-      ward: addr.ward || '',
+      ward: matchedWard ? matchedWard.name : defaultWardForProvince,
       district: '',
-      city: addr.city || 'Thành phố Hồ Chí Minh',
+      city: matchedProvince ? matchedProvince.name : 'Thành phố Hồ Chí Minh',
       isDefault: Boolean(addr.isDefault),
     });
     setShowForm(true);
@@ -235,7 +246,7 @@ export default function AddressesPage() {
               <form
                 onSubmit={handleSubmit}
                 data-testid="address-form"
-                className="bg-surface border border-border rounded-2xl p-6 mb-8 space-y-4 max-w-2xl animate-slide-up shadow-sm"
+                className="relative z-30 bg-surface border border-border rounded-2xl p-6 mb-8 space-y-4 max-w-2xl animate-slide-up shadow-sm"
               >
                 <h2 className="text-h3">
                   {editingId ? t('addresses.editFormTitle') : t('addresses.newFormTitle')}
@@ -384,13 +395,13 @@ export default function AddressesPage() {
             ) : (
               <div
                 data-testid="addresses-list"
-                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                className="relative z-0 grid grid-cols-1 md:grid-cols-2 gap-6"
               >
                 {addresses.map((addr) => (
                   <article
                     key={addr.id}
                     data-testid="address-card"
-                    className={`bg-surface rounded-2xl border p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md animate-slide-up ${
+                    className={`relative z-0 bg-surface rounded-2xl border p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md animate-slide-up ${
                       addr.isDefault ? 'border-ink ring-1 ring-ink/10' : 'border-border hover:border-ink/30'
                     }`}
                   >
@@ -413,9 +424,7 @@ export default function AddressesPage() {
                       </div>
 
                       <p className="text-small text-ink/90 mt-4 leading-relaxed">
-                        {[addr.address, addr.ward, addr.district, addr.city]
-                          .filter(Boolean)
-                          .join(', ')}
+                        {formatVnAddress(addr)}
                       </p>
                     </div>
 

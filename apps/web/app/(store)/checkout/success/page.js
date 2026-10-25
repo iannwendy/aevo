@@ -329,7 +329,6 @@ export default async function CheckoutSuccessPage({ searchParams }) {
                         {[
                           shippingAddr.address,
                           shippingAddr.ward,
-                          shippingAddr.district,
                           shippingAddr.city,
                         ]
                           .filter(Boolean)

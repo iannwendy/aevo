@@ -43,11 +43,11 @@ export function findMatchingProvince(cityValue) {
   );
   if (exact) return exact;
 
-  // Partial match (e.g. "Ho Chi Minh" or "TP HCM")
+  // Common aliases
   if (norm === 'hcm' || norm === 'tp hcm' || norm === 'tphcm' || norm === 'sai gon') {
     return vnAdminUnits.find((p) => p.code === '79') || null;
   }
-  if (norm === 'hn' || norm === 'tp hn') {
+  if (norm === 'hn' || norm === 'tp hn' || norm === 'hanoi') {
     return vnAdminUnits.find((p) => p.code === '01') || null;
   }
 
@@ -56,7 +56,7 @@ export function findMatchingProvince(cityValue) {
       (p) =>
         normalizeSearchText(p.name).includes(norm) ||
         normalizeSearchText(p.nameEn).includes(norm) ||
-        norm.includes(normalizeSearchText(p.shortName))
+        (norm.length >= 4 && norm.includes(normalizeSearchText(p.shortName)))
     ) || null
   );
 }
@@ -76,6 +76,8 @@ export function findMatchingWard(province, wardValue) {
   );
   if (exact) return exact;
 
+  // Only allow substring match if query is at least 3 chars and matches a whole word or prefix
+  if (norm.length < 3) return null;
   return (
     wards.find(
       (w) =>
@@ -83,6 +85,25 @@ export function findMatchingWard(province, wardValue) {
         normalizeSearchText(w.nameEn).includes(norm)
     ) || null
   );
+}
+
+/**
+ * Formats an address object cleanly according to Vietnam's 2-tier administrative model
+ * (Street Address, Ward/Commune/Special Zone, Province/City), ignoring abolished district
+ * or invalid legacy placeholder strings.
+ */
+export function formatVnAddress(addr, separator = ', ') {
+  if (!addr) return '';
+  const street = String(addr.address || '').trim();
+  const matchedProvince = findMatchingProvince(addr.city);
+  const matchedWard = findMatchingWard(matchedProvince, addr.ward);
+
+  const validWard = matchedWard ? matchedWard.name : '';
+  const validCity = matchedProvince
+    ? matchedProvince.name
+    : String(addr.city || '').trim();
+
+  return [street, validWard, validCity].filter(Boolean).join(separator);
 }
 
 /**
@@ -96,7 +117,6 @@ export default function VnAddressSelector({
   cityTestId = 'address-city-input',
   wardTestId = 'address-ward-input',
   disabled = false,
-  required = true,
   className = '',
 }) {
   const { locale, t } = useI18n();
@@ -120,6 +140,58 @@ export default function VnAddressSelector({
     () => findMatchingWard(selectedProvince, ward),
     [selectedProvince, ward]
   );
+
+  // Automatically sanitize legacy/invalid city or ward values when mounted or loaded
+  useEffect(() => {
+    if (!onChange) return;
+    const normalizedCity = selectedProvince ? selectedProvince.name : city;
+    const normalizedWard = selectedWard ? selectedWard.name : '';
+    if (
+      (selectedProvince && city !== normalizedCity) ||
+      (ward && !selectedWard)
+    ) {
+      onChange({
+        city: normalizedCity || 'Thành phố Hồ Chí Minh',
+        ward: normalizedWard,
+        district: '',
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city, ward, selectedProvince, selectedWard]);
+
+  // Elevate ancestor stacking contexts while dropdown is open so sibling cards with animations/transforms never overlap
+  useEffect(() => {
+    if (!openDropdown || !containerRef.current) return;
+    const modifiedAncestors = [];
+    let el = containerRef.current.parentElement;
+    while (el && el !== document.body) {
+      const style = window.getComputedStyle(el);
+      if (
+        style.transform !== 'none' ||
+        style.animationName !== 'none' ||
+        el.tagName === 'FORM' ||
+        el.tagName === 'SECTION'
+      ) {
+        modifiedAncestors.push({
+          el,
+          prevPosition: el.style.position,
+          prevZIndex: el.style.zIndex,
+        });
+        if (style.position === 'static') {
+          el.style.position = 'relative';
+        }
+        el.style.zIndex = '50';
+      }
+      el = el.parentElement;
+    }
+
+    return () => {
+      for (const item of modifiedAncestors) {
+        item.el.style.position = item.prevPosition;
+        item.el.style.zIndex = item.prevZIndex;
+      }
+    };
+  }, [openDropdown]);
 
   // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
@@ -193,7 +265,6 @@ export default function VnAddressSelector({
         provinceNameEn: selectedProvince.nameEn,
       }));
     }
-    // Fallback: flatten all wards if no province selected yet
     const all = [];
     for (const p of vnAdminUnits) {
       for (const w of p.wards || []) {
@@ -238,7 +309,7 @@ export default function VnAddressSelector({
 
   const handleSelectProvince = (province) => {
     const isSameProvince = selectedProvince?.code === province.code;
-    const nextWard = isSameProvince ? ward : '';
+    const nextWard = isSameProvince && selectedWard ? selectedWard.name : '';
     onChange?.({
       city: province.name,
       ward: nextWard,
@@ -277,28 +348,23 @@ export default function VnAddressSelector({
     wardSearchInputRef.current?.focus();
   };
 
-  const displayProvinceName = selectedProvince
-    ? locale === 'en'
-      ? `${selectedProvince.name} (${selectedProvince.shortNameEn})`
-      : selectedProvince.name
-    : city || '';
-
-  const displayWardName = selectedWard
-    ? locale === 'en'
-      ? `${selectedWard.name} (${selectedWard.nameEn})`
-      : selectedWard.name
-    : ward || '';
+  // Only show validated administrative unit names so invalid legacy text never appears
+  const displayProvinceName = selectedProvince ? selectedProvince.name : '';
+  const displayWardName = selectedWard ? selectedWard.name : '';
 
   return (
-    <div ref={containerRef} className={`space-y-2 ${className}`}>
+    <div
+      ref={containerRef}
+      className={`relative ${openDropdown ? 'z-50' : 'z-20'} space-y-2 ${className}`}
+    >
       {/* Header badge indicating Vietnam 2-tier new administrative units */}
       <div className="flex items-center justify-between gap-2">
         <span className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-secondary">
-          <MapPin size={12} className="text-ink" />
+          <MapPin size={12} className="text-ink shrink-0" />
           <span>{t('vnAddress.newAdminBadge')}</span>
         </span>
         {selectedProvince && (
-          <span className="text-[11px] font-mono text-secondary">
+          <span className="text-[11px] font-mono text-secondary shrink-0">
             {t('vnAddress.wardsCount', { count: selectedProvince.wards?.length || 0 })}
           </span>
         )}
@@ -310,13 +376,13 @@ export default function VnAddressSelector({
         tabIndex={-1}
         aria-hidden="true"
         data-testid={cityTestId}
-        value={city}
+        value={selectedProvince ? selectedProvince.name : city}
         onChange={(e) => {
           const val = e.target.value;
           const matched = findMatchingProvince(val);
           onChange?.({
             city: matched ? matched.name : val,
-            ward,
+            ward: selectedWard ? selectedWard.name : '',
             district: '',
           });
         }}
@@ -327,12 +393,12 @@ export default function VnAddressSelector({
         tabIndex={-1}
         aria-hidden="true"
         data-testid={wardTestId}
-        value={ward}
+        value={selectedWard ? selectedWard.name : ''}
         onChange={(e) => {
           const val = e.target.value;
           const matched = findMatchingWard(selectedProvince, val);
           onChange?.({
-            city,
+            city: selectedProvince ? selectedProvince.name : city,
             ward: matched ? matched.name : val,
             district: '',
           });
@@ -340,9 +406,9 @@ export default function VnAddressSelector({
         className="sr-only pointer-events-none"
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* ==================== 1. PROVINCE / CITY SELECTOR ==================== */}
-        <div className="relative">
+        <div className="relative sm:static">
           <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
             {t('vnAddress.provinceLabel')}
           </label>
@@ -356,19 +422,19 @@ export default function VnAddressSelector({
             data-testid={`${cityTestId}-trigger`}
             aria-expanded={openDropdown === 'province'}
             aria-haspopup="listbox"
-            className={`w-full h-12 px-3.5 rounded-xl border text-left flex items-center justify-between gap-2 transition-all duration-150 focus-ring ${
+            className={`w-full h-12 px-3 rounded-xl border text-left flex items-center justify-between gap-1.5 transition-all duration-150 focus-ring ${
               openDropdown === 'province'
                 ? 'border-ink bg-surface ring-1 ring-ink shadow-xs'
                 : 'border-border bg-canvas hover:border-ink/40'
             } ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
               <Building2
-                size={16}
+                size={15}
                 className={displayProvinceName ? 'text-ink shrink-0' : 'text-secondary shrink-0'}
               />
               <span
-                className={`text-small truncate ${
+                className={`text-[13.5px] truncate ${
                   displayProvinceName ? 'text-ink font-medium' : 'text-secondary'
                 }`}
               >
@@ -376,7 +442,7 @@ export default function VnAddressSelector({
               </span>
             </div>
             <ChevronDown
-              size={16}
+              size={15}
               className={`text-secondary shrink-0 transition-transform duration-200 ${
                 openDropdown === 'province' ? 'rotate-180 text-ink' : ''
               }`}
@@ -389,16 +455,16 @@ export default function VnAddressSelector({
               data-testid={`${cityTestId}-dropdown`}
               role="listbox"
               className="
-                absolute left-0 right-0 z-50 mt-2
-                sm:min-w-[360px]
-                rounded-2xl border border-border bg-surface shadow-xl
+                absolute left-0 right-0 z-[100] mt-2
+                w-full
+                rounded-2xl border border-border bg-surface shadow-2xl
                 overflow-hidden animate-scale-in
               "
             >
               {/* Search Bar + Search Button */}
-              <div className="p-3 border-b border-border bg-canvas/60 space-y-2.5">
+              <div className="p-3 border-b border-border bg-canvas/70 space-y-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
+                  <div className="relative flex-1 min-w-0">
                     <Search
                       size={15}
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none"
@@ -422,7 +488,7 @@ export default function VnAddressSelector({
                       }}
                       placeholder={t('vnAddress.searchProvincePlaceholder')}
                       data-testid={`${cityTestId}-search-input`}
-                      className="w-full h-9 pl-9 pr-8 rounded-lg border border-border bg-surface text-small text-ink focus-ring"
+                      className="w-full h-10 pl-9 pr-8 rounded-xl border border-border bg-surface text-small text-ink placeholder:text-secondary focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink"
                     />
                     {provinceQuery && (
                       <button
@@ -443,7 +509,7 @@ export default function VnAddressSelector({
                     type="button"
                     onClick={handleTriggerProvinceSearch}
                     data-testid={`${cityTestId}-search-btn`}
-                    className="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-caption font-medium inline-flex items-center gap-1.5 hover:bg-primary/90 shrink-0 transition-colors"
+                    className="h-10 px-3.5 rounded-xl bg-primary text-primary-foreground text-caption font-medium inline-flex items-center gap-1.5 hover:bg-primary/90 shrink-0 transition-colors"
                   >
                     <Search size={13} />
                     <span>{t('vnAddress.searchBtn')}</span>
@@ -477,7 +543,7 @@ export default function VnAddressSelector({
               </div>
 
               {/* Scrollable List of 34 Provinces */}
-              <div className="max-h-64 overflow-y-auto divide-y divide-border/50">
+              <div className="max-h-64 overflow-y-auto divide-y divide-border/50 bg-surface">
                 {filteredProvinces.length === 0 ? (
                   <div className="p-6 text-center text-small text-secondary">
                     {t('vnAddress.noResults')}
@@ -516,7 +582,7 @@ export default function VnAddressSelector({
         </div>
 
         {/* ==================== 2. WARD / COMMUNE / SPECIAL ZONE SELECTOR ==================== */}
-        <div className="relative">
+        <div className="relative sm:static">
           <label className="block text-caption font-mono uppercase tracking-wider text-secondary mb-1.5">
             {t('vnAddress.wardLabel')}
           </label>
@@ -530,19 +596,19 @@ export default function VnAddressSelector({
             data-testid={`${wardTestId}-trigger`}
             aria-expanded={openDropdown === 'ward'}
             aria-haspopup="listbox"
-            className={`w-full h-12 px-3.5 rounded-xl border text-left flex items-center justify-between gap-2 transition-all duration-150 focus-ring ${
+            className={`w-full h-12 px-3 rounded-xl border text-left flex items-center justify-between gap-1.5 transition-all duration-150 focus-ring ${
               openDropdown === 'ward'
                 ? 'border-ink bg-surface ring-1 ring-ink shadow-xs'
                 : 'border-border bg-canvas hover:border-ink/40'
             } ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
               <Navigation
-                size={16}
+                size={15}
                 className={displayWardName ? 'text-ink shrink-0' : 'text-secondary shrink-0'}
               />
               <span
-                className={`text-small truncate ${
+                className={`text-[13.5px] truncate ${
                   displayWardName ? 'text-ink font-medium' : 'text-secondary'
                 }`}
               >
@@ -553,7 +619,7 @@ export default function VnAddressSelector({
               </span>
             </div>
             <ChevronDown
-              size={16}
+              size={15}
               className={`text-secondary shrink-0 transition-transform duration-200 ${
                 openDropdown === 'ward' ? 'rotate-180 text-ink' : ''
               }`}
@@ -566,16 +632,16 @@ export default function VnAddressSelector({
               data-testid={`${wardTestId}-dropdown`}
               role="listbox"
               className="
-                absolute left-0 right-0 sm:left-auto sm:right-0 z-50 mt-2
-                sm:min-w-[380px]
-                rounded-2xl border border-border bg-surface shadow-xl
+                absolute left-0 right-0 z-[100] mt-2
+                w-full
+                rounded-2xl border border-border bg-surface shadow-2xl
                 overflow-hidden animate-scale-in
               "
             >
               {/* Search Bar + Search Button */}
-              <div className="p-3 border-b border-border bg-canvas/60 space-y-2.5">
+              <div className="p-3 border-b border-border bg-canvas/70 space-y-2.5">
                 <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
+                  <div className="relative flex-1 min-w-0">
                     <Search
                       size={15}
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none"
@@ -599,7 +665,7 @@ export default function VnAddressSelector({
                       }}
                       placeholder={t('vnAddress.searchWardPlaceholder')}
                       data-testid={`${wardTestId}-search-input`}
-                      className="w-full h-9 pl-9 pr-8 rounded-lg border border-border bg-surface text-small text-ink focus-ring"
+                      className="w-full h-10 pl-9 pr-8 rounded-xl border border-border bg-surface text-small text-ink placeholder:text-secondary focus:outline-none focus:border-ink focus:ring-1 focus:ring-ink"
                     />
                     {wardQuery && (
                       <button
@@ -620,7 +686,7 @@ export default function VnAddressSelector({
                     type="button"
                     onClick={handleTriggerWardSearch}
                     data-testid={`${wardTestId}-search-btn`}
-                    className="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-caption font-medium inline-flex items-center gap-1.5 hover:bg-primary/90 shrink-0 transition-colors"
+                    className="h-10 px-3.5 rounded-xl bg-primary text-primary-foreground text-caption font-medium inline-flex items-center gap-1.5 hover:bg-primary/90 shrink-0 transition-colors"
                   >
                     <Search size={13} />
                     <span>{t('vnAddress.searchBtn')}</span>
@@ -659,16 +725,14 @@ export default function VnAddressSelector({
               </div>
 
               {/* Scrollable List of Wards / Communes / Special Zones */}
-              <div className="max-h-64 overflow-y-auto divide-y divide-border/50">
+              <div className="max-h-64 overflow-y-auto divide-y divide-border/50 bg-surface">
                 {filteredWards.length === 0 ? (
                   <div className="p-6 text-center text-small text-secondary">
                     {t('vnAddress.noResults')}
                   </div>
                 ) : (
                   filteredWards.map((w) => {
-                    const isSelected =
-                      selectedWard?.code === w.code ||
-                      (ward && normalizeSearchText(ward) === normalizeSearchText(w.name));
+                    const isSelected = selectedWard?.code === w.code;
                     return (
                       <button
                         key={w.code}

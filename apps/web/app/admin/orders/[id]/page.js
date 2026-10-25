@@ -18,6 +18,7 @@ import { ordersApi } from '../../../../lib/api';
 import { formatPrice } from '../../../../lib/utils';
 import { useI18n } from '../../../../lib/i18n';
 import { formatAevoTitle } from '../../../../lib/i18n/dictionaries';
+import { formatVnAddress } from '../../../../components/address/VnAddressSelector';
 
 const ORDER_STATUSES = ['PENDING', 'CONFIRMED', 'SHIPPING', 'DELIVERED', 'CANCELLED'];
 
@@ -397,7 +398,7 @@ export default function AdminOrderDetailPage({ params }) {
                 <p className="font-mono text-caption">{addr.phone || '—'}</p>
                 <p>{addr.address || '—'}</p>
                 <p>
-                  {[addr.ward, addr.district, addr.city].filter(Boolean).join(', ') || '—'}
+                  {formatVnAddress({ ward: addr.ward, city: addr.city }) || '—'}
                 </p>
               </div>
             </div>
