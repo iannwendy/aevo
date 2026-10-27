@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const { escapeHtml, stripCrLf } = require('../utils/security');
 
 /**
@@ -10,32 +11,119 @@ const { escapeHtml, stripCrLf } = require('../utils/security');
  *   - Obsidian Ink Typography (#171717), Muted Secondary Copy (#737373), Sage Accent (#52665C)
  *   - Monospace Eyebrow Badges ('Geist Mono', monospace) & Full-Width 48px Primary CTA Button
  *
- * SMTP credentials are optional: without them the mailer runs in "log" mode
- * and writes the message to the API log instead of sending it. That keeps a
- * fresh clone working end to end (the reset link is visible in the log) while
- * still sending real mail in a configured deployment.
+ * Anti-spam & deliverability hardening:
+ *   - SPF/DKIM/DMARC alignment: aligns From address and Message-ID domain with authenticated SMTP_USER
+ *   - Explicit FQDN EHLO hostname (`name`) so Docker container IDs / .local hostnames never leak into Received headers
+ *   - Personalized To header (`"Full Name" <email>`) and monitored Reply-To header
+ *   - Transactional headers (`X-Entity-Ref-ID`, `X-Auto-Response-Suppress`, `Content-Language`) without bulk/promo flags
+ *   - Clean preheader without 1px font, same-color-as-background text, or zero-width joiner obfuscation (`&#847;&zwnj;`)
+ *   - Public HTTPS URL normalization (rewrites loopback `http://localhost:3000` links in emails to `https://aevo.io.vn`)
+ *   - Descriptive anchor text (no naked domain or raw JWT URL anchor text that triggers anti-phishing filters)
+ *   - Hard-bounce guard for test/demo/seed domains (`@aevo.com`, `@example.com`, `.local`, etc.) to protect sender reputation
  */
 let transporter = null;
 let transporterKey = '';
 let usingSmtp = false;
 
 function getPublicSiteUrl() {
+  const explicit = String(
+    process.env.EMAIL_PUBLIC_URL || process.env.PUBLIC_SITE_URL || ''
+  ).trim();
+  if (explicit) {
+    return explicit.replace(/\/+$/, '');
+  }
+
   const raw = String(process.env.CLIENT_URL || 'https://aevo.io.vn')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
-  const prodUrl = raw.find((u) => u.includes('aevo.io.vn'));
-  return (prodUrl || raw[0] || 'https://aevo.io.vn').replace(/\/+$/, '');
+  const prodUrl =
+    raw.find((u) => u.includes('aevo.io.vn')) ||
+    raw.find((u) => /^https:\/\//i.test(u) && !/localhost|127\.0\.0\.1|0\.0\.0\.0/i.test(u));
+  return (prodUrl || 'https://aevo.io.vn').replace(/\/+$/, '');
+}
+
+/**
+ * Rewrites loopback origins (`http://localhost:3000`) in action links to the public
+ * HTTPS storefront URL so outgoing SMTP emails never trigger `WEIRD_PORT`,
+ * `LOCALHOST_URI`, or `HTTPS_HTTP_MISMATCH` anti-phishing rules.
+ */
+function normalizePublicEmailUrl(rawUrl, siteUrl = getPublicSiteUrl()) {
+  const cleaned = stripCrLf(String(rawUrl || '').trim());
+  if (!cleaned) return '';
+  return cleaned.replace(
+    /^https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(?::\d+)?(?=\/|\?|$)/i,
+    siteUrl
+  );
+}
+
+/**
+ * Parse and align sender identity so From address, Reply-To, Message-ID, and
+ * SMTP EHLO domain are consistent with the authenticated SMTP account.
+ */
+function resolveSenderConfig() {
+  const smtpHost = stripCrLf(process.env.SMTP_HOST || '').trim().toLowerCase();
+  const smtpUser = stripCrLf(process.env.SMTP_USER || '').trim();
+  const rawFrom = stripCrLf(process.env.SMTP_FROM || '').trim();
+
+  let fromName = 'AEVO Store';
+  let fromAddress = smtpUser || 'support@aevo.io.vn';
+
+  if (rawFrom) {
+    const angleMatch = rawFrom.match(/^(.*?)<([^<>]+)>\s*$/);
+    if (angleMatch) {
+      const parsedName = angleMatch[1].replace(/^["']+|["']+$/g, '').trim();
+      const parsedAddr = angleMatch[2].trim();
+      if (parsedName) {
+        fromName = parsedName === 'AEVO' ? 'AEVO Store' : parsedName;
+      }
+      if (parsedAddr) {
+        fromAddress = parsedAddr;
+      }
+    } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawFrom)) {
+      fromAddress = rawFrom;
+    }
+  }
+
+  // Ensure DMARC/SPF alignment when relaying through Gmail or freemail SMTP
+  const isGmailRelay =
+    smtpHost.includes('gmail.com') || /@gmail\.com$/i.test(smtpUser);
+  if (isGmailRelay && smtpUser && fromAddress.toLowerCase() !== smtpUser.toLowerCase()) {
+    fromAddress = smtpUser;
+  }
+
+  const domainPart = (fromAddress.split('@')[1] || 'aevo.io.vn')
+    .trim()
+    .toLowerCase();
+  const senderDomain = /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(domainPart)
+    ? domainPart
+    : 'aevo.io.vn';
+  const ehloDomain =
+    stripCrLf(process.env.SMTP_EHLO_DOMAIN || '').trim() ||
+    (senderDomain !== 'gmail.com' ? senderDomain : 'aevo.io.vn');
+  const replyTo = stripCrLf(
+    process.env.SMTP_REPLY_TO || smtpUser || fromAddress
+  ).trim();
+
+  return {
+    fromName,
+    fromAddress,
+    senderDomain,
+    ehloDomain,
+    replyTo,
+  };
 }
 
 function getTransporter() {
   const cleanPass = String(process.env.SMTP_PASS || '').replace(/\s+/g, '');
+  const { ehloDomain } = resolveSenderConfig();
   const currentKey = [
     process.env.SMTP_HOST || '',
     process.env.SMTP_PORT || '',
     process.env.SMTP_SECURE || '',
     process.env.SMTP_USER || '',
     cleanPass ? 'set' : '',
+    ehloDomain,
   ].join('|');
 
   if (transporter && transporterKey === currentKey) {
@@ -45,15 +133,40 @@ function getTransporter() {
   transporterKey = currentKey;
 
   if (process.env.SMTP_HOST && process.env.SMTP_USER && cleanPass) {
-    transporter = nodemailer.createTransport({
+    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+    const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+
+    const transportOptions = {
       host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587', 10),
-      secure: process.env.SMTP_SECURE === 'true' || process.env.SMTP_PORT === '465',
+      port,
+      secure,
+      name: ehloDomain,
       auth: {
         user: process.env.SMTP_USER,
         pass: cleanPass,
       },
-    });
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
+      tls: {
+        minVersion: 'TLSv1.2',
+        rejectUnauthorized: process.env.SMTP_TLS_REJECT_UNAUTHORIZED !== 'false',
+      },
+    };
+
+    if (
+      process.env.SMTP_DKIM_DOMAIN &&
+      process.env.SMTP_DKIM_SELECTOR &&
+      process.env.SMTP_DKIM_PRIVATE_KEY
+    ) {
+      transportOptions.dkim = {
+        domainName: process.env.SMTP_DKIM_DOMAIN.trim(),
+        keySelector: process.env.SMTP_DKIM_SELECTOR.trim(),
+        privateKey: process.env.SMTP_DKIM_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      };
+    }
+
+    transporter = nodemailer.createTransport(transportOptions);
     usingSmtp = true;
   } else {
     transporter = { sendMail: async (mail) => ({ messageId: 'dev-mode', ...mail }) };
@@ -68,11 +181,12 @@ function getTransporter() {
  */
 function renderAevoEmailLayout({
   preheader = '',
-  badgeText = 'SECURITY',
-  eyebrow = 'ACCOUNT',
+  badgeText = 'Member Care',
+  eyebrow = 'Account',
   heading = '',
   bodyHtml = '',
   footerHtml = '',
+  recipientEmail = '',
   siteUrl = getPublicSiteUrl(),
 }) {
   const safePreheader = escapeHtml(preheader);
@@ -80,10 +194,12 @@ function renderAevoEmailLayout({
   const safeEyebrow = escapeHtml(eyebrow);
   const safeHeading = escapeHtml(heading);
   const safeSiteUrl = escapeHtml(siteUrl);
+  const safeRecipient = escapeHtml(recipientEmail);
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="color-scheme" content="light" />
@@ -91,15 +207,15 @@ function renderAevoEmailLayout({
   <title>${safeHeading} — AEVO</title>
 </head>
 <body style="margin:0;padding:0;background-color:#F5F5F3;color:#171717;font-family:-apple-system,BlinkMacSystemFont,'Geist','Inter','Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
-  <!-- Hidden inbox preheader text -->
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px;color:#F5F5F3;">
-    ${safePreheader}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;
+  <!-- Inbox preview text (clean display:none without tiny-font or low-contrast spam triggers) -->
+  <div style="display:none;max-height:0;max-width:0;overflow:hidden;mso-hide:all;">
+    ${safePreheader}
   </div>
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F5F3;width:100%;margin:0;padding:48px 16px;">
     <tr>
       <td align="center">
-        <!-- Main Card Surface (matches max-w-md bg-surface border-border rounded-2xl p-8 md:p-10) -->
+        <!-- Main Card Surface -->
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:460px;width:100%;background-color:#FFFFFF;border:1px solid #E5E5E3;border-radius:16px;box-shadow:0 1px 3px rgba(23,23,23,0.04),0 8px 24px rgba(23,23,23,0.03);overflow:hidden;">
           <tr>
             <td style="padding:36px 36px 32px 36px;">
@@ -142,15 +258,22 @@ function renderAevoEmailLayout({
           </tr>
         </table>
 
-        <!-- Minimal Brand Sub-footer -->
+        <!-- Minimal Brand Sub-footer (descriptive anchor text avoids domain-mismatch anti-phishing flags) -->
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:460px;width:100%;margin-top:20px;">
           <tr>
             <td align="center" style="font-size:12px;line-height:1.6;color:#737373;padding:0 16px;">
               <div style="font-weight:500;color:#171717;letter-spacing:-0.01em;">AEVO — Premium Computing</div>
               <div style="margin-top:2px;">
-                <a href="${safeSiteUrl}" target="_blank" rel="noopener noreferrer" style="color:#737373;text-decoration:underline;text-underline-offset:3px;">aevo.io.vn</a>
+                <a href="${safeSiteUrl}" target="_blank" rel="noopener noreferrer" style="color:#737373;text-decoration:underline;text-underline-offset:3px;">AEVO Online Store</a>
                 &nbsp;&bull;&nbsp; Ho Chi Minh City, Vietnam
               </div>
+              ${
+                safeRecipient
+                  ? `<div style="margin-top:6px;font-size:11px;color:#8A8A86;">
+                      This transactional message was sent to ${safeRecipient} regarding your AEVO account or order.
+                    </div>`
+                  : ''
+              }
             </td>
           </tr>
         </table>
@@ -168,26 +291,57 @@ function sanitizeRecipientEmail(rawTo) {
   return stripCrLf(firstToken);
 }
 
-async function sendMail({ to, subject, html, text }) {
-  const defaultFrom = process.env.SMTP_USER
-    ? `AEVO <${process.env.SMTP_USER}>`
-    : 'AEVO <no-reply@aevo.io.vn>';
-  const from = stripCrLf(process.env.SMTP_FROM || defaultFrom);
+function sanitizeDisplayName(rawName) {
+  const cleaned = stripCrLf(String(rawName || ''))
+    .replace(/[<>"]/g, '')
+    .trim()
+    .slice(0, 80);
+  return cleaned;
+}
+
+async function sendMail({ to, recipientName = '', subject, html, text }) {
+  const { fromName, fromAddress, senderDomain, replyTo } = resolveSenderConfig();
   const safeTo = sanitizeRecipientEmail(to);
+  const safeRecipientName = sanitizeDisplayName(recipientName);
   const safeSubject = stripCrLf(subject);
+  const entityRefId = crypto.randomUUID();
+  const messageId = `<${entityRefId}@${senderDomain}>`;
+
   const mail = {
-    from,
-    to: safeTo,
+    from: {
+      name: fromName,
+      address: fromAddress,
+    },
+    to: safeRecipientName
+      ? {
+          name: safeRecipientName,
+          address: safeTo,
+        }
+      : safeTo,
+    replyTo,
     subject: safeSubject,
     html,
     text,
+    messageId,
+    date: new Date(),
+    priority: 'normal',
+    headers: {
+      'X-Entity-Ref-ID': entityRefId,
+      'X-Auto-Response-Suppress': 'OOF, AutoReply',
+      'Content-Language': 'en, vi',
+    },
   };
 
   const activeTransporter = getTransporter();
+  // Guard against RFC 2606 / RFC 6761 reserved domains AND project seed/E2E test domains (@aevo.com)
+  // so automated test runs never generate hard bounces that damage SMTP sender reputation.
   const isReservedTestAddress =
     !safeTo ||
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safeTo) ||
-    /@(example\.com|example\.org|example\.net|test\.local|aevo\.local|evil\.com)$/i.test(safeTo);
+    /@(example\.com|example\.org|example\.net|test\.com|test\.local|aevo\.local|aevo\.com|evil\.com|localhost|invalid)$/i.test(
+      safeTo
+    ) ||
+    /\.(test|local|example|invalid|localhost)$/i.test(safeTo);
 
   if (!usingSmtp || isReservedTestAddress) {
     console.log(
@@ -214,22 +368,28 @@ async function sendMail({ to, subject, html, text }) {
 async function sendPasswordResetEmail(to, fullName, link) {
   const subject = 'Reset your AEVO password';
   const safeName = escapeHtml(fullName || 'Customer');
-  const safeEmail = escapeHtml(sanitizeRecipientEmail(to));
-  const safeLink = escapeHtml(link || '');
+  const safeRecipient = sanitizeRecipientEmail(to);
+  const safeEmail = escapeHtml(safeRecipient);
   const siteUrl = getPublicSiteUrl();
+  const normalizedLink = normalizePublicEmailUrl(link, siteUrl);
+  const safeLink = escapeHtml(normalizedLink);
   const safeLoginUrl = escapeHtml(`${siteUrl}/login`);
 
   const text = [
     `Hi ${stripCrLf(fullName || 'Customer')},`,
     '',
-    'We received a request to reset the password for your AEVO account.',
-    'Use the link below to set a new password (valid for 1 hour):',
+    `We received a request to update the password for your AEVO account (${safeRecipient}).`,
+    'You can choose a new password using the link below (active for 60 minutes):',
     '',
-    link,
+    normalizedLink,
     '',
-    'If you did not request a password reset, you can safely ignore this email.',
+    'If you did not request this change, no updates have been made to your account and you can safely ignore this message.',
     '',
-    `Remembered it? Sign in at ${siteUrl}/login`,
+    `Sign in to your account: ${siteUrl}/login`,
+    '',
+    '---',
+    'AEVO — Premium Computing | Ho Chi Minh City, Vietnam',
+    `This transactional message was sent to ${safeRecipient}.`,
   ].join('\n');
 
   const bodyHtml = `
@@ -237,7 +397,7 @@ async function sendPasswordResetEmail(to, fullName, link) {
       Hi <strong style="color:#171717;font-weight:500;">${safeName}</strong>,
     </p>
     <p style="font-size:15px;line-height:1.6;color:#737373;margin:0 0 24px 0;">
-      Enter the link below to choose a new password for your account (<span style="color:#171717;font-weight:500;">${safeEmail}</span>). For your security, this recovery link is single-use and expires in <strong style="color:#171717;font-weight:500;">1 hour</strong>.
+      We received a request to update the password for your AEVO account (<span style="color:#171717;font-weight:500;">${safeEmail}</span>). Select the button below to choose a new password. This link remains active for <strong style="color:#171717;font-weight:500;">60 minutes</strong>.
     </p>
 
     <!-- Primary Full-Width CTA Button (matches .btn-primary h-12 rounded-lg on /forgot-password) -->
@@ -251,15 +411,15 @@ async function sendPasswordResetEmail(to, fullName, link) {
       </tr>
     </table>
 
-    <!-- Muted Surface Panel for Direct Link Copy -->
+    <!-- Muted Surface Panel for Direct Link Copy (non-anchor text avoids raw-URL anchor phishing heuristics) -->
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F5F3;border:1px solid #E5E5E3;border-radius:12px;margin-top:20px;">
       <tr>
         <td style="padding:14px 16px;">
           <div style="font-family:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;color:#737373;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">
-            Direct Recovery URL
+            Copy link if button does not open
           </div>
-          <div style="font-family:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;line-height:1.5;color:#171717;word-break:break-all;">
-            <a href="${safeLink}" target="_blank" rel="noopener noreferrer" style="color:#52665C;text-decoration:underline;">${safeLink}</a>
+          <div style="font-family:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;line-height:1.5;color:#52665C;word-break:break-all;">
+            ${safeLink}
           </div>
         </td>
       </tr>
@@ -268,7 +428,7 @@ async function sendPasswordResetEmail(to, fullName, link) {
 
   const footerHtml = `
     <p style="margin:0 0 12px 0;">
-      Didn&rsquo;t request this email? No changes have been made to your account &mdash; you can safely ignore this message.
+      Didn&rsquo;t request this email? No changes have been made to your account &mdash; you can safely ignore this message, or reply to this email if you need assistance from AEVO Customer Care.
     </p>
     <p style="margin:0;color:#737373;">
       Remembered it?
@@ -277,16 +437,23 @@ async function sendPasswordResetEmail(to, fullName, link) {
   `;
 
   const html = renderAevoEmailLayout({
-    preheader: 'Use this link to reset your AEVO password. Valid for 1 hour.',
-    badgeText: 'SECURITY',
-    eyebrow: 'ACCOUNT',
+    preheader: 'Update your AEVO account password. This link is active for 60 minutes.',
+    badgeText: 'Member Care',
+    eyebrow: 'Account',
     heading: 'Reset your password',
     bodyHtml,
     footerHtml,
+    recipientEmail: safeRecipient,
     siteUrl,
   });
 
-  const result = await sendMail({ to, subject, html, text });
+  const result = await sendMail({
+    to,
+    recipientName: fullName,
+    subject,
+    html,
+    text,
+  });
   if (!result.sent) {
     console.log(`[mailer] password reset link for ${stripCrLf(to)}: ${link}`);
   }
@@ -295,22 +462,28 @@ async function sendPasswordResetEmail(to, fullName, link) {
 
 /** Welcome email with auto-generated password & setup link for new accounts. */
 async function sendWelcomeAccountEmail({ to, fullName, temporaryPassword, resetUrl }) {
-  const subject = 'Welcome to AEVO — Your Account & Password Details';
+  const subject = 'Welcome to AEVO — Your account is ready';
   const safeName = escapeHtml(fullName || 'Customer');
-  const safeEmail = escapeHtml(sanitizeRecipientEmail(to));
+  const safeRecipient = sanitizeRecipientEmail(to);
+  const safeEmail = escapeHtml(safeRecipient);
   const safePassword = escapeHtml(temporaryPassword || '');
-  const safeLink = escapeHtml(resetUrl || '');
   const siteUrl = getPublicSiteUrl();
+  const normalizedResetUrl = normalizePublicEmailUrl(resetUrl, siteUrl);
+  const safeLink = escapeHtml(normalizedResetUrl);
   const safeLoginUrl = escapeHtml(`${siteUrl}/login`);
 
   const text = [
     `Hi ${stripCrLf(fullName || 'Customer')},`,
     '',
-    'Your AEVO account has been created.',
-    temporaryPassword ? `Email: ${stripCrLf(to)}\nTemporary Password: ${stripCrLf(temporaryPassword)}` : '',
-    resetUrl ? `\nSet or change your password anytime using this link:\n${resetUrl}` : '',
+    'Thank you for registering with AEVO. Your member account has been created and is ready to use.',
+    temporaryPassword ? `Email: ${safeRecipient}\nTemporary Password: ${stripCrLf(temporaryPassword)}` : '',
+    normalizedResetUrl ? `\nSet your personal password anytime using this link:\n${normalizedResetUrl}` : '',
     '',
-    'You can sign in with your email and temporary password to view your order history and loyalty points.',
+    'You can sign in to view your order history, manage shipping addresses, and track your AEVO loyalty points.',
+    '',
+    '---',
+    'AEVO — Premium Computing | Ho Chi Minh City, Vietnam',
+    `This transactional message was sent to ${safeRecipient}.`,
   ]
     .filter(Boolean)
     .join('\n');
@@ -320,7 +493,7 @@ async function sendWelcomeAccountEmail({ to, fullName, temporaryPassword, resetU
       Hi <strong style="color:#171717;font-weight:500;">${safeName}</strong>,
     </p>
     <p style="font-size:15px;line-height:1.6;color:#737373;margin:0 0 20px 0;">
-      Your AEVO account is ready. Use your temporary credentials below to sign in, or set a personal password right away.
+      Thank you for joining AEVO. Your account is ready so you can track orders, manage shipping addresses, and earn loyalty rewards. Below are your initial sign-in details:
     </p>
     ${
       temporaryPassword
@@ -335,7 +508,7 @@ async function sendWelcomeAccountEmail({ to, fullName, temporaryPassword, resetU
         : ''
     }
     ${
-      resetUrl
+      normalizedResetUrl
         ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 8px 0;">
             <tr>
               <td align="center" style="border-radius:10px;background-color:#171717;">
@@ -357,25 +530,37 @@ async function sendWelcomeAccountEmail({ to, fullName, temporaryPassword, resetU
   `;
 
   const html = renderAevoEmailLayout({
-    preheader: 'Your AEVO account has been created.',
-    badgeText: 'WELCOME',
-    eyebrow: 'ACCOUNT',
+    preheader: 'Thank you for joining AEVO. Your member account is ready.',
+    badgeText: 'Welcome',
+    eyebrow: 'Account',
     heading: 'Welcome to AEVO',
     bodyHtml,
     footerHtml,
+    recipientEmail: safeRecipient,
     siteUrl,
   });
 
-  return sendMail({ to, subject, html, text });
+  return sendMail({
+    to,
+    recipientName: fullName,
+    subject,
+    html,
+    text,
+  });
 }
 
 /** Order confirmation email (requirement: "confirmation email with the details of the order"). */
 async function sendOrderConfirmationEmail(to, fullName, order, autoAccountCredentials = null) {
   const safeOrderNum = escapeHtml(order.orderNumber);
   const safeName = escapeHtml(fullName || 'Customer');
+  const safeRecipient = sanitizeRecipientEmail(to);
   const safePayment = escapeHtml(String(order.paymentMethod || 'cod').toUpperCase());
   const siteUrl = getPublicSiteUrl();
   const subject = `AEVO order ${stripCrLf(order.orderNumber)} confirmed`;
+
+  const normalizedCredResetUrl = autoAccountCredentials?.resetUrl
+    ? normalizePublicEmailUrl(autoAccountCredentials.resetUrl, siteUrl)
+    : '';
 
   const rows = (order.items || [])
     .map(
@@ -392,12 +577,10 @@ async function sendOrderConfirmationEmail(to, fullName, order, autoAccountCreden
     .join('');
 
   const accountText = autoAccountCredentials?.temporaryPassword
-    ? `\n\nAccount Automatically Created for Order Tracking:\nEmail: ${stripCrLf(
+    ? `\n\nAccount Created for Order Tracking:\nEmail: ${stripCrLf(
         autoAccountCredentials.email || to
       )}\nTemporary Password: ${stripCrLf(autoAccountCredentials.temporaryPassword)}${
-        autoAccountCredentials.resetUrl
-          ? `\nSet Your Own Password: ${autoAccountCredentials.resetUrl}`
-          : ''
+        normalizedCredResetUrl ? `\nSet Your Own Password: ${normalizedCredResetUrl}` : ''
       }`
     : '';
 
@@ -409,8 +592,8 @@ async function sendOrderConfirmationEmail(to, fullName, order, autoAccountCreden
             <div style="font-family:'Geist Mono',ui-monospace,monospace;">Email: ${escapeHtml(autoAccountCredentials.email || to)}</div>
             <div style="font-family:'Geist Mono',ui-monospace,monospace;">Temporary Password: ${escapeHtml(autoAccountCredentials.temporaryPassword)}</div>
             ${
-              autoAccountCredentials.resetUrl
-                ? `<div style="margin-top:10px;"><a href="${escapeHtml(autoAccountCredentials.resetUrl)}" style="color:#171717;font-weight:500;text-decoration:underline;">Set a new password &rarr;</a></div>`
+              normalizedCredResetUrl
+                ? `<div style="margin-top:10px;"><a href="${escapeHtml(normalizedCredResetUrl)}" style="color:#171717;font-weight:500;text-decoration:underline;">Set a new password &rarr;</a></div>`
                 : ''
             }
           </td>
@@ -418,9 +601,9 @@ async function sendOrderConfirmationEmail(to, fullName, order, autoAccountCreden
       </table>`
     : '';
 
-  const text = `Hi ${stripCrLf(fullName || 'Customer')},\n\nThanks for your order ${stripCrLf(order.orderNumber)}.\n\n${(order.items || [])
+  const text = `Hi ${stripCrLf(fullName || 'Customer')},\n\nThank you for your order ${stripCrLf(order.orderNumber)} with AEVO.\n\n${(order.items || [])
     .map((i) => `- ${stripCrLf(i.productName)} x${Number(i.quantity) || 1}: ${Number(i.price).toLocaleString('vi-VN')} VND`)
-    .join('\n')}\n\nTotal: ${Number(order.totalAmount).toLocaleString('vi-VN')} VND\nPayment: ${stripCrLf(order.paymentMethod)}${accountText}\n\nWe will email you when the order ships.`;
+    .join('\n')}\n\nTotal: ${Number(order.totalAmount).toLocaleString('vi-VN')} VND\nPayment: ${stripCrLf(order.paymentMethod)}${accountText}\n\nWe will notify you by email as soon as your shipment dispatches.\n\n---\nAEVO — Premium Computing | Ho Chi Minh City, Vietnam\nThis transactional message was sent to ${safeRecipient}.`;
 
   const bodyHtml = `
     <p style="font-size:15px;line-height:1.6;color:#737373;margin:0 0 12px 0;">
@@ -454,14 +637,21 @@ async function sendOrderConfirmationEmail(to, fullName, order, autoAccountCreden
   const html = renderAevoEmailLayout({
     preheader: `Your AEVO order ${stripCrLf(order.orderNumber)} is confirmed.`,
     badgeText: safeOrderNum,
-    eyebrow: 'ORDER CONFIRMATION',
+    eyebrow: 'Order Confirmation',
     heading: `Order ${safeOrderNum} confirmed`,
     bodyHtml,
     footerHtml,
+    recipientEmail: safeRecipient,
     siteUrl,
   });
 
-  return sendMail({ to, subject, html, text });
+  return sendMail({
+    to,
+    recipientName: fullName,
+    subject,
+    html,
+    text,
+  });
 }
 
 module.exports = {
@@ -470,5 +660,7 @@ module.exports = {
   sendWelcomeAccountEmail,
   sendOrderConfirmationEmail,
   renderAevoEmailLayout,
+  getPublicSiteUrl,
+  normalizePublicEmailUrl,
+  resolveSenderConfig,
 };
-

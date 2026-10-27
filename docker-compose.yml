@@ -55,7 +55,7 @@ services:
       - SMTP_SECURE=${SMTP_SECURE:-false}
       - SMTP_USER=${SMTP_USER:-baominh.internship@gmail.com}
       - SMTP_PASS=${SMTP_PASS:-ewscrhryhmsndyxi}
-      - SMTP_FROM=${SMTP_FROM:-AEVO <baominh.internship@gmail.com>}
+      - SMTP_FROM=${SMTP_FROM:-AEVO Store <baominh.internship@gmail.com>}
       - PORT=3001
     depends_on:
       db:
@@ -118,7 +118,7 @@ services:
       - SMTP_SECURE=${SMTP_SECURE:-false}
       - SMTP_USER=${SMTP_USER:-baominh.internship@gmail.com}
       - SMTP_PASS=${SMTP_PASS:-ewscrhryhmsndyxi}
-      - SMTP_FROM=${SMTP_FROM:-AEVO <baominh.internship@gmail.com>}
+      - SMTP_FROM=${SMTP_FROM:-AEVO Store <baominh.internship@gmail.com>}
       - PORT=3003
     depends_on:
       api:
@@ -151,7 +151,7 @@ services:
       - SMTP_SECURE=${SMTP_SECURE:-false}
       - SMTP_USER=${SMTP_USER:-baominh.internship@gmail.com}
       - SMTP_PASS=${SMTP_PASS:-ewscrhryhmsndyxi}
-      - SMTP_FROM=${SMTP_FROM:-AEVO <baominh.internship@gmail.com>}
+      - SMTP_FROM=${SMTP_FROM:-AEVO Store <baominh.internship@gmail.com>}
       - PORT=3004
     depends_on:
       api:
