@@ -24,7 +24,7 @@ This directory documents the **4 Bonus Features** (Section II.10 of `docs/requir
    - Validates Prisma schema (`npx prisma validate`) and all 3 Docker Compose configurations (`docker compose config -q`).
 2. **Stage 2 (`test-and-verify`)**:
    - Provisions ephemeral `postgres:16-alpine` and `redis:7-alpine` service containers with healthchecks.
-   - Runs `prisma db push` and seeds the 129-product computer hardware catalog.
+   - Runs `prisma db push` and seeds the 187-product computer hardware catalog.
    - Builds the Next.js production bundle (`npm run build --workspace=apps/web`).
    - Starts the microservices, Elasticsearch node, API Gateway, and Next.js server, and executes the automated E2E suites (`phase1` through `phase6` + `security`).
 3. **Stage 3 (`docker-build`)**:
@@ -82,7 +82,7 @@ In addition to the **Next.js Frontend (`web`)** and **PostgreSQL Database (`db`)
 ### Capabilities & Endpoints
 - `GET /api/search/elasticsearch?q=...&fuzzy=true` — Executes BM25 multi-field search (`name^4`, `brand^3.5`, `tags^2.5`, `category^2`, `description^1`) with Levenshtein fuzzy typo tolerance (e.g., `"macbok"` automatically matches `"MacBook"`), boolean filters, and facet aggregations (`brands`, `categories`, `priceStats`).
 - `GET /api/search/suggest?q=...` — Sub-millisecond prefix & edge-ngram autocomplete suggestions.
-- `POST /api/search/reindex` — Bulk-synchronizes all 129 active PostgreSQL products into the `aevo_products` index.
+- `POST /api/search/reindex` — Bulk-synchronizes all 187 active PostgreSQL products into the `aevo_products` index.
 - `GET /api/search/benchmark` — Runs a multi-iteration performance benchmark comparing **Elasticsearch Inverted Index Search** vs **PostgreSQL `ILIKE` Sequential Scan**, returning average, min, max, P95 latencies and speedup factor.
 
 ---

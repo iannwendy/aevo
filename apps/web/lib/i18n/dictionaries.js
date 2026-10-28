@@ -308,6 +308,7 @@ export const dictionaries = {
       yourNameOptional: 'Your Name (Optional)',
       yourNamePlaceholder: 'e.g., Minh Nguyen',
       yourCommentLabel: 'Your Comment *',
+      yourCommentOptionalLabel: 'Your Comment (Optional)',
       yourCommentPlaceholder:
         'Share your experience with build quality, thermals, or display accuracy...',
       submitting: 'Submitting...',

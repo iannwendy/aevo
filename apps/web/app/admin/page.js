@@ -272,7 +272,7 @@ export default function AdminDashboardPage() {
                 <DollarSign size={18} strokeWidth={1.75} />
               </div>
               <div className="mt-4">
-                <p className="text-2xl sm:text-3xl font-display font-medium tabular-nums text-ink">
+                <p className="text-xl sm:text-2xl 2xl:text-3xl font-display font-medium tabular-nums tracking-tight text-ink break-words">
                   {formatPrice(simpleData.revenue)}
                 </p>
                 <p className="text-caption text-secondary mt-1">
@@ -381,16 +381,16 @@ export default function AdminDashboardPage() {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="border-b border-border text-caption font-mono uppercase text-secondary">
-                        <th className="py-2.5 pr-3">{t('admin.thOrder')}</th>
-                        <th className="py-2.5 px-3">{t('admin.thCustomer')}</th>
-                        <th className="py-2.5 px-3">{t('admin.thStatus')}</th>
-                        <th className="py-2.5 pl-3 text-right">{t('admin.thTotal')}</th>
+                        <th className="py-2.5 pr-2">{t('admin.thOrder')}</th>
+                        <th className="py-2.5 px-2">{t('admin.thCustomer')}</th>
+                        <th className="py-2.5 px-2">{t('admin.thStatus')}</th>
+                        <th className="py-2.5 pl-2 pr-1 text-right whitespace-nowrap">{t('admin.thTotal')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60 text-small">
                       {(simpleData.recentOrders || []).slice(0, 6).map((order) => (
                         <tr key={order.id} className="table-row-interactive">
-                          <td className="py-3 pr-3 font-mono text-caption">
+                          <td className="py-3 pr-2 font-mono text-caption max-w-[130px] truncate">
                             <Link
                               href={`/admin/orders/${order.id}`}
                               className="text-ink font-medium hover:underline"
@@ -398,7 +398,7 @@ export default function AdminDashboardPage() {
                               {order.orderNumber}
                             </Link>
                           </td>
-                          <td className="py-3 px-3 truncate max-w-[160px]">
+                          <td className="py-3 px-2 truncate max-w-[135px]">
                             <p className="text-ink font-medium truncate">
                               {order.user?.fullName || order.guestName || 'Guest'}
                             </p>
@@ -406,7 +406,7 @@ export default function AdminDashboardPage() {
                               {order.user?.email || order.guestEmail || ''}
                             </p>
                           </td>
-                          <td className="py-3 px-3">
+                          <td className="py-3 px-2">
                             <span
                               className={`inline-flex items-center px-2 py-0.5 rounded-pill border text-[11px] font-mono uppercase ${getStatusBadgeClass(
                                 order.status
@@ -415,7 +415,7 @@ export default function AdminDashboardPage() {
                               {order.status}
                             </span>
                           </td>
-                          <td className="py-3 pl-3 text-right font-mono text-caption tabular-nums text-ink">
+                          <td className="py-3 pl-2 pr-1 text-right font-mono text-caption tabular-nums whitespace-nowrap text-ink">
                             {formatPrice(order.totalAmount)}
                           </td>
                         </tr>
@@ -549,7 +549,7 @@ export default function AdminDashboardPage() {
                 </span>
                 <TrendingUp size={18} />
               </div>
-              <p className="text-2xl sm:text-3xl font-display font-medium tabular-nums text-ink mt-3">
+              <p className="text-xl sm:text-2xl 2xl:text-3xl font-display font-medium tabular-nums tracking-tight text-ink mt-3 break-words">
                 {formatPrice(advancedData.summary?.revenue || 0)}
               </p>
               <div className="flex items-center gap-1.5 text-caption mt-1">
@@ -575,7 +575,7 @@ export default function AdminDashboardPage() {
                 </span>
                 <DollarSign size={18} />
               </div>
-              <p className="text-2xl sm:text-3xl font-display font-medium tabular-nums text-ink mt-3">
+              <p className="text-xl sm:text-2xl 2xl:text-3xl font-display font-medium tabular-nums tracking-tight text-ink mt-3 break-words">
                 {formatPrice(advancedData.summary?.profit || 0)}
               </p>
               <p className="text-caption text-secondary mt-1">

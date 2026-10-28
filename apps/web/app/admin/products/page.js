@@ -47,6 +47,9 @@ export default function AdminProductsPage() {
   const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryDesc, setNewCategoryDesc] = useState('');
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
+  const [editCategoryDesc, setEditCategoryDesc] = useState('');
 
   // Feedback banner
   const [feedback, setFeedback] = useState(null);
@@ -181,6 +184,32 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleStartEditCategory = (cat) => {
+    setEditingCategoryId(cat.id);
+    setEditCategoryName(cat.name || '');
+    setEditCategoryDesc(cat.description || '');
+  };
+
+  const handleUpdateCategory = async (catId) => {
+    if (!editCategoryName.trim()) return;
+    setFeedback(null);
+    try {
+      await categoriesApi.update(catId, {
+        name: editCategoryName.trim(),
+        description: editCategoryDesc.trim() || undefined,
+      });
+      setEditingCategoryId(null);
+      setFeedback({ type: 'success', message: 'Category updated.' });
+      loadCategories();
+      loadProducts();
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        message: err.response?.data?.error || 'Could not update category.',
+      });
+    }
+  };
+
   return (
     <AdminShell>
       <div className="space-y-8" data-testid="admin-products-page">
@@ -266,29 +295,83 @@ export default function AdminProductsPage() {
             </form>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {categories.map((cat) => (
-                <div
-                  key={cat.id}
-                  className="p-3.5 rounded-xl bg-surface-muted border border-border flex items-center justify-between gap-2"
-                >
-                  <div className="min-w-0">
-                    <p className="text-small font-medium text-ink truncate">
-                      {catName(cat.slug || cat.name)}
-                    </p>
-                    <p className="text-caption font-mono text-secondary">
-                      /{cat.slug} · {cat.productCount ?? 0} products
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteCategory(cat.id)}
-                    className="p-2 rounded-lg text-secondary hover:text-danger transition-colors"
-                    aria-label={`Deactivate ${cat.name}`}
+              {categories.map((cat) => {
+                const isEditing = editingCategoryId === cat.id;
+                return (
+                  <div
+                    key={cat.id}
+                    className="p-3.5 rounded-xl bg-surface-muted border border-border flex flex-col justify-between gap-2"
                   >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-              ))}
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={editCategoryName}
+                          onChange={(e) => setEditCategoryName(e.target.value)}
+                          placeholder="Category name"
+                          data-testid={`edit-category-name-${cat.slug}`}
+                          className="input-field h-9 text-small"
+                        />
+                        <input
+                          type="text"
+                          value={editCategoryDesc}
+                          onChange={(e) => setEditCategoryDesc(e.target.value)}
+                          placeholder="Category description"
+                          data-testid={`edit-category-desc-${cat.slug}`}
+                          className="input-field h-9 text-small"
+                        />
+                        <div className="flex items-center justify-end gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => setEditingCategoryId(null)}
+                            className="btn-secondary h-8 px-3 text-caption"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateCategory(cat.id)}
+                            data-testid={`save-category-${cat.slug}`}
+                            className="btn-primary h-8 px-3 text-caption"
+                          >
+                            Save
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-small font-medium text-ink truncate">
+                            {catName(cat.slug || cat.name)}
+                          </p>
+                          <p className="text-caption font-mono text-secondary">
+                            /{cat.slug} · {cat.productCount ?? 0} products
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleStartEditCategory(cat)}
+                            data-testid={`edit-category-btn-${cat.slug}`}
+                            className="p-2 rounded-lg text-secondary hover:text-ink transition-colors"
+                            aria-label={`Edit ${cat.name}`}
+                          >
+                            <Edit3 size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCategory(cat.id)}
+                            className="p-2 rounded-lg text-secondary hover:text-danger transition-colors"
+                            aria-label={`Deactivate ${cat.name}`}
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

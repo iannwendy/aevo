@@ -232,10 +232,17 @@ async function callGeminiGenerateContent(parts, { jsonMode = false, timeoutMs = 
       const errBody = await res.json().catch(() => ({}));
       const errMsg = errBody?.error?.message || `HTTP ${res.status}`;
       lastGeminiNote = errMsg;
-      if (res.status === 402 || res.status === 429 || res.status === 401 || res.status === 403) {
-        lastGeminiStatus = res.status === 402 ? 'quota-depleted-fallback' : 'auth-or-rate-limit-fallback';
-        // Cooldown for 60s so requests remain fast while falling back to local engine
-        geminiCooldownUntil = Date.now() + 60_000;
+      if (
+        res.status === 400 ||
+        res.status === 401 ||
+        res.status === 402 ||
+        res.status === 403 ||
+        res.status === 429
+      ) {
+        lastGeminiStatus =
+          res.status === 402 ? 'quota-depleted-fallback' : 'auth-or-rate-limit-fallback';
+        // Cooldown for 300s so requests remain instant while falling back to local engine
+        geminiCooldownUntil = Date.now() + 300_000;
       }
       return null;
     }

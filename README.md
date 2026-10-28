@@ -48,7 +48,7 @@
 
 **AEVO** (`aevo.`) is a production-grade e-commerce ecosystem exclusively dedicated to **computers, workstations, displays, and PC hardware components**. Moving away from cluttered, neon-heavy gaming storefronts, AEVO adopts a **Premium Minimal Editorial Design System** inspired by high-end industrial hardware studios:
 
-- **Curated Computing Catalog**: **167+ computer & PC hardware products** across **6 specialized categories** (*Laptops, Components, Monitors, Storage, Peripherals, Accessories*). Every product features **at least 2 independent SKU variants**, **at least 3 studio gallery images**, and **at least 5 lines of technical specifications**.
+- **Curated Computing Catalog**: **187 computer & PC hardware products** across **6 specialized categories** (*Laptops, Components, Monitors, Storage, Peripherals, Accessories*). Every product features **at least 2 independent SKU variants**, **at least 3 studio gallery images**, and **at least 5 lines of technical specifications**.
 - **Dual-Interface Experience**:
   - **`AEVO Store` (`/`)**: High-contrast editorial storefront with instant search, multi-criteria filtering, real-time cart synchronization, 5-step guest/member checkout, bilingual (`ENG` / `VIE`) localization, and seamless **Light / Dark Mode**.
   - **`AEVO Control` (`/admin`)**: Executive administration suite featuring real-time KPI telemetry, comparative timeframe analytics (`Year`, `Quarter`, `Month`, `Week`, `Custom Range`), inventory variant management, order lifecycle control, and discount governance.
@@ -68,7 +68,7 @@ AEVO's design system pairs warm porcelain surfaces (`#F5F5F3`) with deep obsidia
 ---
 
 ### 2. Hardware Catalog, Multi-Facet Filtering & AI Visual Search
-Customers can browse all 167+ computing products with combined keyword search, category pills, multi-brand selection, price range sliders, star rating filters, 6 sort modes, Grid/List view switching, and **AI Visual Hardware Search** by uploading any product photo.
+Customers can browse all 187 computing products with combined keyword search, category pills, multi-brand selection, price range sliders, star rating filters, 6 sort modes, Grid/List view switching, and **AI Visual Hardware Search** by uploading any product photo.
 
 | **Multi-Criteria Catalog & Ecosystem Filters** | **AI Visual Search by Image Upload** |
 | :---: | :---: |
@@ -180,7 +180,7 @@ aevo/
 │   ├── api/                           # Express.js API Gateway & Microservice Runner
 │   │   ├── prisma/
 │   │   │   ├── schema.prisma          # PostgreSQL relational schema (15 models)
-│   │   │   ├── seed.js                # Idempotent database seeder (167+ products)
+│   │   │   ├── seed.js                # Idempotent database seeder (187 products)
 │   │   │   ├── apple-2026.json        # Curated Apple M3/M4/M5 hardware catalog
 │   │   │   └── products-2026.json     # PC components, GPUs, monitors & peripherals
 │   │   ├── src/
@@ -220,7 +220,7 @@ aevo/
 
 ### Option 1: One-Command Docker Compose (Recommended — Full 8-Container Stack)
 
-Starts the entire AEVO ecosystem (Next.js Frontend, API Gateway, 3 Domain Microservices, Elasticsearch Node, PostgreSQL 16, and Redis 7), automatically pushes the Prisma schema, and seeds the 167+ hardware catalog on first boot.
+Starts the entire AEVO ecosystem (Next.js Frontend, API Gateway, 3 Domain Microservices, Elasticsearch Node, PostgreSQL 16, and Redis 7), automatically pushes the Prisma schema, and seeds the 187 hardware catalog on first boot.
 
 ```bash
 # 1. Clone the repository
