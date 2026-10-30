@@ -6,6 +6,8 @@
  *   - user-service    (port 3004): Auth, Users, Profile, Addresses, Loyalty Points
  *   - elasticsearch   (port 9200): Elasticsearch 8 Compatible Inverted-Index Search Server
  */
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
