@@ -299,6 +299,7 @@ export default function AiAssistantWidget() {
   const [addedMap, setAddedMap] = useState({});
   const feedRef = useRef(null);
   const streamTimerRef = useRef(null);
+  const isAutoScrollPinnedRef = useRef(true);
 
   // Restore session conversation on mount
   useEffect(() => {
@@ -336,7 +337,7 @@ export default function AiAssistantWidget() {
     return () => clearInterval(interval);
   }, [loading]);
 
-  // Word-by-word streaming engine
+  // Word-by-word streaming engine (respects user scroll position!)
   useEffect(() => {
     if (!streamingState) return;
 
@@ -344,8 +345,7 @@ export default function AiAssistantWidget() {
     // Tokenize into words while preserving exact whitespace & newlines
     const tokens = String(fullText || '').match(/\S+\s*/g) || [fullText];
     let currentIdx = 0;
-    // Stream 2-3 words per frame at 22ms (~90-120 words/sec, ~1.1-1.5s total duration)
-    const wordsPerTick = tokens.length > 110 ? 3 : 2;
+    const wordsPerTick = tokens.length > 100 ? 3 : 2;
 
     if (streamTimerRef.current) {
       clearInterval(streamTimerRef.current);
@@ -355,9 +355,12 @@ export default function AiAssistantWidget() {
       currentIdx = Math.min(tokens.length, currentIdx + wordsPerTick);
       const nextSlice = tokens.slice(0, currentIdx).join('');
 
-      setStreamingState((prev) => (prev && prev.id === id ? { ...prev, visibleText: nextSlice } : prev));
+      setStreamingState((prev) =>
+        prev && prev.id === id ? { ...prev, visibleText: nextSlice } : prev
+      );
 
-      if (feedRef.current) {
+      // Only follow the stream if the user hasn't scrolled up to read earlier lines
+      if (feedRef.current && isAutoScrollPinnedRef.current) {
         feedRef.current.scrollTop = feedRef.current.scrollHeight;
       }
 
@@ -366,7 +369,7 @@ export default function AiAssistantWidget() {
         streamTimerRef.current = null;
         setStreamingState(null);
       }
-    }, 22);
+    }, 24);
 
     return () => {
       if (streamTimerRef.current) {
@@ -376,7 +379,7 @@ export default function AiAssistantWidget() {
     };
   }, [streamingState?.id]);
 
-  // Persist session conversation & auto-scroll feed
+  // Persist session conversation when messages change
   useEffect(() => {
     try {
       if (messages.length > 0) {
@@ -385,10 +388,28 @@ export default function AiAssistantWidget() {
     } catch {
       // Ignore storage write errors
     }
-    if (feedRef.current) {
+  }, [messages]);
+
+  // Scroll to bottom when opening chat or when loading indicator first appears
+  useEffect(() => {
+    if (open && feedRef.current && isAutoScrollPinnedRef.current) {
       feedRef.current.scrollTop = feedRef.current.scrollHeight;
     }
-  }, [messages, loading, open]);
+  }, [open, loading]);
+
+  const handleFeedScroll = () => {
+    const el = feedRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    isAutoScrollPinnedRef.current = distanceFromBottom <= 45;
+  };
+
+  const handleFeedWheel = (e) => {
+    if (e.deltaY < 0) {
+      // User intentionally scrolled up — immediately unpin auto-scroll
+      isAutoScrollPinnedRef.current = false;
+    }
+  };
 
   // Hide on admin & auth pages so Admin remains strictly within specification
   if (
@@ -491,6 +512,7 @@ export default function AiAssistantWidget() {
 
   const handleResetChat = () => {
     stopStreamingImmediately();
+    isAutoScrollPinnedRef.current = true;
     setMessages([]);
     setSuggestedPrompts([]);
     try {
@@ -535,6 +557,8 @@ export default function AiAssistantWidget() {
     if (!text || loading) return;
 
     stopStreamingImmediately();
+    // Re-pin auto-scroll when the user sends a new query
+    isAutoScrollPinnedRef.current = true;
 
     const userMsg = {
       id: `user-${Date.now()}`,
@@ -574,10 +598,10 @@ export default function AiAssistantWidget() {
         },
       });
 
-      // Ensure a brief, natural thinking transition (~420ms) before word-by-word streaming starts
+      // Ensure a brief, natural thinking transition (~380ms) before word-by-word streaming starts
       const elapsed = Date.now() - requestStart;
-      if (elapsed < 420) {
-        await new Promise((r) => setTimeout(r, 420 - elapsed));
+      if (elapsed < 380) {
+        await new Promise((r) => setTimeout(r, 380 - elapsed));
       }
 
       const data = res.data || {};
@@ -593,7 +617,6 @@ export default function AiAssistantWidget() {
       };
 
       setLoading(false);
-      setMessages((prev) => [...prev, botMsg]);
       if (replyText) {
         setStreamingState({
           id: botMsgId,
@@ -601,6 +624,7 @@ export default function AiAssistantWidget() {
           visibleText: '',
         });
       }
+      setMessages((prev) => [...prev, botMsg]);
       if (Array.isArray(data.suggestedPrompts) && data.suggestedPrompts.length > 0) {
         setSuggestedPrompts(data.suggestedPrompts);
       }
@@ -611,6 +635,11 @@ export default function AiAssistantWidget() {
         locale === 'vi'
           ? 'Xin lỗi, trợ lý AI đang tạm bận. Vui lòng thử lại sau giây lát.'
           : 'Sorry, the AI Hardware Advisor is momentarily busy. Please try again.';
+      setStreamingState({
+        id: errId,
+        fullText: errText,
+        visibleText: '',
+      });
       setMessages((prev) => [
         ...prev,
         {
@@ -620,11 +649,6 @@ export default function AiAssistantWidget() {
           recommendations: [],
         },
       ]);
-      setStreamingState({
-        id: errId,
-        fullText: errText,
-        visibleText: '',
-      });
     }
   };
 
@@ -743,6 +767,11 @@ export default function AiAssistantWidget() {
           {/* Messages Feed */}
           <div
             ref={feedRef}
+            onScroll={handleFeedScroll}
+            onWheel={handleFeedWheel}
+            onTouchMove={() => {
+              handleFeedScroll();
+            }}
             data-testid="ai-chatbot-messages"
             className={`flex-1 overflow-y-auto p-4 space-y-3.5 ${
               expanded ? 'max-h-[480px]' : 'max-h-[380px]'
@@ -837,117 +866,123 @@ export default function AiAssistantWidget() {
                     </div>
                   )}
 
-                  {/* Product Recommendations Cards */}
-                  {Array.isArray(msg.recommendations) && msg.recommendations.length > 0 && (
-                    <div data-testid="ai-chat-recommendations" className="space-y-2 pt-1">
-                      <div className="flex items-center justify-between px-1">
-                        <div className="text-[10px] font-mono uppercase tracking-wider text-secondary">
-                          {t('ai.recommendedProducts')} ({msg.recommendations.length})
+                  {/* Product Recommendations Cards — Revealed AFTER text finishes streaming so it never pushes the streaming text out of view */}
+                  {!isThisMsgStreaming &&
+                    Array.isArray(msg.recommendations) &&
+                    msg.recommendations.length > 0 && (
+                      <div
+                        data-testid="ai-chat-recommendations"
+                        className="space-y-2 pt-1 animate-fade-in"
+                      >
+                        <div className="flex items-center justify-between px-1">
+                          <div className="text-[10px] font-mono uppercase tracking-wider text-secondary">
+                            {t('ai.recommendedProducts')} ({msg.recommendations.length})
+                          </div>
+                          {msg.recommendations.length >= 2 && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                sendQuery(
+                                  locale === 'vi'
+                                    ? `So sánh ${msg.recommendations[0].name} và ${msg.recommendations[1].name}`
+                                    : `Compare ${msg.recommendations[0].name} vs ${msg.recommendations[1].name}`
+                                )
+                              }
+                              className="inline-flex items-center gap-1 text-[10.5px] font-medium text-ink hover:underline"
+                            >
+                              <Scale size={11} />
+                              <span>
+                                {locale === 'vi' ? 'So sánh 2 mẫu đầu' : 'Compare top 2'}
+                              </span>
+                            </button>
+                          )}
                         </div>
-                        {msg.recommendations.length >= 2 && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              sendQuery(
-                                locale === 'vi'
-                                  ? `So sánh ${msg.recommendations[0].name} và ${msg.recommendations[1].name}`
-                                  : `Compare ${msg.recommendations[0].name} vs ${msg.recommendations[1].name}`
-                              )
-                            }
-                            className="inline-flex items-center gap-1 text-[10.5px] font-medium text-ink hover:underline"
-                          >
-                            <Scale size={11} />
-                            <span>
-                              {locale === 'vi' ? 'So sánh 2 mẫu đầu' : 'Compare top 2'}
-                            </span>
-                          </button>
-                        )}
-                      </div>
 
-                      {msg.recommendations.map((rec) => {
-                        const addStatus = addedMap[rec.id];
-                        return (
-                          <Link
-                            key={rec.id}
-                            href={`/products/${rec.slug}`}
-                            data-testid="ai-recommended-product-card"
-                            className="flex items-center gap-3 p-2.5 rounded-xl bg-surface border border-border hover:border-ink/40 transition-all group"
-                          >
-                            <img
-                              src={rec.image || FALLBACK_PRODUCT_IMAGE}
-                              alt={rec.name}
-                              onError={handleImageError}
-                              className="w-12 h-12 rounded-lg object-contain bg-canvas p-1 shrink-0"
-                            />
-                            <div className="min-w-0 flex-1 space-y-0.5">
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] font-mono uppercase text-secondary">
-                                  {rec.brand}
-                                </span>
-                                {rec.averageRating > 0 && (
-                                  <span className="inline-flex items-center gap-0.5 text-[10px] font-mono text-secondary">
-                                    · <Star size={9} className="fill-current" /> {rec.averageRating}
-                                  </span>
-                                )}
-                                {rec.discountPercent > 0 && (
-                                  <span className="px-1.5 py-0.2 rounded bg-canvas border border-border text-[9.5px] font-mono text-ink">
-                                    -{rec.discountPercent}%
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="text-caption font-medium text-ink truncate group-hover:underline">
-                                {rec.name}
-                              </div>
-
-                              {rec.matchedVariantName && (
-                                <div className="text-[10.5px] text-secondary truncate">
-                                  {rec.matchedVariantName}
-                                </div>
-                              )}
-
-                              <div className="flex items-center gap-2 pt-0.5">
-                                <span className="text-[11.5px] font-mono font-semibold text-ink">
-                                  {formatPrice(rec.price)}
-                                </span>
-                                {rec.comparePrice > rec.price && (
-                                  <span className="text-[10px] font-mono text-secondary line-through">
-                                    {formatPrice(rec.comparePrice)}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col items-end gap-1.5 shrink-0">
-                              {rec.defaultVariantId && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => handleQuickAddToCart(e, rec)}
-                                  className="px-2 py-1 rounded-lg bg-canvas border border-border hover:bg-primary hover:text-primary-foreground text-[10.5px] font-medium text-ink inline-flex items-center gap-1 transition-colors"
-                                >
-                                  {addStatus === 'done' ? (
-                                    <>
-                                      <Check size={11} />
-                                      <span>{locale === 'vi' ? 'Đã thêm' : 'Added'}</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <ShoppingBag size={11} />
-                                      <span>{locale === 'vi' ? '+ Giỏ' : '+ Add'}</span>
-                                    </>
-                                  )}
-                                </button>
-                              )}
-                              <ArrowUpRight
-                                size={13}
-                                className="text-secondary group-hover:text-ink"
+                        {msg.recommendations.map((rec) => {
+                          const addStatus = addedMap[rec.id];
+                          return (
+                            <Link
+                              key={rec.id}
+                              href={`/products/${rec.slug}`}
+                              data-testid="ai-recommended-product-card"
+                              className="flex items-center gap-3 p-2.5 rounded-xl bg-surface border border-border hover:border-ink/40 transition-all group"
+                            >
+                              <img
+                                src={rec.image || FALLBACK_PRODUCT_IMAGE}
+                                alt={rec.name}
+                                onError={handleImageError}
+                                className="w-12 h-12 rounded-lg object-contain bg-canvas p-1 shrink-0"
                               />
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
+                              <div className="min-w-0 flex-1 space-y-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[10px] font-mono uppercase text-secondary">
+                                    {rec.brand}
+                                  </span>
+                                  {rec.averageRating > 0 && (
+                                    <span className="inline-flex items-center gap-0.5 text-[10px] font-mono text-secondary">
+                                      · <Star size={9} className="fill-current" />{' '}
+                                      {rec.averageRating}
+                                    </span>
+                                  )}
+                                  {rec.discountPercent > 0 && (
+                                    <span className="px-1.5 py-0.2 rounded bg-canvas border border-border text-[9.5px] font-mono text-ink">
+                                      -{rec.discountPercent}%
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="text-caption font-medium text-ink truncate group-hover:underline">
+                                  {rec.name}
+                                </div>
+
+                                {rec.matchedVariantName && (
+                                  <div className="text-[10.5px] text-secondary truncate">
+                                    {rec.matchedVariantName}
+                                  </div>
+                                )}
+
+                                <div className="flex items-center gap-2 pt-0.5">
+                                  <span className="text-[11.5px] font-mono font-semibold text-ink">
+                                    {formatPrice(rec.price)}
+                                  </span>
+                                  {rec.comparePrice > rec.price && (
+                                    <span className="text-[10px] font-mono text-secondary line-through">
+                                      {formatPrice(rec.comparePrice)}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                {rec.defaultVariantId && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleQuickAddToCart(e, rec)}
+                                    className="px-2 py-1 rounded-lg bg-canvas border border-border hover:bg-primary hover:text-primary-foreground text-[10.5px] font-medium text-ink inline-flex items-center gap-1 transition-colors"
+                                  >
+                                    {addStatus === 'done' ? (
+                                      <>
+                                        <Check size={11} />
+                                        <span>{locale === 'vi' ? 'Đã thêm' : 'Added'}</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ShoppingBag size={11} />
+                                        <span>{locale === 'vi' ? '+ Giỏ' : '+ Add'}</span>
+                                      </>
+                                    )}
+                                  </button>
+                                )}
+                                <ArrowUpRight
+                                  size={13}
+                                  className="text-secondary group-hover:text-ink"
+                                />
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
                 </div>
               );
             })}
