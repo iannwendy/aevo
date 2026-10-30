@@ -1065,6 +1065,131 @@ async function registerCustomer(tag = 'sec', extraBody = {}) {
     return `activeTokens=${activeAfterSecond.length}, revokedPriorTokens=${revokedTokens.length}`;
   });
 
+  // -------------------------------------------------------------------------
+  // SEC-27: Next.js /admin middleware blocks X-Forwarded-Host Open Redirect
+  // -------------------------------------------------------------------------
+  await test('SEC-27', 'Next.js /admin middleware ignores untrusted X-Forwarded-Host / X-Forwarded-Proto headers', async () => {
+    const res = await fetch(`${CLIENT}/admin`, {
+      redirect: 'manual',
+      headers: {
+        'X-Forwarded-Host': 'evil-phishing.example.com',
+        'X-Forwarded-Proto': 'javascript',
+      },
+    });
+    assert.ok([307, 308, 302].includes(res.status), `Expected redirect status, got ${res.status}`);
+    const location = res.headers.get('location') || '';
+    assert.ok(!location.includes('evil-phishing.example.com'), `Untrusted host leaked into redirect Location: ${location}`);
+    assert.ok(!location.toLowerCase().startsWith('javascript:'), `Unsafe protocol in redirect Location: ${location}`);
+    assert.ok(location.includes('/login?next='), `Expected safe login redirect, got ${location}`);
+    return `Safe Location=${location}`;
+  });
+
+  // -------------------------------------------------------------------------
+  // SEC-28: Password change rate limiting & oversized password DoS protection
+  // -------------------------------------------------------------------------
+  await test('SEC-28', 'Oversized login/password inputs (>128 chars) are rejected before bcrypt & PUT /api/auth/password is rate-limited', async () => {
+    const pwUser = await registerCustomer('sec28.pw');
+    const hugePassword = 'P'.repeat(5000);
+
+    const loginHuge = await call('/api/auth/login', {
+      method: 'POST',
+      body: { email: pwUser.email, password: hugePassword },
+    });
+    assert.equal(loginHuge.status, 400, 'Expected 400 for >128-char login password');
+
+    const changeHuge = await call('/api/auth/password', {
+      method: 'PUT',
+      token: pwUser.token,
+      body: { currentPassword: hugePassword, newPassword: 'ValidPass123' },
+    });
+    assert.equal(changeHuge.status, 400, 'Expected 400 for >128-char currentPassword');
+
+    let hit429 = false;
+    for (let i = 0; i < 12; i++) {
+      const attempt = await call('/api/auth/password', {
+        method: 'PUT',
+        token: pwUser.token,
+        body: { currentPassword: `WrongPass-${i}`, newPassword: 'ValidPass123' },
+      });
+      if (attempt.status === 429) {
+        hit429 = true;
+        break;
+      }
+    }
+    assert.equal(hit429, true, 'Expected 429 rate limit on repeated failed PUT /api/auth/password attempts');
+    return `loginHuge=${loginHuge.status}, changeHuge=${changeHuge.status}, passwordRateLimited=${hit429}`;
+  });
+
+  // -------------------------------------------------------------------------
+  // SEC-29: Admin user, category, product & discount input length validation
+  // -------------------------------------------------------------------------
+  await test('SEC-29', 'Admin endpoints enforce email format & upper length bounds on user, category, product & discount fields', async () => {
+    const targetUser = await registerCustomer('sec29.bounds');
+
+    const badEmailUpdate = await call(`/api/users/${targetUser.user.id}`, {
+      method: 'PUT',
+      token: admin.token,
+      body: { email: 'not-an-email' },
+    });
+    assert.equal(badEmailUpdate.status, 400);
+
+    const longAddrUpdate = await call(`/api/users/${targetUser.user.id}`, {
+      method: 'PUT',
+      token: admin.token,
+      body: { address: 'A'.repeat(500) },
+    });
+    assert.equal(longAddrUpdate.status, 400);
+
+    const emptySlugCat = await call('/api/categories', {
+      method: 'POST',
+      token: admin.token,
+      body: { name: '!!!@@@###' },
+    });
+    assert.equal(emptySlugCat.status, 400);
+
+    const longProduct = await call('/api/products', {
+      method: 'POST',
+      token: admin.token,
+      body: {
+        name: 'N'.repeat(250),
+        brand: 'Apple',
+        categoryId: 'invalid-cat',
+        description: 'Valid description',
+      },
+    });
+    assert.equal(longProduct.status, 400);
+
+    const longDiscountDesc = await call('/api/discounts', {
+      method: 'POST',
+      token: admin.token,
+      body: {
+        code: 'SEC29',
+        discountType: 'percentage',
+        discountValue: 10,
+        maxUses: 5,
+        description: 'D'.repeat(600),
+      },
+    });
+    assert.equal(longDiscountDesc.status, 400);
+
+    return `badEmail=${badEmailUpdate.status}, longAddr=${longAddrUpdate.status}, badCat=${emptySlugCat.status}, longProd=${longProduct.status}, longDisc=${longDiscountDesc.status}`;
+  });
+
+  // -------------------------------------------------------------------------
+  // SEC-30: JSON-LD script blocks escape HTML characters (<, >, &) against XSS
+  // -------------------------------------------------------------------------
+  await test('SEC-30', 'SSR JSON-LD structured data blocks escape <, >, and & characters to prevent </script> breakout XSS', async () => {
+    const res = await fetch(`${CLIENT}/products/macbook-pro-m3`);
+    assert.equal(res.status, 200);
+    const html = await res.text();
+    const match = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/i);
+    assert.ok(match, 'Expected JSON-LD script block on product detail page');
+    assert.ok(!match[1].includes('</script>'), 'JSON-LD payload must never contain raw </script>');
+    const parsed = JSON.parse(match[1]);
+    assert.ok(Array.isArray(parsed) && parsed.length >= 2, 'Expected valid parsed JSON-LD array');
+    return `Verified safe JSON-LD serialization (${match[1].length} bytes)`;
+  });
+
   await prisma.$disconnect();
 
   const passed = results.filter((r) => r.ok).length;

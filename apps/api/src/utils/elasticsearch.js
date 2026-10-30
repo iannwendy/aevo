@@ -4,10 +4,25 @@
  * and synchronized in-memory BM25 inverted index for sub-millisecond search, fuzzy typo tolerance,
  * multi-field relevance boosting, facet aggregations, and real PostgreSQL vs Elasticsearch benchmarks.
  */
+const crypto = require('crypto');
 const prisma = require('./prisma');
 
 const ELASTICSEARCH_URL = process.env.ELASTICSEARCH_URL || 'http://localhost:9200';
 const ES_INDEX_NAME = process.env.ELASTICSEARCH_INDEX || 'aevo_products';
+const INTERNAL_SYNC_TOKEN = crypto
+  .createHmac('sha256', process.env.JWT_SECRET || 'aevo-es-sync-secret')
+  .update('aevo-es-internal-write-v1')
+  .digest('hex');
+
+function verifyInternalSyncToken(candidate) {
+  if (typeof candidate !== 'string' || candidate.length !== INTERNAL_SYNC_TOKEN.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(
+    Buffer.from(candidate, 'utf8'),
+    Buffer.from(INTERNAL_SYNC_TOKEN, 'utf8')
+  );
+}
 
 // =============================================================================
 // Inverted Index + BM25 + Fuzzy Matching Engine (shared by ES node & fallback)
@@ -582,7 +597,10 @@ async function syncAllProductsToElasticsearch() {
     const timer = setTimeout(() => controller.abort(), 2500);
     const res = await fetch(`${ELASTICSEARCH_URL}/${ES_INDEX_NAME}/_bulk_sync`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Internal-Sync-Token': INTERNAL_SYNC_TOKEN,
+      },
       body: JSON.stringify({ documents: formatted }),
       signal: controller.signal,
     });
@@ -618,6 +636,7 @@ async function syncSingleProductToElasticsearch(productId) {
       localIndex.removeDocument(productId);
       fetch(`${ELASTICSEARCH_URL}/${ES_INDEX_NAME}/_doc/${productId}`, {
         method: 'DELETE',
+        headers: { 'X-Internal-Sync-Token': INTERNAL_SYNC_TOKEN },
       }).catch(() => {});
       return { action: 'removed', productId };
     }
@@ -626,7 +645,10 @@ async function syncSingleProductToElasticsearch(productId) {
     localIndex.indexDocument(productId, doc);
     fetch(`${ELASTICSEARCH_URL}/${ES_INDEX_NAME}/_doc/${productId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Internal-Sync-Token': INTERNAL_SYNC_TOKEN,
+      },
       body: JSON.stringify(doc),
     }).catch(() => {});
     return { action: 'indexed', productId };
@@ -785,6 +807,8 @@ async function runSearchBenchmark({ queries, iterations = 8 } = {}) {
 module.exports = {
   ELASTICSEARCH_URL,
   ES_INDEX_NAME,
+  INTERNAL_SYNC_TOKEN,
+  verifyInternalSyncToken,
   InvertedSearchIndex,
   localIndex,
   ensureIndexWarm,

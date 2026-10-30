@@ -8,6 +8,31 @@ const INSTANCE_ID =
   `api-${crypto.randomBytes(4).toString('hex')}`;
 
 const memoryStore = new Map();
+const MAX_MEMORY_STORE_ENTRIES = 2000;
+
+function setMemoryEntry(key, value, ttlSeconds) {
+  if (memoryStore.size >= MAX_MEMORY_STORE_ENTRIES && !memoryStore.has(key)) {
+    const now = Date.now();
+    for (const [k, v] of memoryStore) {
+      if (now > v.expiresAt) memoryStore.delete(k);
+    }
+    if (memoryStore.size >= MAX_MEMORY_STORE_ENTRIES) {
+      const oldestKey = memoryStore.keys().next().value;
+      if (oldestKey !== undefined) memoryStore.delete(oldestKey);
+    }
+  }
+  memoryStore.set(key, {
+    value,
+    expiresAt: Date.now() + ttlSeconds * 1000,
+  });
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of memoryStore) {
+    if (now > v.expiresAt) memoryStore.delete(k);
+  }
+}, 60_000).unref?.();
 
 function createRedisClient(role = 'main') {
   const client = new Redis(REDIS_URL, {
@@ -74,10 +99,7 @@ async function setSessionState(key, value, ttlSeconds = 7 * 24 * 3600) {
     }
   }
 
-  memoryStore.set(fullKey, {
-    value: serialized,
-    expiresAt: Date.now() + ttlSeconds * 1000,
-  });
+  setMemoryEntry(fullKey, serialized, ttlSeconds);
   return false;
 }
 
@@ -150,10 +172,7 @@ async function setCacheValue(key, value, ttlSeconds = 30) {
   const fullKey = `aevo:cache:${key}`;
   const serialized = JSON.stringify(value);
 
-  memoryStore.set(fullKey, {
-    value: serialized,
-    expiresAt: Date.now() + ttlSeconds * 1000,
-  });
+  setMemoryEntry(fullKey, serialized, ttlSeconds);
 
   if (isRedisReady()) {
     try {

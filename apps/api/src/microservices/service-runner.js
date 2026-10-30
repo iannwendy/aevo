@@ -21,6 +21,7 @@ const { registerAllDomainConsumers } = require('./domain-consumers');
 const {
   ES_INDEX_NAME,
   localIndex,
+  verifyInternalSyncToken,
   syncAllProductsToElasticsearch,
 } = require('../utils/elasticsearch');
 
@@ -97,20 +98,27 @@ async function startElasticsearchNode() {
     });
   });
 
-  app.post('/:index/_bulk_sync', (req, res) => {
+  const requireInternalSyncAuth = (req, res, next) => {
+    if (!verifyInternalSyncToken(req.headers['x-internal-sync-token'])) {
+      return res.status(403).json({ error: 'Internal search index write token required' });
+    }
+    return next();
+  };
+
+  app.post('/:index/_bulk_sync', requireInternalSyncAuth, (req, res) => {
     const docs = Array.isArray(req.body?.documents) ? req.body.documents.slice(0, 1000) : [];
     localIndex.clear();
     const result = localIndex.bulkIndex(docs);
     res.json({ errors: false, ...result });
   });
 
-  app.put('/:index/_doc/:id', (req, res) => {
+  app.put('/:index/_doc/:id', requireInternalSyncAuth, (req, res) => {
     const { id } = req.params;
     localIndex.indexDocument(id, { ...req.body, id });
     res.json({ _index: req.params.index, _id: id, result: 'updated' });
   });
 
-  app.delete('/:index/_doc/:id', (req, res) => {
+  app.delete('/:index/_doc/:id', requireInternalSyncAuth, (req, res) => {
     const { id } = req.params;
     const removed = localIndex.removeDocument(id);
     res.json({ _index: req.params.index, _id: id, result: removed ? 'deleted' : 'not_found' });

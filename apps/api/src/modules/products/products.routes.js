@@ -748,7 +748,18 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
       return res.status(400).json({ error: 'Name, description, brand and categoryId are required' });
     }
 
+    if (
+      String(name).trim().length > 200 ||
+      String(brand).trim().length > 120 ||
+      String(description).trim().length > 10000
+    ) {
+      return res.status(400).json({ error: 'Product field exceeds maximum allowed length' });
+    }
+
     if (Array.isArray(variants)) {
+      if (variants.length > 50) {
+        return res.status(400).json({ error: 'Maximum of 50 variants allowed per product' });
+      }
       if (variants.length > 0 && variants.length < 2) {
         return res.status(400).json({ error: 'A product must have at least 2 variants' });
       }
@@ -757,10 +768,16 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
         if (!Number.isFinite(vp) || vp < 0) {
           return res.status(400).json({ error: 'Variant price must be a non-negative number' });
         }
+        if (String(v?.name || '').length > 200 || String(v?.sku || '').length > 100) {
+          return res.status(400).json({ error: 'Variant name or SKU exceeds maximum allowed length' });
+        }
       }
     }
 
     if (Array.isArray(images)) {
+      if (images.length > 20) {
+        return res.status(400).json({ error: 'Maximum of 20 images allowed per product' });
+      }
       if (images.length > 0 && images.length < 3) {
         return res.status(400).json({ error: 'A product must have at least 3 illustrative images' });
       }
@@ -901,7 +918,18 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
+    if (
+      (name !== undefined && String(name).trim().length > 200) ||
+      (brand !== undefined && String(brand).trim().length > 120) ||
+      (description !== undefined && String(description).trim().length > 10000)
+    ) {
+      return res.status(400).json({ error: 'Product field exceeds maximum allowed length' });
+    }
+
     if (Array.isArray(variants)) {
+      if (variants.length > 50) {
+        return res.status(400).json({ error: 'Maximum of 50 variants allowed per product' });
+      }
       if (variants.length > 0 && variants.length < 2) {
         return res.status(400).json({ error: 'A product must have at least 2 variants' });
       }
@@ -909,10 +937,16 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
         if (v?.price !== undefined && (!Number.isFinite(Number(v.price)) || Number(v.price) < 0)) {
           return res.status(400).json({ error: 'Variant price must be a non-negative number' });
         }
+        if (String(v?.name || '').length > 200 || String(v?.sku || '').length > 100) {
+          return res.status(400).json({ error: 'Variant name or SKU exceeds maximum allowed length' });
+        }
       }
     }
 
     if (Array.isArray(images)) {
+      if (images.length > 20) {
+        return res.status(400).json({ error: 'Maximum of 20 images allowed per product' });
+      }
       if (images.length > 0 && images.length < 3) {
         return res.status(400).json({ error: 'A product must have at least 3 illustrative images' });
       }

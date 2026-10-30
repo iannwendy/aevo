@@ -354,6 +354,10 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
       });
     }
 
+    if (hasExcessiveAddressLength({ fullName, phone, address, ward, city })) {
+      return res.status(400).json({ error: 'User or address field exceeds maximum allowed length' });
+    }
+
     const updatedFullName =
       fullName !== undefined && String(fullName).trim()
         ? String(fullName).trim().slice(0, 120)
@@ -363,6 +367,13 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
       email !== undefined && String(email).trim()
         ? String(email).trim().toLowerCase()
         : undefined;
+
+    if (
+      cleanEmail !== undefined &&
+      (cleanEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail))
+    ) {
+      return res.status(400).json({ error: 'Invalid email address format' });
+    }
 
     await prisma.user.update({
       where: { id },

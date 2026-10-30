@@ -186,6 +186,12 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
         .json({ error: 'Percentage discount cannot exceed 100%' });
     }
 
+    if (description !== undefined && String(description || '').length > 500) {
+      return res
+        .status(400)
+        .json({ error: 'Discount description exceeds maximum allowed length (500 characters)' });
+    }
+
     const existing = await prisma.discount.findUnique({
       where: { code: normalizedCode },
     });
@@ -216,6 +222,12 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
   try {
     const { id } = req.params;
     const { isActive, maxUses, description, discountValue, discountType } = req.body;
+
+    if (description !== undefined && String(description || '').length > 500) {
+      return res
+        .status(400)
+        .json({ error: 'Discount description exceeds maximum allowed length (500 characters)' });
+    }
 
     if (maxUses !== undefined) {
       const parsedMax = Number(maxUses);

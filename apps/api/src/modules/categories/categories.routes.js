@@ -105,10 +105,16 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
     }
 
     const cleanName = String(name).trim();
+    if (cleanName.length > 120 || String(description || '').length > 1000) {
+      return res.status(400).json({ error: 'Category name or description exceeds maximum allowed length' });
+    }
     const slug = cleanName
       .toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[^\w-]/g, '');
+    if (!slug) {
+      return res.status(400).json({ error: 'Category name must contain alphanumeric characters' });
+    }
 
     const category = await prisma.category.create({
       data: {
@@ -141,13 +147,25 @@ router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
       if (!cleanName) {
         return res.status(400).json({ error: 'Category name cannot be empty' });
       }
-      data.name = cleanName;
-      data.slug = cleanName
+      if (cleanName.length > 120) {
+        return res.status(400).json({ error: 'Category name exceeds maximum allowed length' });
+      }
+      const nextSlug = cleanName
         .toLowerCase()
         .replace(/\s+/g, '-')
         .replace(/[^\w-]/g, '');
+      if (!nextSlug) {
+        return res.status(400).json({ error: 'Category name must contain alphanumeric characters' });
+      }
+      data.name = cleanName;
+      data.slug = nextSlug;
     }
-    if (description !== undefined) data.description = description;
+    if (description !== undefined) {
+      if (String(description || '').length > 1000) {
+        return res.status(400).json({ error: 'Category description exceeds maximum allowed length' });
+      }
+      data.description = description;
+    }
     if (image !== undefined) {
       if (image && !isSafeImageUrl(image)) {
         return res.status(400).json({ error: 'Invalid or unsafe image URL' });

@@ -188,7 +188,7 @@ router.post(
   }),
   [
     body('email').isString().isEmail().normalizeEmail(),
-    body('password').isString().notEmpty(),
+    body('password').isString().isLength({ min: 1, max: 128 }),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -390,9 +390,16 @@ router.put(
 router.put(
   '/password',
   authMiddleware,
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: 'Too many password change attempts, please try again later',
+    keyGenerator: (req) => String(req.user?.id || req.ip || 'anon'),
+    skipSuccessfulRequests: true,
+  }),
   [
-    body('currentPassword').notEmpty(),
-    body('newPassword').isLength({ min: 6, max: PASSWORD_MAX }),
+    body('currentPassword').isString().isLength({ min: 1, max: 128 }),
+    body('newPassword').isString().isLength({ min: 6, max: PASSWORD_MAX }),
   ],
   async (req, res) => {
     const errors = validationResult(req);

@@ -133,7 +133,12 @@ export default async function ProductsCatalogPage({ searchParams = {} }) {
     <main className="min-h-screen flex flex-col justify-between">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd)
+            .replace(/</g, '\\u003c')
+            .replace(/>/g, '\\u003e')
+            .replace(/&/g, '\\u0026'),
+        }}
       />
       <SiteHeader />
       <Suspense

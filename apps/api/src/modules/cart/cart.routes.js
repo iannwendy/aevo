@@ -253,6 +253,9 @@ router.post('/items', optionalAuth, async (req, res) => {
         data: { quantity: newQuantity },
       });
     } else {
+      if ((cart.items || []).length >= 50) {
+        return res.status(400).json({ error: 'Maximum of 50 distinct items allowed per cart' });
+      }
       await prisma.cartItem.create({
         data: {
           cartId: cart.id,

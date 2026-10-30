@@ -49,20 +49,65 @@ function isPrefetchRequest(request) {
   );
 }
 
+function resolveSafeRedirectOrigin(request) {
+  const defaultOrigin = request.nextUrl?.origin || 'http://localhost:3000';
+  const rawProto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim()?.toLowerCase();
+  const safeProto =
+    rawProto === 'https' || rawProto === 'http'
+      ? rawProto
+      : request.nextUrl?.protocol === 'https:'
+      ? 'https'
+      : 'http';
+
+  const candidateHost =
+    request.headers.get('x-forwarded-host')?.split(',')[0]?.trim() ||
+    request.headers.get('host')?.trim();
+
+  if (!candidateHost || !/^[a-zA-Z0-9.-]+(?::\d{1,5})?$/.test(candidateHost)) {
+    return defaultOrigin;
+  }
+
+  const hostname = candidateHost.split(':')[0].toLowerCase();
+  const trustedHostnames = new Set([
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+    'aevo.io.vn',
+    'www.aevo.io.vn',
+  ]);
+
+  if (request.nextUrl?.hostname) {
+    trustedHostnames.add(request.nextUrl.hostname.toLowerCase());
+  }
+  for (const envUrl of [process.env.NEXT_PUBLIC_SITE_URL, process.env.CLIENT_URL]) {
+    if (envUrl) {
+      try {
+        trustedHostnames.add(new URL(envUrl).hostname.toLowerCase());
+      } catch {
+        // ignore malformed env URL
+      }
+    }
+  }
+
+  if (!trustedHostnames.has(hostname) && !hostname.endsWith('.aevo.io.vn')) {
+    return defaultOrigin;
+  }
+
+  return `${safeProto}://${candidateHost}`;
+}
+
 function redirectToAdminLogin(request) {
   if (isPrefetchRequest(request)) {
     return new NextResponse(null, { status: 204 });
   }
   const { pathname, search } = request.nextUrl;
-  const nextTarget = `${pathname || '/admin'}${search || ''}`;
-  const forwardedProto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim();
-  const forwardedHost =
-    request.headers.get('x-forwarded-host')?.split(',')[0]?.trim() ||
-    request.headers.get('host')?.trim();
-  const baseOrigin = forwardedHost
-    ? `${forwardedProto || request.nextUrl.protocol.replace(':', '') || 'http'}://${forwardedHost}`
-    : request.url;
-  const loginUrl = new URL(`/login?next=${encodeURIComponent(nextTarget)}`, baseOrigin);
+  const rawNextTarget = `${pathname || '/admin'}${search || ''}`;
+  const safeNextTarget =
+    rawNextTarget.startsWith('/') && !rawNextTarget.startsWith('//') && !rawNextTarget.startsWith('/\\')
+      ? rawNextTarget
+      : '/admin';
+  const baseOrigin = resolveSafeRedirectOrigin(request);
+  const loginUrl = new URL(`/login?next=${encodeURIComponent(safeNextTarget)}`, baseOrigin);
   const response = NextResponse.redirect(loginUrl, 307);
   response.headers.set('cache-control', 'no-store, must-revalidate');
   return response;

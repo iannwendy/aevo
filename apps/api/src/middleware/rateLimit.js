@@ -7,6 +7,7 @@
  * Redis when the app scales horizontally.
  */
 const buckets = new Map();
+const MAX_BUCKETS = 5000;
 
 // Drop expired buckets periodically so the map cannot grow without bound.
 setInterval(() => {
@@ -42,6 +43,10 @@ function rateLimit({
 
     let entry = buckets.get(key);
     if (!entry) {
+      if (buckets.size >= MAX_BUCKETS) {
+        const oldestKey = buckets.keys().next().value;
+        if (oldestKey !== undefined) buckets.delete(oldestKey);
+      }
       entry = { hits: [], windowMs };
       buckets.set(key, entry);
     }
