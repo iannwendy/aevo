@@ -165,7 +165,13 @@ export default function CheckoutClient({ initialUser = null, initialCart = null 
   };
 
   // Financial calculations
-  const items = cart?.items || [];
+  const items = useMemo(
+    () =>
+      [...(cart?.items || [])].sort(
+        (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+      ),
+    [cart?.items]
+  );
   const subtotal = useMemo(
     () => items.reduce((sum, i) => sum + (i.variant?.price || 0) * i.quantity, 0),
     [items]

@@ -211,6 +211,8 @@ async function registerCustomer(tag = 'phase3') {
       body: { variantId: varB.id, quantity: 1 },
     });
     assert.equal(res.status, 200);
+    assert.equal(res.body.items[0].variantId, varB.id, 'Expected newest added cart item first');
+    assert.equal(res.body.items[1].variantId, varA.id, 'Expected older cart item second');
     const expectedSubtotal = varA.price * 2 + varB.price * 1;
     assert.equal(res.body.subtotal, expectedSubtotal);
     assert.equal(res.body.itemCount, 3);
@@ -251,8 +253,8 @@ async function registerCustomer(tag = 'phase3') {
 
   await test('FE-21', 'Update quantity via AJAX updates total without page reload', async () => {
     const cartBefore = await call('/api/cart', { cookie: guestSessionCookie });
-    const firstItem = cartBefore.body.items[0];
-    const updRes = await call(`/api/cart/items/${firstItem.id}`, {
+    const itemA = cartBefore.body.items.find((i) => i.variantId === varA.id) || cartBefore.body.items[0];
+    const updRes = await call(`/api/cart/items/${itemA.id}`, {
       method: 'PUT',
       cookie: guestSessionCookie,
       body: { quantity: 1 },

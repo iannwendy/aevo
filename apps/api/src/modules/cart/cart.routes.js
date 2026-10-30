@@ -11,7 +11,7 @@ const TAX_RATE = 0.1;
 
 const CART_INCLUDE = {
   items: {
-    orderBy: { createdAt: 'asc' },
+    orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     include: {
       variant: {
         include: {
@@ -131,7 +131,11 @@ async function resolveOrCreateCart(req, res) {
             txOps.push(
               prisma.cartItem.update({
                 where: { id: existing.id },
-                data: { quantity: mergedQty },
+                data: {
+                  quantity: mergedQty,
+                  createdAt:
+                    gItem.createdAt > existing.createdAt ? gItem.createdAt : existing.createdAt,
+                },
               })
             );
           } else {
@@ -142,6 +146,7 @@ async function resolveOrCreateCart(req, res) {
                   cartId: userCart.id,
                   variantId: gItem.variantId,
                   quantity: allowedQty,
+                  createdAt: gItem.createdAt,
                 },
               })
             );
@@ -250,7 +255,7 @@ router.post('/items', optionalAuth, async (req, res) => {
 
       await prisma.cartItem.update({
         where: { id: existingItem.id },
-        data: { quantity: newQuantity },
+        data: { quantity: newQuantity, createdAt: new Date() },
       });
     } else {
       if ((cart.items || []).length >= 50) {

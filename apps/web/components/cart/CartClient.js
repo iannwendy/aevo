@@ -129,7 +129,9 @@ export default function CartClient({ initialCart }) {
     }
   };
 
-  const items = cart?.items || [];
+  const items = [...(cart?.items || [])].sort(
+    (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+  );
   const subtotal =
     cart?.subtotal ??
     items.reduce((sum, i) => sum + (i.variant?.price || 0) * i.quantity, 0);

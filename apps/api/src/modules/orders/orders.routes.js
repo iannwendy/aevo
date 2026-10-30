@@ -208,6 +208,7 @@ router.post(
         where: { userId: req.user.id },
         include: {
           items: {
+            orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
             include: {
               variant: { include: { product: true } },
             },
@@ -221,6 +222,7 @@ router.post(
         where: { sessionId },
         include: {
           items: {
+            orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
             include: {
               variant: { include: { product: true } },
             },
