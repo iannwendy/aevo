@@ -61,8 +61,14 @@ Full technical documentation and verification commands are located in `Bonus/REA
         `order-service` :3003, `user-service` :3004, `elasticsearch` :9200,
         `redis` :6379, `db` :5434) decoupled via Redis Pub/Sub (`aevo:events:bus`).
 
-  [3] AI-Powered Commerce Suite (+0.5 pts):
-      - Smart Product Recommendation Chatbot (`POST /api/ai/chat` + floating UI)
+  [3] AI-Powered Commerce Suite — AEVO Intelligence v2 (+0.5 pts):
+      - Multi-Turn Agentic AI Concierge (`POST /api/ai/chat` + floating UI):
+        * Workflow & budget-aware SKU variant consultation (EN & VI)
+        * Side-by-side Markdown Spec Comparison Matrix (`| Spec | A | B |`)
+        * Multi-category Workspace Setup Builder with Loyalty Point calculation
+        * Live PostgreSQL 5-char Discount Code & Loyalty balance lookup
+        * Real-time Order Tracking (`AEVO-XXXXX`), Page Context awareness,
+          and 1-click Quick Add to Cart directly inside chat cards
       - Visual Product Search by Image Upload (`POST /api/ai/image-search`)
       - Bilingual Review Sentiment & Aspect Analysis (`POST /api/ai/sentiment`)
 

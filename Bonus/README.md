@@ -60,10 +60,15 @@ In addition to the **Next.js Frontend (`web`)** and **PostgreSQL Database (`db`)
 
 ## 3. AI-Related Features (`+0.5 pts`)
 
-### 3.1. Smart Product Recommendation Chatbot
-- **Backend**: `POST /api/ai/chat`
-- **Frontend**: Floating `AiAssistantWidget` (`[data-testid="ai-chatbot-trigger"]`) on storefront pages.
-- **Capabilities**: Understands bilingual (Vietnamese & English) natural language queries, extracts budget constraints (e.g., *"dưới 35 triệu"*, *"under 35M"*), hardware categories (`laptops`, `monitors`, `components`, `storage`, `peripherals`, `accessories`), brands, and workflows (`gaming`, `programming`, `creator`, `productivity`), and returns real in-stock product cards from the AEVO catalog.
+### 3.1. AEVO Intelligence v2 — Multi-Turn Agentic AI Concierge & Hardware Advisor
+- **Backend**: `POST /api/ai/chat` ([`ai.routes.js`](../apps/api/src/modules/ai/ai.routes.js)) — Hybrid Google Gemini LLM + Deterministic Multi-Turn Agentic RAG Engine backed by Elasticsearch BM25 and PostgreSQL.
+- **Frontend**: Floating [`AiAssistantWidget`](../apps/web/components/ai/AiAssistantWidget.js) (`[data-testid="ai-chatbot-trigger"]`) with Expand/Compact studio view, custom Rich Markdown & Table renderer, `sessionStorage` multi-turn persistence, and 1-click **Quick Add to Cart** (`+ Giỏ` / `+ Add`).
+- **Key Highlights**:
+  1. **Multi-Turn Memory & Product Page Context**: Tracks conversation history for follow-up queries (*"So sánh 2 mẫu đầu tiên"*, *"Còn mẫu nào rẻ hơn không?"*) and automatically detects the active `/products/[slug]` page to offer instant product analysis.
+  2. **Variant-Level SKU & Budget Matching**: Parses flexible Vietnamese & English budget expressions (*"dưới 45 triệu"*, *"từ 25 đến 40 triệu"*, *"tầm 30 triệu"*), selects the optimal in-stock `ProductVariant` within budget, and highlights discount percentages and technical specs.
+  3. **Side-by-Side Spec Comparison Matrix**: Renders structured Markdown comparison tables (`| Spec | Model A | Model B |`) comparing brands, starting prices, featured configurations, star ratings, and specialist recommendations.
+  4. **Workspace Setup / Bundle Builder**: Intelligently allocates total budgets across complementary categories (*Laptops + Monitors + Peripherals*), calculating bundle totals and **10% Loyalty Points** earned.
+  5. **Live Promo Codes, Loyalty Balance & Order Tracking**: Queries PostgreSQL live to display active 5-character discount codes (`remaining / maxUses`), authenticated user Loyalty Points, and real-time order tracking by order number (`AEVO-...`).
 
 ### 3.2. Product Search by Image Upload
 - **Backend**: `POST /api/ai/image-search`
