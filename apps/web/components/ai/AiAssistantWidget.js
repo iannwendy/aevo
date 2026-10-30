@@ -20,6 +20,7 @@ import {
   Scale,
   Tag,
   PackageSearch,
+  Square,
 } from 'lucide-react';
 import { aiApi, cartApi } from '../../lib/api';
 import { useI18n } from '../../lib/i18n';
@@ -27,9 +28,23 @@ import { FALLBACK_PRODUCT_IMAGE, formatPrice, handleImageError } from '../../lib
 
 const STORAGE_KEY = 'aevo_ai_chat_history_v2';
 
-function renderInlineFormatting(text, keyPrefix = 'inline') {
-  if (!text) return null;
-  // Tokenize links [label](url), inline code `code`, bold **text**, italic *text*
+// Balance unclosed ** or ` tokens during live word-by-word streaming so raw syntax never flickers
+function normalizeStreamingInlineText(raw = '') {
+  let text = String(raw || '');
+  const boldCount = (text.match(/\*\*/g) || []).length;
+  if (boldCount % 2 === 1) {
+    text += '**';
+  }
+  const codeCount = (text.match(/`/g) || []).length;
+  if (codeCount % 2 === 1) {
+    text += '`';
+  }
+  return text;
+}
+
+function renderInlineFormatting(rawText, keyPrefix = 'inline') {
+  if (!rawText) return null;
+  const text = normalizeStreamingInlineText(rawText);
   const pattern = /(\[[^\]]+\]\([^)]+\)|`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g;
   const parts = String(text).split(pattern);
 
@@ -83,7 +98,16 @@ function renderInlineFormatting(text, keyPrefix = 'inline') {
   });
 }
 
-function renderRichMarkdown(markdownText = '') {
+function StreamingCursor() {
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-block w-[6px] h-[13px] ml-1 align-middle bg-ink animate-pulse rounded-[1px]"
+    />
+  );
+}
+
+function renderRichMarkdown(markdownText = '', isStreaming = false) {
   const lines = String(markdownText || '').split('\n');
   const blocks = [];
   let i = 0;
@@ -100,23 +124,18 @@ function renderRichMarkdown(markdownText = '') {
     // 1. Markdown Table block (starts with | and next line is | --- |)
     if (
       trimmed.startsWith('|') &&
-      trimmed.endsWith('|') &&
       i + 1 < lines.length &&
       lines[i + 1].trim().startsWith('|') &&
       lines[i + 1].includes('---')
     ) {
-      const headerCells = trimmed
-        .slice(1, -1)
-        .split('|')
-        .map((c) => c.trim());
+      const cleanHeader = trimmed.endsWith('|') ? trimmed.slice(1, -1) : trimmed.slice(1);
+      const headerCells = cleanHeader.split('|').map((c) => c.trim());
       i += 2; // Skip header and separator row
       const bodyRows = [];
       while (i < lines.length && lines[i].trim().startsWith('|')) {
-        const rowCells = lines[i]
-          .trim()
-          .slice(1, -1)
-          .split('|')
-          .map((c) => c.trim());
+        const rowTrim = lines[i].trim();
+        const cleanRow = rowTrim.endsWith('|') ? rowTrim.slice(1, -1) : rowTrim.slice(1);
+        const rowCells = cleanRow.split('|').map((c) => c.trim());
         bodyRows.push(rowCells);
         i += 1;
       }
@@ -156,14 +175,22 @@ function renderRichMarkdown(markdownText = '') {
       continue;
     }
 
+    // Skip partial table header line while waiting for the separator line during streaming
+    if (isStreaming && trimmed.startsWith('|') && i === lines.length - 1) {
+      i += 1;
+      continue;
+    }
+
     // 2. Headings (### or ####)
     if (trimmed.startsWith('### ')) {
+      const isLast = isStreaming && i === lines.length - 1;
       blocks.push(
         <h4
           key={`h3-${i}`}
           className="text-[13px] font-semibold text-ink tracking-tight pt-1 pb-0.5"
         >
           {renderInlineFormatting(trimmed.slice(4), `h3-${i}`)}
+          {isLast && <StreamingCursor />}
         </h4>
       );
       i += 1;
@@ -171,12 +198,14 @@ function renderRichMarkdown(markdownText = '') {
     }
 
     if (trimmed.startsWith('#### ')) {
+      const isLast = isStreaming && i === lines.length - 1;
       blocks.push(
         <h5
           key={`h4-${i}`}
           className="text-[11.5px] font-semibold uppercase tracking-wider text-secondary pt-1"
         >
           {renderInlineFormatting(trimmed.slice(5), `h4-${i}`)}
+          {isLast && <StreamingCursor />}
         </h5>
       );
       i += 1;
@@ -185,12 +214,14 @@ function renderRichMarkdown(markdownText = '') {
 
     // 3. Blockquote / Callout (> ...)
     if (trimmed.startsWith('> ')) {
+      const isLast = isStreaming && i === lines.length - 1;
       blocks.push(
         <div
           key={`quote-${i}`}
           className="my-1.5 p-2.5 rounded-xl bg-surface border border-border text-[11.5px] text-ink leading-relaxed"
         >
           {renderInlineFormatting(trimmed.slice(2), `quote-${i}`)}
+          {isLast && <StreamingCursor />}
         </div>
       );
       i += 1;
@@ -216,28 +247,35 @@ function renderRichMarkdown(markdownText = '') {
 
       blocks.push(
         <ul key={`list-${i}`} className="space-y-1.5 my-1">
-          {listItems.map((item) => (
-            <li
-              key={`li-${item.lineIdx}`}
-              className={`flex items-start gap-2 text-[12.5px] leading-relaxed ${
-                item.isSubItem ? 'pl-4 text-[11.5px] text-secondary' : 'text-ink'
-              }`}
-            >
-              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-ink/50 shrink-0" />
-              <div className="flex-1 min-w-0">
-                {renderInlineFormatting(item.text, `li-${item.lineIdx}`)}
-              </div>
-            </li>
-          ))}
+          {listItems.map((item, idx) => {
+            const isLastItem =
+              isStreaming && idx === listItems.length - 1 && item.lineIdx === lines.length - 1;
+            return (
+              <li
+                key={`li-${item.lineIdx}`}
+                className={`flex items-start gap-2 text-[12.5px] leading-relaxed ${
+                  item.isSubItem ? 'pl-4 text-[11.5px] text-secondary' : 'text-ink'
+                }`}
+              >
+                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-ink/50 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  {renderInlineFormatting(item.text, `li-${item.lineIdx}`)}
+                  {isLastItem && <StreamingCursor />}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       );
       continue;
     }
 
     // 5. Standard paragraph
+    const isLast = isStreaming && i === lines.length - 1;
     blocks.push(
       <p key={`p-${i}`} className="text-[12.5px] text-ink leading-relaxed">
         {renderInlineFormatting(trimmed, `p-${i}`)}
+        {isLast && <StreamingCursor />}
       </p>
     );
     i += 1;
@@ -253,11 +291,14 @@ export default function AiAssistantWidget() {
   const [expanded, setExpanded] = useState(false);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [thinkingStep, setThinkingStep] = useState(0);
   const [messages, setMessages] = useState([]);
+  const [streamingState, setStreamingState] = useState(null); // { id, fullText, visibleText }
   const [suggestedPrompts, setSuggestedPrompts] = useState([]);
   const [copiedId, setCopiedId] = useState(null);
   const [addedMap, setAddedMap] = useState({});
   const feedRef = useRef(null);
+  const streamTimerRef = useRef(null);
 
   // Restore session conversation on mount
   useEffect(() => {
@@ -273,6 +314,67 @@ export default function AiAssistantWidget() {
       // Ignore storage read errors
     }
   }, []);
+
+  // Cleanup any running stream timer on unmount
+  useEffect(() => {
+    return () => {
+      if (streamTimerRef.current) {
+        clearInterval(streamTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Multi-stage thinking step rotator while loading
+  useEffect(() => {
+    if (!loading) {
+      setThinkingStep(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setThinkingStep((prev) => (prev + 1) % 3);
+    }, 180);
+    return () => clearInterval(interval);
+  }, [loading]);
+
+  // Word-by-word streaming engine
+  useEffect(() => {
+    if (!streamingState) return;
+
+    const { id, fullText } = streamingState;
+    // Tokenize into words while preserving exact whitespace & newlines
+    const tokens = String(fullText || '').match(/\S+\s*/g) || [fullText];
+    let currentIdx = 0;
+    // Stream 2-3 words per frame at 22ms (~90-120 words/sec, ~1.1-1.5s total duration)
+    const wordsPerTick = tokens.length > 110 ? 3 : 2;
+
+    if (streamTimerRef.current) {
+      clearInterval(streamTimerRef.current);
+    }
+
+    streamTimerRef.current = setInterval(() => {
+      currentIdx = Math.min(tokens.length, currentIdx + wordsPerTick);
+      const nextSlice = tokens.slice(0, currentIdx).join('');
+
+      setStreamingState((prev) => (prev && prev.id === id ? { ...prev, visibleText: nextSlice } : prev));
+
+      if (feedRef.current) {
+        feedRef.current.scrollTop = feedRef.current.scrollHeight;
+      }
+
+      if (currentIdx >= tokens.length) {
+        clearInterval(streamTimerRef.current);
+        streamTimerRef.current = null;
+        setStreamingState(null);
+      }
+    }, 22);
+
+    return () => {
+      if (streamTimerRef.current) {
+        clearInterval(streamTimerRef.current);
+        streamTimerRef.current = null;
+      }
+    };
+  }, [streamingState?.id]);
 
   // Persist session conversation & auto-scroll feed
   useEffect(() => {
@@ -301,6 +403,19 @@ export default function AiAssistantWidget() {
 
   const productSlugMatch = pathname.match(/^\/products\/([^/?#]+)/);
   const currentProductSlug = productSlugMatch ? decodeURIComponent(productSlugMatch[1]) : null;
+
+  const thinkingLabels =
+    locale === 'vi'
+      ? [
+          'Đang phân tích ngữ cảnh & nhu cầu...',
+          'Đang truy vấn kho hàng Elasticsearch BM25...',
+          'Đang tổng hợp cấu hình tối ưu...',
+        ]
+      : [
+          'Analyzing workflow & intent...',
+          'Querying Elasticsearch BM25 catalog...',
+          'Synthesizing optimal configurations...',
+        ];
 
   const defaultPrompts =
     locale === 'vi'
@@ -366,7 +481,16 @@ export default function AiAssistantWidget() {
           },
         ];
 
+  const stopStreamingImmediately = () => {
+    if (streamTimerRef.current) {
+      clearInterval(streamTimerRef.current);
+      streamTimerRef.current = null;
+    }
+    setStreamingState(null);
+  };
+
   const handleResetChat = () => {
+    stopStreamingImmediately();
     setMessages([]);
     setSuggestedPrompts([]);
     try {
@@ -410,6 +534,8 @@ export default function AiAssistantWidget() {
     const text = String(rawText ?? input ?? '').trim();
     if (!text || loading) return;
 
+    stopStreamingImmediately();
+
     const userMsg = {
       id: `user-${Date.now()}`,
       role: 'user',
@@ -435,6 +561,8 @@ export default function AiAssistantWidget() {
     setInput('');
     setLoading(true);
 
+    const requestStart = Date.now();
+
     try {
       const res = await aiApi.chat({
         message: text,
@@ -445,34 +573,58 @@ export default function AiAssistantWidget() {
           productSlug: currentProductSlug,
         },
       });
+
+      // Ensure a brief, natural thinking transition (~420ms) before word-by-word streaming starts
+      const elapsed = Date.now() - requestStart;
+      if (elapsed < 420) {
+        await new Promise((r) => setTimeout(r, 420 - elapsed));
+      }
+
       const data = res.data || {};
+      const botMsgId = `bot-${Date.now()}`;
+      const replyText = data.reply || '';
       const botMsg = {
-        id: `bot-${Date.now()}`,
+        id: botMsgId,
         role: 'assistant',
-        text: data.reply || '',
+        text: replyText,
         actionBadge: data.actionBadge || null,
         intent: data.intent || null,
         recommendations: Array.isArray(data.recommendations) ? data.recommendations : [],
       };
+
+      setLoading(false);
       setMessages((prev) => [...prev, botMsg]);
+      if (replyText) {
+        setStreamingState({
+          id: botMsgId,
+          fullText: replyText,
+          visibleText: '',
+        });
+      }
       if (Array.isArray(data.suggestedPrompts) && data.suggestedPrompts.length > 0) {
         setSuggestedPrompts(data.suggestedPrompts);
       }
     } catch {
+      setLoading(false);
+      const errId = `err-${Date.now()}`;
+      const errText =
+        locale === 'vi'
+          ? 'Xin lỗi, trợ lý AI đang tạm bận. Vui lòng thử lại sau giây lát.'
+          : 'Sorry, the AI Hardware Advisor is momentarily busy. Please try again.';
       setMessages((prev) => [
         ...prev,
         {
-          id: `err-${Date.now()}`,
+          id: errId,
           role: 'assistant',
-          text:
-            locale === 'vi'
-              ? 'Xin lỗi, trợ lý AI đang tạm bận. Vui lòng thử lại sau giây lát.'
-              : 'Sorry, the AI Hardware Advisor is momentarily busy. Please try again.',
+          text: errText,
           recommendations: [],
         },
       ]);
-    } finally {
-      setLoading(false);
+      setStreamingState({
+        id: errId,
+        fullText: errText,
+        visibleText: '',
+      });
     }
   };
 
@@ -512,7 +664,11 @@ export default function AiAssistantWidget() {
                     {t('ai.advisorBadge')}
                   </span>
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-surface border border-border text-[9.5px] font-mono text-secondary">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        loading || streamingState ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'
+                      }`}
+                    />
                     AI v2
                   </span>
                 </div>
@@ -620,169 +776,196 @@ export default function AiAssistantWidget() {
               )}
             </div>
 
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                data-testid={msg.role === 'user' ? 'ai-chat-user-msg' : 'ai-chat-bot-msg'}
-                className={`space-y-2 ${msg.role === 'user' ? 'flex justify-end' : ''}`}
-              >
-                {msg.role === 'user' ? (
-                  <div className="inline-block max-w-[85%] px-3.5 py-2.5 rounded-2xl bg-primary text-primary-foreground text-[12.5px] leading-relaxed">
-                    {msg.text}
-                  </div>
-                ) : (
-                  <div className="p-3.5 rounded-xl bg-canvas border border-border space-y-2">
-                    {/* Bot Message Top Bar: Action Badge + Copy Button */}
-                    <div className="flex items-center justify-between gap-2 pb-1 border-b border-border/60">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-secondary">
-                        <Sparkles size={10} />
-                        {msg.actionBadge ||
-                          (locale === 'vi' ? 'AEVO Intelligence' : 'AEVO Advisor')}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleCopyMessage(msg.id, msg.text)}
-                        title={locale === 'vi' ? 'Sao chép câu trả lời' : 'Copy response'}
-                        aria-label={locale === 'vi' ? 'Sao chép câu trả lời' : 'Copy response'}
-                        className="inline-flex items-center gap-1 text-[10px] text-secondary hover:text-ink transition-colors"
-                      >
-                        {copiedId === msg.id ? (
-                          <>
-                            <Check size={11} />
-                            <span>{locale === 'vi' ? 'Đã chép' : 'Copied'}</span>
-                          </>
-                        ) : (
-                          <Copy size={11} />
-                        )}
-                      </button>
+            {messages.map((msg) => {
+              const isThisMsgStreaming = Boolean(streamingState && streamingState.id === msg.id);
+              const displayedText = isThisMsgStreaming ? streamingState.visibleText : msg.text;
+
+              return (
+                <div
+                  key={msg.id}
+                  data-testid={msg.role === 'user' ? 'ai-chat-user-msg' : 'ai-chat-bot-msg'}
+                  className={`space-y-2 ${msg.role === 'user' ? 'flex justify-end' : ''}`}
+                >
+                  {msg.role === 'user' ? (
+                    <div className="inline-block max-w-[85%] px-3.5 py-2.5 rounded-2xl bg-primary text-primary-foreground text-[12.5px] leading-relaxed">
+                      {msg.text}
                     </div>
-
-                    {/* Rich Markdown Content */}
-                    {renderRichMarkdown(msg.text)}
-                  </div>
-                )}
-
-                {/* Product Recommendations Cards */}
-                {Array.isArray(msg.recommendations) && msg.recommendations.length > 0 && (
-                  <div data-testid="ai-chat-recommendations" className="space-y-2 pt-1">
-                    <div className="flex items-center justify-between px-1">
-                      <div className="text-[10px] font-mono uppercase tracking-wider text-secondary">
-                        {t('ai.recommendedProducts')} ({msg.recommendations.length})
-                      </div>
-                      {msg.recommendations.length >= 2 && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            sendQuery(
-                              locale === 'vi'
-                                ? `So sánh ${msg.recommendations[0].name} và ${msg.recommendations[1].name}`
-                                : `Compare ${msg.recommendations[0].name} vs ${msg.recommendations[1].name}`
-                            )
-                          }
-                          className="inline-flex items-center gap-1 text-[10.5px] font-medium text-ink hover:underline"
-                        >
-                          <Scale size={11} />
-                          <span>
-                            {locale === 'vi' ? 'So sánh 2 mẫu đầu' : 'Compare top 2'}
-                          </span>
-                        </button>
-                      )}
-                    </div>
-
-                    {msg.recommendations.map((rec) => {
-                      const addStatus = addedMap[rec.id];
-                      return (
-                        <Link
-                          key={rec.id}
-                          href={`/products/${rec.slug}`}
-                          data-testid="ai-recommended-product-card"
-                          className="flex items-center gap-3 p-2.5 rounded-xl bg-surface border border-border hover:border-ink/40 transition-all group"
-                        >
-                          <img
-                            src={rec.image || FALLBACK_PRODUCT_IMAGE}
-                            alt={rec.name}
-                            onError={handleImageError}
-                            className="w-12 h-12 rounded-lg object-contain bg-canvas p-1 shrink-0"
+                  ) : (
+                    <div className="p-3.5 rounded-xl bg-canvas border border-border space-y-2">
+                      {/* Bot Message Top Bar: Action Badge + Stop/Copy Button */}
+                      <div className="flex items-center justify-between gap-2 pb-1 border-b border-border/60">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-secondary">
+                          <Sparkles
+                            size={10}
+                            className={isThisMsgStreaming ? 'animate-spin' : ''}
                           />
-                          <div className="min-w-0 flex-1 space-y-0.5">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[10px] font-mono uppercase text-secondary">
-                                {rec.brand}
-                              </span>
-                              {rec.averageRating > 0 && (
-                                <span className="inline-flex items-center gap-0.5 text-[10px] font-mono text-secondary">
-                                  · <Star size={9} className="fill-current" /> {rec.averageRating}
-                                </span>
-                              )}
-                              {rec.discountPercent > 0 && (
-                                <span className="px-1.5 py-0.2 rounded bg-canvas border border-border text-[9.5px] font-mono text-ink">
-                                  -{rec.discountPercent}%
-                                </span>
-                              )}
-                            </div>
+                          {msg.actionBadge ||
+                            (locale === 'vi' ? 'AEVO Intelligence' : 'AEVO Advisor')}
+                        </span>
 
-                            <div className="text-caption font-medium text-ink truncate group-hover:underline">
-                              {rec.name}
-                            </div>
-
-                            {rec.matchedVariantName && (
-                              <div className="text-[10.5px] text-secondary truncate">
-                                {rec.matchedVariantName}
-                              </div>
+                        {isThisMsgStreaming ? (
+                          <button
+                            type="button"
+                            onClick={stopStreamingImmediately}
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface border border-border text-[10px] font-medium text-ink hover:opacity-80 transition-opacity"
+                          >
+                            <Square size={8} className="fill-current" />
+                            <span>{locale === 'vi' ? 'Hiện hết' : 'Skip'}</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleCopyMessage(msg.id, msg.text)}
+                            title={locale === 'vi' ? 'Sao chép câu trả lời' : 'Copy response'}
+                            aria-label={locale === 'vi' ? 'Sao chép câu trả lời' : 'Copy response'}
+                            className="inline-flex items-center gap-1 text-[10px] text-secondary hover:text-ink transition-colors"
+                          >
+                            {copiedId === msg.id ? (
+                              <>
+                                <Check size={11} />
+                                <span>{locale === 'vi' ? 'Đã chép' : 'Copied'}</span>
+                              </>
+                            ) : (
+                              <Copy size={11} />
                             )}
+                          </button>
+                        )}
+                      </div>
 
-                            <div className="flex items-center gap-2 pt-0.5">
-                              <span className="text-[11.5px] font-mono font-semibold text-ink">
-                                {formatPrice(rec.price)}
-                              </span>
-                              {rec.comparePrice > rec.price && (
-                                <span className="text-[10px] font-mono text-secondary line-through">
-                                  {formatPrice(rec.comparePrice)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                      {/* Rich Markdown Content (streamed word-by-word) */}
+                      {renderRichMarkdown(displayedText, isThisMsgStreaming)}
+                    </div>
+                  )}
 
-                          <div className="flex flex-col items-end gap-1.5 shrink-0">
-                            {rec.defaultVariantId && (
-                              <button
-                                type="button"
-                                onClick={(e) => handleQuickAddToCart(e, rec)}
-                                className="px-2 py-1 rounded-lg bg-canvas border border-border hover:bg-primary hover:text-primary-foreground text-[10.5px] font-medium text-ink inline-flex items-center gap-1 transition-colors"
-                              >
-                                {addStatus === 'done' ? (
-                                  <>
-                                    <Check size={11} />
-                                    <span>{locale === 'vi' ? 'Đã thêm' : 'Added'}</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <ShoppingBag size={11} />
-                                    <span>{locale === 'vi' ? '+ Giỏ' : '+ Add'}</span>
-                                  </>
-                                )}
-                              </button>
-                            )}
-                            <ArrowUpRight
-                              size={13}
-                              className="text-secondary group-hover:text-ink"
+                  {/* Product Recommendations Cards */}
+                  {Array.isArray(msg.recommendations) && msg.recommendations.length > 0 && (
+                    <div data-testid="ai-chat-recommendations" className="space-y-2 pt-1">
+                      <div className="flex items-center justify-between px-1">
+                        <div className="text-[10px] font-mono uppercase tracking-wider text-secondary">
+                          {t('ai.recommendedProducts')} ({msg.recommendations.length})
+                        </div>
+                        {msg.recommendations.length >= 2 && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              sendQuery(
+                                locale === 'vi'
+                                  ? `So sánh ${msg.recommendations[0].name} và ${msg.recommendations[1].name}`
+                                  : `Compare ${msg.recommendations[0].name} vs ${msg.recommendations[1].name}`
+                              )
+                            }
+                            className="inline-flex items-center gap-1 text-[10.5px] font-medium text-ink hover:underline"
+                          >
+                            <Scale size={11} />
+                            <span>
+                              {locale === 'vi' ? 'So sánh 2 mẫu đầu' : 'Compare top 2'}
+                            </span>
+                          </button>
+                        )}
+                      </div>
+
+                      {msg.recommendations.map((rec) => {
+                        const addStatus = addedMap[rec.id];
+                        return (
+                          <Link
+                            key={rec.id}
+                            href={`/products/${rec.slug}`}
+                            data-testid="ai-recommended-product-card"
+                            className="flex items-center gap-3 p-2.5 rounded-xl bg-surface border border-border hover:border-ink/40 transition-all group"
+                          >
+                            <img
+                              src={rec.image || FALLBACK_PRODUCT_IMAGE}
+                              alt={rec.name}
+                              onError={handleImageError}
+                              className="w-12 h-12 rounded-lg object-contain bg-canvas p-1 shrink-0"
                             />
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            ))}
+                            <div className="min-w-0 flex-1 space-y-0.5">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] font-mono uppercase text-secondary">
+                                  {rec.brand}
+                                </span>
+                                {rec.averageRating > 0 && (
+                                  <span className="inline-flex items-center gap-0.5 text-[10px] font-mono text-secondary">
+                                    · <Star size={9} className="fill-current" /> {rec.averageRating}
+                                  </span>
+                                )}
+                                {rec.discountPercent > 0 && (
+                                  <span className="px-1.5 py-0.2 rounded bg-canvas border border-border text-[9.5px] font-mono text-ink">
+                                    -{rec.discountPercent}%
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="text-caption font-medium text-ink truncate group-hover:underline">
+                                {rec.name}
+                              </div>
+
+                              {rec.matchedVariantName && (
+                                <div className="text-[10.5px] text-secondary truncate">
+                                  {rec.matchedVariantName}
+                                </div>
+                              )}
+
+                              <div className="flex items-center gap-2 pt-0.5">
+                                <span className="text-[11.5px] font-mono font-semibold text-ink">
+                                  {formatPrice(rec.price)}
+                                </span>
+                                {rec.comparePrice > rec.price && (
+                                  <span className="text-[10px] font-mono text-secondary line-through">
+                                    {formatPrice(rec.comparePrice)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col items-end gap-1.5 shrink-0">
+                              {rec.defaultVariantId && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleQuickAddToCart(e, rec)}
+                                  className="px-2 py-1 rounded-lg bg-canvas border border-border hover:bg-primary hover:text-primary-foreground text-[10.5px] font-medium text-ink inline-flex items-center gap-1 transition-colors"
+                                >
+                                  {addStatus === 'done' ? (
+                                    <>
+                                      <Check size={11} />
+                                      <span>{locale === 'vi' ? 'Đã thêm' : 'Added'}</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ShoppingBag size={11} />
+                                      <span>{locale === 'vi' ? '+ Giỏ' : '+ Add'}</span>
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                              <ArrowUpRight
+                                size={13}
+                                className="text-secondary group-hover:text-ink"
+                              />
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             {loading && (
               <div
                 data-testid="ai-chatbot-loading"
-                className="p-3.5 rounded-xl bg-canvas border border-border flex items-center gap-2.5 text-caption text-secondary animate-pulse"
+                className="p-3.5 rounded-xl bg-canvas border border-border flex items-center justify-between gap-2.5 text-caption text-secondary"
               >
-                <Sparkles size={14} className="shrink-0" />
-                <span>{t('ai.thinking')}</span>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Sparkles size={14} className="shrink-0 animate-spin text-ink" />
+                  <span className="truncate">{thinkingLabels[thinkingStep] || t('ai.thinking')}</span>
+                </div>
+                <span className="flex items-center gap-1 shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-ink/60 animate-bounce" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-ink/40 animate-bounce [animation-delay:120ms]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-ink/20 animate-bounce [animation-delay:240ms]" />
+                </span>
               </div>
             )}
           </div>
